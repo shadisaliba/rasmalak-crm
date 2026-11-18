@@ -29,7 +29,7 @@ export function ProposalGenerator({ orgId }: ProposalGeneratorProps) {
     try {
       const [tplRes, dealRes] = await Promise.all([
         supabase.from('crm_document_templates').select('id, name, name_ar, content, content_ar, language').eq('org_id', orgId).eq('is_active', true),
-        supabase.from('crm_deals').select('id, title').eq('org_id', orgId).not('status', 'in', '("won","lost")').limit(50),
+        supabase.from('crm_deals').select('id, title').eq('org_id', orgId).is('closed_at', null).limit(50),
       ]);
       if (tplRes.data) setTemplates(tplRes.data.map(r => ({
         id: r.id, name: r.name, nameAr: r.name_ar, content: r.content, contentAr: r.content_ar, language: r.language,

@@ -82,22 +82,22 @@ export async function GET(request: Request) {
             .from('crm_deals')
             .select('title, value, ai_score, probability, stage_id')
             .eq('org_id', org.org_id)
-            .not('status', 'in', '("won","lost")')
+            .is('closed_at', null)
             .limit(50);
 
           const { data: closedWon } = await supabase
             .from('crm_deals')
-            .select('value')
+            .select('value, crm_deal_stages!inner(is_won)')
             .eq('org_id', org.org_id)
-            .eq('status', 'won')
-            .gte('updated_at', new Date(Date.now() - 7 * 86400000).toISOString());
+            .eq('crm_deal_stages.is_won', true)
+            .gte('closed_at', new Date(Date.now() - 7 * 86400000).toISOString());
 
           const { data: closedLost } = await supabase
             .from('crm_deals')
-            .select('value')
+            .select('value, crm_deal_stages!inner(is_lost)')
             .eq('org_id', org.org_id)
-            .eq('status', 'lost')
-            .gte('updated_at', new Date(Date.now() - 7 * 86400000).toISOString());
+            .eq('crm_deal_stages.is_lost', true)
+            .gte('closed_at', new Date(Date.now() - 7 * 86400000).toISOString());
 
           const totalValue = (openDeals ?? []).reduce((sum, d) => sum + (d.value ?? 0), 0);
           const atRisk = (openDeals ?? []).filter(d => (d.ai_score ?? 50) < 40);
@@ -168,7 +168,7 @@ export async function GET(request: Request) {
             .select('title, value, ai_score')
             .eq('org_id', org.org_id)
             .eq('assigned_to', rep.user_id)
-            .not('status', 'in', '("won","lost")')
+            .is('closed_at', null)
             .limit(10);
 
           const { data: todayTasks } = await supabase

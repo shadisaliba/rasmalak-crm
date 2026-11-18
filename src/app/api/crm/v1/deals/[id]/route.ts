@@ -27,7 +27,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const body = await request.json();
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
-  for (const key of ['title', 'title_ar', 'stage_id', 'value', 'currency', 'probability', 'expected_close', 'contact_id', 'company_id', 'assigned_to', 'custom_fields', 'status', 'won_lost_reason']) {
+  for (const key of ['title', 'title_ar', 'stage_id', 'value', 'currency', 'probability', 'expected_close', 'contact_id', 'company_id', 'assigned_to', 'custom_fields', 'won_lost_reason']) {
     if (body[key] !== undefined) updates[key] = body[key];
   }
 

@@ -42,7 +42,7 @@ async function fetchDashboard(orgId: string, currency: string): Promise<Dashboar
       .from('crm_deals')
       .select('id, title, value, probability, ai_score, stage_id')
       .eq('org_id', orgId)
-      .not('status', 'in', '("won","lost")')
+      .is('closed_at', null)
       .limit(200);
 
     const pipelineValue = (deals ?? []).reduce((s, d) => s + (d.value ?? 0), 0);

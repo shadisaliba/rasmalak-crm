@@ -47,7 +47,7 @@ export async function GET(request: Request) {
         ai_score, created_at, updated_at,
         crm_contacts ( name, title, company )
       `)
-      .not('status', 'in', '("won","lost")')
+      .is('closed_at', null)
       .limit(200);
 
     if (!deals || deals.length === 0) {
@@ -69,7 +69,7 @@ export async function GET(request: Request) {
         .from('crm_deals')
         .select('*', { count: 'exact', head: true })
         .eq('org_id', orgId)
-        .not('status', 'in', '("won","lost")');
+        .is('closed_at', null);
 
       const avgComms = dealCount && dealCount > 0 ? Math.round((commCount ?? 0) / dealCount) : 0;
       orgStats.set(orgId, { avgComms, avgDays: 14 }); // Default avg stage days
