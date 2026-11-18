@@ -6,6 +6,7 @@ import { useIntl } from 'react-intl';
 import { useOrg } from '@/store/orgStore';
 import { CURRENCIES } from '@/lib/constants';
 import type { CreateOrgInput } from '@/types/crm';
+import { HOME_ROUTE } from '@/lib/routes';
 
 const INDUSTRIES = [
   'technology', 'real_estate', 'healthcare', 'retail', 'construction',
@@ -55,7 +56,7 @@ export function OrgSetup() {
     const org = await createOrg(data);
 
     if (org) {
-      router.replace('/crm');
+      router.replace(HOME_ROUTE);
     } else {
       setError(t('org.setup.error', 'Failed to create organization'));
       setIsSubmitting(false);

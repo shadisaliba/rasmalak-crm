@@ -20,6 +20,43 @@ interface Message {
   createdAt: string;
 }
 
+async function fetchMessages(orgId: string, contactId: string): Promise<Message[] | null> {
+  try {
+    const { data } = await supabase
+      .from('crm_communications')
+      .select('id, direction, body, created_at')
+      .eq('org_id', orgId)
+      .eq('contact_id', contactId)
+      .eq('type', 'whatsapp')
+      .order('created_at', { ascending: true })
+      .limit(100);
+    return data
+      ? data.map(m => ({
+          id: m.id, direction: m.direction as 'inbound' | 'outbound',
+          body: m.body ?? '', createdAt: m.created_at,
+        }))
+      : null;
+  } catch (err) {
+    console.warn('[ConversationView] Error loading:', err);
+    return null;
+  }
+}
+
+async function fetchWindowOpen(accountId: string, contactPhone: string): Promise<boolean> {
+  try {
+    const { data } = await supabase
+      .from('whatsapp_conversations')
+      .select('window_expires')
+      .eq('account_id', accountId)
+      .eq('contact_phone', contactPhone)
+      .eq('status', 'active')
+      .single();
+    return !!data?.window_expires && new Date(data.window_expires) > new Date();
+  } catch {
+    return false;
+  }
+}
+
 export function ConversationView({ contactId, contactPhone, orgId, accountId }: ConversationViewProps) {
   const intl = useIntl();
   const t = (key: string, def: string) => intl.formatMessage({ id: key, defaultMessage: def });
@@ -27,52 +64,23 @@ export function ConversationView({ contactId, contactPhone, orgId, accountId }: 
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [windowOpen, setWindowOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loadedContactId, setLoadedContactId] = useState<string | null>(null);
+  const isLoading = loadedContactId !== contactId;
+
+
 
   useEffect(() => {
-    loadMessages();
-    checkWindow();
-  }, [contactId]);
-
-  const loadMessages = async () => {
-    setIsLoading(true);
-    try {
-      const { data } = await supabase
-        .from('crm_communications')
-        .select('id, direction, body, created_at')
-        .eq('org_id', orgId)
-        .eq('contact_id', contactId)
-        .eq('type', 'whatsapp')
-        .order('created_at', { ascending: true })
-        .limit(100);
-
-      if (data) {
-        setMessages(data.map(m => ({
-          id: m.id, direction: m.direction as 'inbound' | 'outbound',
-          body: m.body ?? '', createdAt: m.created_at,
-        })));
-      }
-    } catch (err) {
-      console.warn('[ConversationView] Error loading:', err);
-    }
-    setIsLoading(false);
-  };
-
-  const checkWindow = async () => {
-    try {
-      const { data } = await supabase
-        .from('whatsapp_conversations')
-        .select('window_expires')
-        .eq('account_id', accountId)
-        .eq('contact_phone', contactPhone)
-        .eq('status', 'active')
-        .single();
-
-      setWindowOpen(!!data?.window_expires && new Date(data.window_expires) > new Date());
-    } catch {
-      setWindowOpen(false);
-    }
-  };
+    let ignore = false;
+    fetchMessages(orgId, contactId).then(rows => {
+      if (ignore) return;
+      if (rows) setMessages(rows);
+      setLoadedContactId(contactId);
+    });
+    fetchWindowOpen(accountId, contactPhone).then(open => {
+      if (!ignore) setWindowOpen(open);
+    });
+    return () => { ignore = true; };
+  }, [orgId, contactId, accountId, contactPhone]);
 
   const handleSend = async () => {
     if (!text.trim()) return;
@@ -99,7 +107,8 @@ export function ConversationView({ contactId, contactPhone, orgId, accountId }: 
       });
 
       setText('');
-      await loadMessages();
+      const rows = await fetchMessages(orgId, contactId);
+      if (rows) setMessages(rows);
     } catch (err) {
       console.warn('[ConversationView] Send error:', err);
     }

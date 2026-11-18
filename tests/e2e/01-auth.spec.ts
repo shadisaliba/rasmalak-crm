@@ -1,18 +1,20 @@
 /**
  * Auth flow tests (unauthenticated — no stored session used here).
- * Tests: login page UI, forgot password, signup form validation, redirect guard.
+ * Tests: default locale, login page UI, forgot password, signup form validation, redirect guard.
  */
 import { test, expect } from '@playwright/test';
+import { forceEnglish, signIn } from './helpers';
 
 // These tests run without the saved session
 test.use({ storageState: { cookies: [], origins: [] } });
 
-// Force English so selectors match English text (default locale is Arabic)
-const forceEnglish = async ({ page }: { page: import('@playwright/test').Page }) => {
-  await page.addInitScript(() => {
-    localStorage.setItem('rasmalak-storage', JSON.stringify({ state: { language: 'en', theme: 'light' } }));
+test.describe('Default locale', () => {
+  test('a fresh browser loads in Arabic, right to left', async ({ page }) => {
+    await page.goto('/login');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
+    await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
   });
-};
+});
 
 test.describe('Login page', () => {
   test.beforeEach(forceEnglish);
@@ -45,13 +47,17 @@ test.describe('Login page', () => {
     await expect(passwordInput).toHaveAttribute('type', 'text');
   });
 
-  test('redirect to dashboard after login', async ({ page }) => {
-    await page.goto('/login');
-    await page.getByPlaceholder('name@example.com').fill(process.env.TEST_EMAIL!);
-    await page.getByPlaceholder('Enter your password').fill(process.env.TEST_PASSWORD!);
-    await page.getByRole('button', { name: /log in/i }).click();
-    await page.waitForURL(/\/(dashboard|$)/, { timeout: 15_000 });
-    await expect(page).not.toHaveURL(/\/login/);
+  test('a member of an organization lands on the CRM dashboard', async ({ page }) => {
+    await signIn(page, process.env.TEST_EMAIL!, process.env.TEST_PASSWORD!);
+    await page.waitForURL(/\/crm\/dashboard/, { timeout: 15_000 });
+  });
+
+  test('a user without an organization lands on organization setup', async ({ page }) => {
+    const email = process.env.TEST_NO_ORG_EMAIL;
+    const password = process.env.TEST_NO_ORG_PASSWORD;
+    test.skip(!email || !password, 'Set TEST_NO_ORG_EMAIL and TEST_NO_ORG_PASSWORD to a user with no organization');
+    await signIn(page, email!, password!);
+    await page.waitForURL(/\/crm\/setup/, { timeout: 15_000 });
   });
 });
 
@@ -102,19 +108,11 @@ test.describe('Forgot password page', () => {
 test.describe('Auth guard', () => {
   test.beforeEach(forceEnglish);
 
-  // NOTE: These tests only pass against a production build.
-  // In development (npm run dev), DEV_BYPASS_AUTH=true skips the auth redirect.
-  test('redirects unauthenticated users from dashboard to login', async ({ page }) => {
-    test.skip(process.env.NODE_ENV !== 'production', 'Auth bypass is enabled in dev mode');
-    await page.goto('/');
-    await page.waitForURL(/\/login/, { timeout: 8000 });
-    await expect(page).toHaveURL(/\/login/);
-  });
-
-  test('redirects unauthenticated users from /chat to login', async ({ page }) => {
-    test.skip(process.env.NODE_ENV !== 'production', 'Auth bypass is enabled in dev mode');
-    await page.goto('/chat');
-    await page.waitForURL(/\/login/, { timeout: 8000 });
-    await expect(page).toHaveURL(/\/login/);
-  });
+  // In development AuthGuard bypasses its check; OrgGuard still sends signed-out users to /login.
+  for (const path of ['/', '/crm/dashboard', '/crm/contacts', '/crm/settings/security']) {
+    test(`redirects signed-out users from ${path} to login`, async ({ page }) => {
+      await page.goto(path);
+      await page.waitForURL(/\/login/, { timeout: 15_000 });
+    });
+  }
 });

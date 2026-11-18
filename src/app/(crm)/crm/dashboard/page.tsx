@@ -35,99 +35,108 @@ interface DashboardData {
   todayTasks: number;
 }
 
+async function fetchDashboard(orgId: string, currency: string): Promise<DashboardData | null> {
+  try {
+    // Pipeline summary
+    const { data: deals } = await supabase
+      .from('crm_deals')
+      .select('id, title, value, probability, ai_score, stage_id')
+      .eq('org_id', orgId)
+      .not('status', 'in', '("won","lost")')
+      .limit(200);
+
+    const pipelineValue = (deals ?? []).reduce((s, d) => s + (d.value ?? 0), 0);
+    const weightedForecast = (deals ?? []).reduce((s, d) => s + (d.value ?? 0) * ((d.probability ?? 50) / 100), 0);
+    const atRiskDeals = (deals ?? [])
+      .filter(d => d.ai_score != null && d.ai_score < 40)
+      .sort((a, b) => (a.ai_score ?? 0) - (b.ai_score ?? 0))
+      .slice(0, 5)
+      .map(d => ({ id: d.id, title: d.title, value: d.value ?? 0, score: d.ai_score ?? 0 }));
+
+    // Overdue tasks
+    const { count: overdueCount } = await supabase
+      .from('crm_tasks')
+      .select('*', { count: 'exact', head: true })
+      .eq('org_id', orgId)
+      .eq('status', 'pending')
+      .lt('due_date', new Date().toISOString());
+
+    // Today's tasks
+    const tomorrow = new Date(Date.now() + 86400000).toISOString();
+    const { count: todayCount } = await supabase
+      .from('crm_tasks')
+      .select('*', { count: 'exact', head: true })
+      .eq('org_id', orgId)
+      .eq('status', 'pending')
+      .lte('due_date', tomorrow);
+
+    // Recent activity
+    const { data: comms } = await supabase
+      .from('crm_communications')
+      .select('id, type, body, created_at, crm_contacts(name)')
+      .eq('org_id', orgId)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    const recentActivity = (comms ?? []).map(c => ({
+      id: c.id,
+      type: c.type,
+      // PostgREST types a to-one embed as an array; at runtime it is a single object.
+      contactName: (c.crm_contacts as unknown as { name?: string } | null)?.name ?? '',
+      body: (c.body ?? '').slice(0, 100),
+      createdAt: c.created_at,
+    }));
+
+    // Integration health
+    const { data: connections } = await supabase
+      .from('service_connections')
+      .select('provider, status')
+      .eq('org_id', orgId);
+
+    const integrationHealth = (connections ?? []).map(c => ({
+      provider: c.provider,
+      status: c.status,
+    }));
+
+    return {
+      pipelineValue,
+      weightedForecast,
+      dealCount: deals?.length ?? 0,
+      currency,
+      overdueTaskCount: overdueCount ?? 0,
+      recentActivity,
+      atRiskDeals,
+      integrationHealth,
+      todayTasks: todayCount ?? 0,
+    };
+  } catch (err) {
+    console.warn('[Dashboard] Load error:', err);
+    return null;
+  }
+}
+
 export default function CrmDashboardPage() {
   const intl = useIntl();
   const isAr = intl.locale.startsWith('ar');
   const t = (key: string, def: string) => intl.formatMessage({ id: key, defaultMessage: def });
   const { currentOrg } = useOrg();
   const [data, setData] = useState<DashboardData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Loading is derived so a switch of organization never shows the previous organization's figures.
+  const [loadedOrgId, setLoadedOrgId] = useState<string | null>(null);
+  const isLoading = loadedOrgId !== currentOrg?.id;
+
 
   useEffect(() => {
     if (!currentOrg) return;
-    loadDashboard(currentOrg.id, currentOrg.currency);
+    const orgId = currentOrg.id;
+    let ignore = false;
+    fetchDashboard(orgId, currentOrg.currency).then(result => {
+      if (ignore) return;
+      setData(result);
+      setLoadedOrgId(orgId);
+    });
+    return () => { ignore = true; };
   }, [currentOrg]);
-
-  const loadDashboard = async (orgId: string, currency: string) => {
-    setIsLoading(true);
-    try {
-      // Pipeline summary
-      const { data: deals } = await supabase
-        .from('crm_deals')
-        .select('id, title, value, probability, ai_score, stage_id')
-        .eq('org_id', orgId)
-        .not('status', 'in', '("won","lost")')
-        .limit(200);
-
-      const pipelineValue = (deals ?? []).reduce((s, d) => s + (d.value ?? 0), 0);
-      const weightedForecast = (deals ?? []).reduce((s, d) => s + (d.value ?? 0) * ((d.probability ?? 50) / 100), 0);
-      const atRiskDeals = (deals ?? [])
-        .filter(d => d.ai_score != null && d.ai_score < 40)
-        .sort((a, b) => (a.ai_score ?? 0) - (b.ai_score ?? 0))
-        .slice(0, 5)
-        .map(d => ({ id: d.id, title: d.title, value: d.value ?? 0, score: d.ai_score ?? 0 }));
-
-      // Overdue tasks
-      const { count: overdueCount } = await supabase
-        .from('crm_tasks')
-        .select('*', { count: 'exact', head: true })
-        .eq('org_id', orgId)
-        .eq('status', 'pending')
-        .lt('due_date', new Date().toISOString());
-
-      // Today's tasks
-      const tomorrow = new Date(Date.now() + 86400000).toISOString();
-      const { count: todayCount } = await supabase
-        .from('crm_tasks')
-        .select('*', { count: 'exact', head: true })
-        .eq('org_id', orgId)
-        .eq('status', 'pending')
-        .lte('due_date', tomorrow);
-
-      // Recent activity
-      const { data: comms } = await supabase
-        .from('crm_communications')
-        .select('id, type, body, created_at, crm_contacts(name)')
-        .eq('org_id', orgId)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      const recentActivity = (comms ?? []).map(c => ({
-        id: c.id,
-        type: c.type,
-        // PostgREST types a to-one embed as an array; at runtime it is a single object.
-        contactName: (c.crm_contacts as unknown as { name?: string } | null)?.name ?? '',
-        body: (c.body ?? '').slice(0, 100),
-        createdAt: c.created_at,
-      }));
-
-      // Integration health
-      const { data: connections } = await supabase
-        .from('service_connections')
-        .select('provider, status')
-        .eq('org_id', orgId);
-
-      const integrationHealth = (connections ?? []).map(c => ({
-        provider: c.provider,
-        status: c.status,
-      }));
-
-      setData({
-        pipelineValue,
-        weightedForecast,
-        dealCount: deals?.length ?? 0,
-        currency,
-        overdueTaskCount: overdueCount ?? 0,
-        recentActivity,
-        atRiskDeals,
-        integrationHealth,
-        todayTasks: todayCount ?? 0,
-      });
-    } catch (err) {
-      console.warn('[Dashboard] Load error:', err);
-    }
-    setIsLoading(false);
-  };
 
   const formatCurrency = (value: number) => {
     try {

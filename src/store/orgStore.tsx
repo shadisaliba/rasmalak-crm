@@ -15,7 +15,7 @@ import { mapFromDb as mapRow, mapToDb } from '@/types/crm';
 /* ============================================
    ORG STORE
    Context Provider for organization state.
-   Follows the same pattern as transactionStore.tsx:
+   Pattern shared by the CRM stores:
    - createContext + Provider
    - Auth-gated fetching
    - getAuthState() in mutations

@@ -15,7 +15,7 @@ import type {
 
 /* ============================================
    AUTOMATION STORE — Context Provider
-   Follows billingStore.tsx / transactionStore.tsx pattern.
+   Follows the billingStore.tsx / crmStore.tsx pattern.
    Manages workflows, templates, and execution logs.
    ============================================ */
 

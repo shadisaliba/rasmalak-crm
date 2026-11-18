@@ -3,16 +3,16 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useSignup, useIsAuthenticated, useHasCompletedOnboarding } from '@/store/useStore';
+import { useSignup, useIsAuthenticated } from '@/store/useStore';
 import { useIntl } from 'react-intl';
 import { Button, Input } from '@/components/ui';
 import { ThemeLanguageSwitcher } from '@/components';
+import { HOME_ROUTE, ORG_SETUP_ROUTE } from '@/lib/routes';
 
 export default function SignupPage() {
   const router = useRouter();
   const signup = useSignup();
   const isAuthenticated = useIsAuthenticated();
-  const hasCompletedOnboarding = useHasCompletedOnboarding();
   const intl = useIntl();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -24,9 +24,9 @@ export default function SignupPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push(hasCompletedOnboarding ? '/' : '/onboarding');
+      router.push(HOME_ROUTE);
     }
-  }, [isAuthenticated, hasCompletedOnboarding, router]);
+  }, [isAuthenticated, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +57,7 @@ export default function SignupPage() {
     setIsLoading(false);
 
     if (result.success) {
-      router.push('/onboarding');
+      router.push(ORG_SETUP_ROUTE);
     } else {
       setError(result.error || intl.formatMessage({ id: 'auth.signup_error', defaultMessage: 'Signup failed' }));
     }

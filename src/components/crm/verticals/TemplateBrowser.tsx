@@ -27,6 +27,15 @@ const ICON_MAP: Record<string, React.ReactNode> = {
   Store: <Store size={24} />,
 };
 
+async function fetchTemplates(): Promise<VerticalTemplate[] | null> {
+  try {
+    const { data } = await supabase.from('crm_vertical_templates').select('*').eq('is_published', true);
+    return data ? (data as unknown as VerticalTemplate[]) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function TemplateBrowser({ onInstall }: { onInstall: (slug: string) => Promise<void> }) {
   const intl = useIntl();
   const isAr = intl.locale.startsWith('ar');
@@ -36,16 +45,16 @@ export function TemplateBrowser({ onInstall }: { onInstall: (slug: string) => Pr
   const [isLoading, setIsLoading] = useState(true);
   const [previewSlug, setPreviewSlug] = useState<string | null>(null);
 
-  useEffect(() => { loadTemplates(); }, []);
 
-  const loadTemplates = async () => {
-    setIsLoading(true);
-    try {
-      const { data } = await supabase.from('crm_vertical_templates').select('*').eq('is_published', true);
-      if (data) setTemplates(data as unknown as VerticalTemplate[]);
-    } catch { /* handled */ }
-    setIsLoading(false);
-  };
+  useEffect(() => {
+    let ignore = false;
+    fetchTemplates().then(rows => {
+      if (ignore) return;
+      if (rows) setTemplates(rows);
+      setIsLoading(false);
+    });
+    return () => { ignore = true; };
+  }, []);
 
   const previewTemplate = templates.find(t => t.slug === previewSlug);
 

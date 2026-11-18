@@ -23,7 +23,7 @@ export function PlanSelector() {
       await changePlan(tier);
     } else {
       const url = await createCheckoutSession(tier, 'monthly');
-      if (url) window.location.href = url;
+      if (url) window.location.assign(url);
     }
   };
 

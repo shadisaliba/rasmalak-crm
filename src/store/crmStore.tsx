@@ -26,7 +26,7 @@ import type {
 /* ============================================
    CRM STORE
    Context Provider for all CRM entities.
-   Follows transactionStore.tsx pattern:
+   Pattern shared by the CRM stores:
    - Auth-gated fetching via useAuthStore
    - Org-scoped via useOrg
    - getAuthState() in mutations
@@ -142,6 +142,9 @@ export function CrmProvider({ children }: { children: ReactNode }) {
 
   // ─── LOAD DATA ───────────────────────────────────────────
 
+  // Provider caches must clear in the same pass that the user or organization changes,
+  // so no screen renders rows that belong to another organization.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!initialized || !user || !currentOrg) {
       setContacts([]); setCompanies([]); setDeals([]);
@@ -242,6 +245,7 @@ export function CrmProvider({ children }: { children: ReactNode }) {
       loadCustomFields();
     });
   }, [initialized, user, currentOrg]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // ─── CONTACT CRUD ────────────────────────────────────────
 

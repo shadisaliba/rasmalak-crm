@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const ALLOWED_REDIRECT_PREFIXES = ['/', '/reset-password', '/onboarding', '/settings'];
+const ALLOWED_REDIRECT_PREFIXES = ['/', '/reset-password', '/crm'];
 
 function sanitizeRedirectUrl(url: string): string {
   if (!url || typeof url !== 'string') return '/';

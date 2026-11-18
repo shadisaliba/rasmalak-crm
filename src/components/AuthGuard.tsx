@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { useIntl } from 'react-intl';
 import { useIsAuthenticated } from '@/store/useStore';
+import { HOME_ROUTE } from '@/lib/routes';
 
 const PUBLIC_ROUTES = ['/login', '/signup', '/forgot-password'];
 
@@ -12,10 +14,11 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const isAuthenticated = useIsAuthenticated();
-  const [isChecking, setIsChecking] = useState(true);
+  const intl = useIntl();
+  const [isChecking, setIsChecking] = useState(!DEV_BYPASS_AUTH);
 
   useEffect(() => {
-    if (DEV_BYPASS_AUTH) { setIsChecking(false); return; }
+    if (DEV_BYPASS_AUTH) return;
     // Small delay to ensure store is hydrated
     const timer = setTimeout(() => {
       setIsChecking(false);
@@ -24,12 +27,12 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       if (!isAuthenticated && !isPublicRoute) {
         router.replace('/login');
       } else if (isAuthenticated && isPublicRoute) {
-        router.replace('/');
+        router.replace(HOME_ROUTE);
       }
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [isAuthenticated, pathname, router]);
+  }, [DEV_BYPASS_AUTH, isAuthenticated, pathname, router]);
 
   // Show loading while checking auth
   if (!DEV_BYPASS_AUTH && (isChecking || (!isAuthenticated && !PUBLIC_ROUTES.includes(pathname)))) {
@@ -37,7 +40,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-primary)]">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-[var(--color-text-secondary)]">Loading...</p>
+          <p className="text-[var(--color-text-secondary)]">{intl.formatMessage({ id: 'common.loading' })}</p>
         </div>
       </div>
     );

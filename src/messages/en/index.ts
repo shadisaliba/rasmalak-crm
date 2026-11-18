@@ -1,15 +1,8 @@
 import app from './app';
 import common from './common';
 import nav from './nav';
-import dashboard from './dashboard';
-import transactions from './transactions';
-import categories from './categories';
 import settings from './settings';
 import auth from './auth';
-import learn from './learn';
-import chat from './chat';
-import tools from './tools';
-import onboarding from './onboarding';
 import crm from './crm';
 import org from './org';
 import billing from './billing';
@@ -33,15 +26,8 @@ const messages: Record<string, string> = {
   ...flatten(app, 'app'),
   ...flatten(common, 'common'),
   ...flatten(nav, 'nav'),
-  ...flatten(dashboard, 'dashboard'),
-  ...flatten(transactions, 'transactions'),
-  ...flatten(categories, 'categories'),
   ...flatten(settings, 'settings'),
   ...flatten(auth, 'auth'),
-  ...flatten(learn, 'learn'),
-  ...flatten(chat, 'chat'),
-  ...flatten(tools, 'tools'),
-  ...flatten(onboarding, 'onboarding'),
   ...flatten(crm, 'crm'),
   ...flatten(org, 'org'),
   ...flatten(billing, 'billing'),

@@ -17,38 +17,46 @@ interface Doc {
   generatedAt: string;
 }
 
+async function fetchDocs(orgId: string, dealId?: string): Promise<Doc[] | null> {
+  try {
+    let query = supabase.from('crm_documents').select('*').eq('org_id', orgId).order('generated_at', { ascending: false });
+    if (dealId) query = query.eq('deal_id', dealId);
+    const { data } = await query.limit(50);
+    return data
+      ? data.map(d => ({
+          id: d.id, name: d.name, nameAr: d.name_ar, status: d.status,
+          version: d.version, fileUrl: d.file_url, language: d.language,
+          generatedAt: d.generated_at,
+        }))
+      : null;
+  } catch (err) {
+    console.warn('[DocumentList] Error:', err);
+    return null;
+  }
+}
+
 export function DocumentList({ dealId }: { dealId?: string }) {
   const intl = useIntl();
   const isAr = intl.locale.startsWith('ar');
   const t = (key: string, def: string) => intl.formatMessage({ id: key, defaultMessage: def });
   const { currentOrg } = useOrg();
   const [docs, setDocs] = useState<Doc[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const scopeKey = `${currentOrg?.id ?? ''}:${dealId ?? ''}`;
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
+  const isLoading = loadedKey !== scopeKey;
+
 
   useEffect(() => {
     if (!currentOrg) return;
-    loadDocs();
-  }, [currentOrg, dealId]);
-
-  const loadDocs = async () => {
-    setIsLoading(true);
-    try {
-      let query = supabase.from('crm_documents').select('*').eq('org_id', currentOrg!.id).order('generated_at', { ascending: false });
-      if (dealId) query = query.eq('deal_id', dealId);
-
-      const { data } = await query.limit(50);
-      if (data) {
-        setDocs(data.map(d => ({
-          id: d.id, name: d.name, nameAr: d.name_ar, status: d.status,
-          version: d.version, fileUrl: d.file_url, language: d.language,
-          generatedAt: d.generated_at,
-        })));
-      }
-    } catch (err) {
-      console.warn('[DocumentList] Error:', err);
-    }
-    setIsLoading(false);
-  };
+    const key = scopeKey;
+    let ignore = false;
+    fetchDocs(currentOrg.id, dealId).then(rows => {
+      if (ignore) return;
+      if (rows) setDocs(rows);
+      setLoadedKey(key);
+    });
+    return () => { ignore = true; };
+  }, [currentOrg, dealId, scopeKey]);
 
   const statusColor = (s: string) => {
     switch (s) {

@@ -138,5 +138,13 @@ export default {
   verifying: 'Verifying...',
   deleting: 'Deleting...',
   complete_setup: 'Complete Setup',
-  // Note: Currency names are centralized in src/lib/currencies.ts
+
+  // Account security and preferences (CRM)
+  security_description: 'Manage your password and two-factor authentication.',
+  two_factor_secret_hint: "Can't scan the code? Enter this key in your authenticator app instead.",
+  two_factor_remove_prompt: 'Enter a current code from your authenticator app to turn off two-factor authentication.',
+  two_factor_removed: 'Two-factor authentication turned off',
+  preferences_description: 'Language, appearance and accent colour on this device.',
+  accent_color: 'Accent colour',
+  accent_color_description: 'Used to highlight active items in the interface.',
 };

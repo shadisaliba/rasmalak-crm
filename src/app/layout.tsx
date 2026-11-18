@@ -6,26 +6,25 @@ import "./globals.css";
 // Primary Arabic font is "Glass Flowers 3D 2" loaded via @font-face in globals.css
 
 export const metadata: Metadata = {
-  title: "Rasmalak - Your Smart Financial Advisor | راسمالك",
-  description: "Rasmalak is your AI-powered personal financial advisor. Budget management, expense tracking, and financial planning in Arabic and English. راسمالك هو مستشارك المالي الشخصي بالذكاء الاصطناعي.",
-  keywords: ["rasmalak", "راسمالك", "personal finance", "تمويل شخصي", "budget", "ميزانية", "AI", "ذكاء اصطناعي", "financial management", "إدارة مالية"],
-  authors: [{ name: "Rasmalak AI" }],
+  title: "Rasmalak CRM | راسمالك",
+  description: "Customer, sales and business management for small businesses. إدارة العملاء والمبيعات والأعمال للشركات الصغيرة.",
+  applicationName: "Rasmalak CRM",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Rasmalak",
+    title: "Rasmalak CRM",
   },
   formatDetection: {
     telephone: false,
   },
   openGraph: {
     type: "website",
-    locale: "ar_SA",
+    locale: "ar_JO",
     alternateLocale: "en_US",
-    siteName: "Rasmalak",
-    title: "Rasmalak - Your Smart Financial Advisor",
-    description: "AI-powered personal financial advisor for budget management and financial planning",
+    siteName: "Rasmalak CRM",
+    title: "Rasmalak CRM",
+    description: "Customer, sales and business management for small businesses.",
   },
 };
 
@@ -34,40 +33,27 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#1B4D3E",
+  themeColor: "#2D6A4F",
   viewportFit: "cover",
 };
 
-// Inline script to prevent layout shift by setting lang/dir/theme before React hydrates
+// Sets lang, dir and theme before React hydrates so the first paint is already correct.
+// Arabic and right-to-left are the defaults when no preference has been saved.
 const initScript = `
 (function() {
+  var root = document.documentElement;
+  var language = 'ar';
+  var theme = 'light';
   try {
     var stored = localStorage.getItem('rasmalak-storage');
-    if (!stored) {
-      // DEV: default to English for visual review
-      stored = JSON.stringify({state:{language:'en',theme:'light'}});
-      localStorage.setItem('rasmalak-storage', stored);
-    }
-    if (stored) {
-      var data = JSON.parse(stored);
-      var state = data.state || {};
-      // Set language direction
-      if (state.language) {
-        document.documentElement.lang = state.language;
-        document.documentElement.dir = state.language === 'ar' ? 'rtl' : 'ltr';
-      }
-      // Set theme
-      if (state.theme) {
-        document.documentElement.setAttribute('data-theme', state.theme);
-        if (state.theme === 'dark') {
-          document.documentElement.classList.add('dark');
-          document.body.style.backgroundColor = '#0B0E14';
-        } else {
-          document.body.style.backgroundColor = '#F9FAFB';
-        }
-      }
-    }
+    var state = stored ? (JSON.parse(stored).state || {}) : {};
+    if (state.language === 'en' || state.language === 'ar') language = state.language;
+    if (state.theme === 'dark' || state.theme === 'light') theme = state.theme;
   } catch (e) {}
+  root.lang = language;
+  root.dir = language === 'ar' ? 'rtl' : 'ltr';
+  root.setAttribute('data-theme', theme);
+  if (theme === 'dark') root.classList.add('dark');
 })();
 `;
 

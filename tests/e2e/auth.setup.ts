@@ -29,8 +29,8 @@ setup('authenticate', async ({ page }) => {
   await page.getByPlaceholder('Enter your password').fill(password);
   await page.getByRole('button', { name: /log in/i }).click();
 
-  // Wait until we leave /login (client-side navigation via router.push)
-  await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 15_000, waitUntil: 'domcontentloaded' });
+  // The test user must belong to an organization, so sign-in ends on the CRM dashboard.
+  await page.waitForURL(/\/crm\/dashboard/, { timeout: 15_000, waitUntil: 'domcontentloaded' });
 
   await page.context().storageState({ path: SESSION_FILE });
 });

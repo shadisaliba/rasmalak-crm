@@ -83,6 +83,9 @@ export function WhatsAppProvider({ children }: { children: ReactNode }) {
   const initialized = useAuthStore((state) => state.initialized);
   const { currentOrg } = useOrg();
 
+  // Provider caches must clear in the same pass that the user or organization changes,
+  // so no screen renders rows that belong to another organization.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!initialized || !user || !currentOrg) {
       setAccounts([]);
@@ -109,6 +112,7 @@ export function WhatsAppProvider({ children }: { children: ReactNode }) {
     load();
     return () => { cancelled = true; };
   }, [initialized, user, currentOrg]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const fetchAccounts = useCallback(async () => {
     if (!currentOrg) return;

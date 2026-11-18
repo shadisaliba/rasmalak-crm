@@ -7,6 +7,7 @@ import { useLogin, useIsAuthenticated } from '@/store/useStore';
 import { useIntl } from 'react-intl';
 import { Button, Input } from '@/components/ui';
 import { ThemeLanguageSwitcher } from '@/components';
+import { HOME_ROUTE } from '@/lib/routes';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/');
+      router.push(HOME_ROUTE);
     }
   }, [isAuthenticated, router]);
 
@@ -49,7 +50,7 @@ export default function LoginPage() {
 
     if (result.success) {
       setFailedAttempts(0);
-      router.push('/');
+      router.push(HOME_ROUTE);
     } else {
       const newAttempts = failedAttempts + 1;
       setFailedAttempts(newAttempts);

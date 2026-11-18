@@ -136,7 +136,7 @@ export function parseWhatsAppChat(
   let currentMessage: Partial<WhatsAppMessage> | null = null;
 
   for (const rawLine of lines) {
-    let line = rawLine.trim();
+    const line = rawLine.trim();
     if (!line) continue;
 
     // For Arabic format, only convert numerals in the date/time prefix, not the message body

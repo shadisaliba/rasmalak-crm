@@ -9,7 +9,7 @@ import type { Subscription, Invoice, PaymentMethod, GatedFeature } from '@/types
 
 /* ============================================
    BILLING STORE — Context Provider
-   Follows transactionStore.tsx pattern.
+   Follows the crmStore.tsx pattern.
    Loads subscription, invoices, payment methods.
    ============================================ */
 
@@ -43,6 +43,9 @@ export function BillingProvider({ children }: { children: ReactNode }) {
   const initialized = useAuthStore((state) => state.initialized);
   const { currentOrg } = useOrg();
 
+  // Provider caches must clear in the same pass that the user or organization changes,
+  // so no screen renders rows that belong to another organization.
+  /* eslint-disable react-hooks/set-state-in-effect */
   // Load subscription data
   useEffect(() => {
     if (!initialized || !user || !currentOrg) {
@@ -69,6 +72,7 @@ export function BillingProvider({ children }: { children: ReactNode }) {
 
     load();
   }, [initialized, user, currentOrg]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const fetchSubscription = useCallback(async () => {
     if (!currentOrg) return;
@@ -157,9 +161,10 @@ export function BillingProvider({ children }: { children: ReactNode }) {
     return isActive && allowedPlans.includes(subscription.plan);
   }, [subscription]);
 
-  // Trial days remaining
+  // Day-level precision does not need a clock that ticks while the page is open.
+  const [now] = useState(() => Date.now());
   const trialDaysRemaining = subscription?.status === 'trialing' && subscription.trialEndsAt
-    ? Math.max(0, Math.ceil((new Date(subscription.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    ? Math.max(0, Math.ceil((new Date(subscription.trialEndsAt).getTime() - now) / (1000 * 60 * 60 * 24)))
     : null;
 
   const value: BillingContextType = {

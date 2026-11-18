@@ -2,8 +2,6 @@
 
 # dependencies
 /node_modules
-rasmalak-app/node_modules
-rasmalak-app/.next
 /.pnp
 .pnp.*
 .yarn/*
@@ -54,5 +52,6 @@ next-env.d.ts
 *.pdf
 *.zip
 .env.test.local
-.env.test.local
 tests/.auth/
+tests/report/
+test-results/

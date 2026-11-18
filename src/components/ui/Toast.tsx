@@ -3,11 +3,16 @@
 import { useEffect, useState } from 'react';
 
 export function Toast({ message, visible, onHide }: { message: string; visible: boolean; onHide: () => void }) {
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState(visible);
+  const [wasVisible, setWasVisible] = useState(visible);
+
+  if (visible !== wasVisible) {
+    setWasVisible(visible);
+    if (visible) setShow(true);
+  }
 
   useEffect(() => {
     if (visible) {
-      setShow(true);
       const timer = setTimeout(() => {
         setShow(false);
         setTimeout(onHide, 200);

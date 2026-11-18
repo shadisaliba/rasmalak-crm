@@ -138,4 +138,13 @@ export default {
   verifying: 'جاري التحقق...',
   deleting: 'جاري الحذف...',
   complete_setup: 'إكمال الإعداد',
+
+  // Account security and preferences (CRM)
+  security_description: 'إدارة كلمة المرور والمصادقة الثنائية.',
+  two_factor_secret_hint: 'لا يمكنك مسح الرمز؟ أدخل هذا المفتاح في تطبيق المصادقة بدلاً من ذلك.',
+  two_factor_remove_prompt: 'أدخل رمزًا حاليًا من تطبيق المصادقة لإيقاف المصادقة الثنائية.',
+  two_factor_removed: 'تم إيقاف المصادقة الثنائية',
+  preferences_description: 'اللغة والمظهر ولون التمييز على هذا الجهاز.',
+  accent_color: 'لون التمييز',
+  accent_color_description: 'يُستخدم لإبراز العناصر النشطة في الواجهة.',
 };

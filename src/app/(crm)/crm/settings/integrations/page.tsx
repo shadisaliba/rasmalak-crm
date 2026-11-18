@@ -42,7 +42,7 @@ export default function IntegrationsPage() {
   const handleConnect = async (provider: string, serviceType: string) => {
     const res = await fetch(`/api/integrations/connect?provider=${provider}&serviceType=${serviceType}`);
     const data = await res.json();
-    if (data.url) window.location.href = data.url;
+    if (data.url) window.location.assign(data.url);
   };
 
   const handleDisconnect = async (connectionId: string) => {

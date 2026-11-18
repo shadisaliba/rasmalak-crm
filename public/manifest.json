@@ -1,14 +1,14 @@
 {
-  "name": "راسمالك - مستشارك المالي الذكي",
-  "short_name": "راسمالك",
-  "description": "مستشارك المالي الشخصي بالذكاء الاصطناعي",
-  "start_url": "/",
+  "name": "Rasmalak CRM",
+  "short_name": "Rasmalak CRM",
+  "description": "إدارة العملاء والمبيعات والأعمال للشركات الصغيرة",
+  "start_url": "/crm/dashboard",
   "display": "standalone",
-  "background_color": "#F7F5F0",
-  "theme_color": "#1B4D3E",
+  "background_color": "#F5F0EB",
+  "theme_color": "#2D6A4F",
   "dir": "rtl",
   "lang": "ar",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
@@ -59,22 +59,8 @@
       "purpose": "maskable any"
     }
   ],
-  "categories": ["finance", "productivity"],
-  "screenshots": [],
-  "shortcuts": [
-    {
-      "name": "إضافة معاملة",
-      "short_name": "إضافة",
-      "description": "إضافة دخل أو مصروف جديد",
-      "url": "/transactions/new",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "الحاسبات",
-      "short_name": "حاسبات",
-      "description": "الحاسبات المالية",
-      "url": "/calculators",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
-    }
+  "categories": [
+    "business",
+    "productivity"
   ]
 }

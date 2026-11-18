@@ -12,11 +12,13 @@ import { CrmHeader } from './CrmHeader';
 export function CrmShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const [sidebarPath, setSidebarPath] = useState(pathname);
 
-  // Close sidebar on route change (mobile)
-  useEffect(() => {
+  // Close the mobile sidebar on navigation; adjusting state during render avoids an extra effect pass.
+  if (pathname !== sidebarPath) {
+    setSidebarPath(pathname);
     setSidebarOpen(false);
-  }, [pathname]);
+  }
 
   // Prevent body scroll when mobile sidebar is open
   useEffect(() => {
