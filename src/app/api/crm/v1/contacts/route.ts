@@ -5,7 +5,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import {
   authenticateApiRequest, logApiRequest, withRateLimitHeaders,
   hasPermission, apiError, apiList, apiSingle,
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
     const tag = url.searchParams.get('tag') ?? '';
     const offset = (page - 1) * limit;
 
-    let query = supabase
+    let query = serviceDb()
       .from('crm_contacts')
       .select('*', { count: 'exact' })
       .eq('org_id', context.orgId)
@@ -83,10 +83,11 @@ export async function POST(request: Request) {
     const customFields = (body.custom_fields && typeof body.custom_fields === 'object' && !Array.isArray(body.custom_fields))
       ? body.custom_fields : {};
 
-    const { data, error } = await supabase
+    const { data, error } = await serviceDb()
       .from('crm_contacts')
       .insert({
         org_id: context.orgId,
+        created_by: context.actorUserId,
         name: String(body.name).slice(0, 255),
         name_ar: body.name_ar ? String(body.name_ar).slice(0, 255) : null,
         email: body.email ? String(body.email).slice(0, 255) : null,

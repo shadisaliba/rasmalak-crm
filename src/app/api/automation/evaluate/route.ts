@@ -6,6 +6,7 @@
  */
 
 import { NextResponse } from 'next/server';
+import { hasBearerSecret } from '@/lib/serverAuth';
 import { processEvent } from '@/automation/engine';
 import type { TriggerEvent } from '@/automation/triggers';
 import type { TriggerType } from '@/types/crm';
@@ -19,10 +20,7 @@ const VALID_TRIGGER_TYPES: TriggerType[] = [
 
 export async function POST(request: Request) {
   // Verify webhook secret (Supabase database webhooks send this header)
-  const authHeader = request.headers.get('authorization');
-  const webhookSecret = process.env.AUTOMATION_WEBHOOK_SECRET || process.env.CRON_SECRET;
-
-  if (authHeader !== `Bearer ${webhookSecret}`) {
+  if (!hasBearerSecret(request, process.env.AUTOMATION_WEBHOOK_SECRET || process.env.CRON_SECRET)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

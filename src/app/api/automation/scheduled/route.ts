@@ -6,16 +6,12 @@
  */
 
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
+import { requireCronSecret } from '@/lib/serverAuth';
 import { runScheduledAutomation } from '@/automation/scheduler';
 
 export async function GET(request: Request) {
-  const cronSecret = process.env.CRON_SECRET;
-  const authHeader = request.headers.get('authorization') ?? '';
-  if (!cronSecret || authHeader.length !== `Bearer ${cronSecret}`.length ||
-      !crypto.timingSafeEqual(Buffer.from(authHeader), Buffer.from(`Bearer ${cronSecret}`))) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const unauthorized = requireCronSecret(request);
+  if (unauthorized) return unauthorized.error;
 
   try {
     const result = await runScheduledAutomation();

@@ -7,20 +7,18 @@
 
 import { NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
-import { supabase } from '@/lib/supabaseClient';
 import { mapFromDb } from '@/types/crm';
 import type { Subscription } from '@/types/crm';
-import { verifyBillingAuth } from '../_auth';
+import { requireBillingAdmin } from '../_auth';
 
 
 export async function POST(request: Request) {
   try {
     const { orgId } = await request.json();
 
-    const auth = await verifyBillingAuth(orgId);
-    if (!auth.authorized) {
-      return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: auth.error } }, { status: auth.error === 'Unauthorized' ? 401 : 403 });
-    }
+    const auth = await requireBillingAdmin(request, orgId);
+    if ('error' in auth) return auth.error;
+    const { supabase } = auth;
 
     const addonPriceId = process.env.STRIPE_PRICE_ADDON_SEAT;
     if (!addonPriceId) {

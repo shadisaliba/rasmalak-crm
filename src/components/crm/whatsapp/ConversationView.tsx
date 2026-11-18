@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useIntl } from 'react-intl';
 import { supabase } from '@/lib/supabaseClient';
-import { sendTextMessage, sendTemplateMessage } from '@/integrations/adapters/whatsappBusiness';
+import { authorizedFetch } from '@/lib/authorizedFetch';
 import { Send, Clock, MessageCircle } from 'lucide-react';
 
 interface ConversationViewProps {
@@ -87,24 +87,23 @@ export function ConversationView({ contactId, contactPhone, orgId, accountId }: 
     setSending(true);
 
     try {
-      if (windowOpen) {
-        await sendTextMessage({ accountId, to: contactPhone, text: text.trim() });
-      } else {
-        // Outside window — would need template. Show message.
+      if (!windowOpen) {
+        // Outside the 24-hour window WhatsApp only accepts approved templates.
         console.warn('[ConversationView] 24h window closed — need template');
         setSending(false);
         return;
       }
 
-      // Log locally
-      await supabase.from('crm_communications').insert({
-        org_id: orgId,
-        contact_id: contactId,
-        type: 'whatsapp',
-        direction: 'outbound',
-        body: text.trim(),
-        source: 'manual',
+      const res = await authorizedFetch('/api/crm/whatsapp/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orgId, accountId, contactId, to: contactPhone, text: text.trim() }),
       });
+      if (!res.ok) {
+        console.warn('[ConversationView] Send failed:', res.status);
+        setSending(false);
+        return;
+      }
 
       setText('');
       const rows = await fetchMessages(orgId, contactId);

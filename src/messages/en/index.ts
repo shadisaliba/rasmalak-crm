@@ -12,6 +12,7 @@ import whatsapp from './whatsapp';
 import api from './api';
 import documents from './documents';
 import verticals from './verticals';
+import errors from './errors';
 
 // Flatten all domain messages into a single object with prefixed keys
 function flatten(obj: Record<string, string>, prefix: string): Record<string, string> {
@@ -37,6 +38,7 @@ const messages: Record<string, string> = {
   ...flatten(api, 'api'),
   ...flatten(documents, 'documents'),
   ...flatten(verticals, 'verticals'),
+  ...flatten(errors, 'errors'),
 };
 
 export default messages;

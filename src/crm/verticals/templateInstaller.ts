@@ -5,7 +5,7 @@
  * workflow copies, and AI context injection.
  */
 
-import { supabase } from '@/lib/supabaseClient';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type { CrmVerticalTemplate } from '@/types/crm';
 
 export interface InstallResult {
@@ -20,6 +20,7 @@ export interface InstallResult {
  * Creates: pipeline with stages, workflow copies.
  */
 export async function installTemplate(
+  supabase: SupabaseClient,
   orgId: string,
   slug: string,
   userId: string
@@ -114,7 +115,7 @@ export async function installTemplate(
 /**
  * Get the currently installed vertical template for an org.
  */
-export async function getInstalledTemplate(orgId: string): Promise<string | null> {
+export async function getInstalledTemplate(supabase: SupabaseClient, orgId: string): Promise<string | null> {
   try {
     const { data } = await supabase
       .from('crm_workflows')

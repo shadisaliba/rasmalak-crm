@@ -7,8 +7,8 @@
  */
 
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
-import { supabase } from '@/lib/supabaseClient';
+import { requireCronSecret } from '@/lib/serverAuth';
+import { serviceDb } from '@/lib/supabaseServer';
 import { dealScoringAgent, buildDealScoringContext } from '@/ai/agents/dealScoringAgent';
 import { AI_CONFIG } from '@/ai/config';
 
@@ -27,12 +27,8 @@ async function callLLM(systemPrompt: string, userMessage: string): Promise<strin
 }
 
 export async function GET(request: Request) {
-  const cronSecret = process.env.CRON_SECRET;
-  const authHeader = request.headers.get('authorization') ?? '';
-  if (!cronSecret || authHeader.length !== `Bearer ${cronSecret}`.length ||
-      !crypto.timingSafeEqual(Buffer.from(authHeader), Buffer.from(`Bearer ${cronSecret}`))) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const unauthorized = requireCronSecret(request);
+  if (unauthorized) return unauthorized.error;
 
   let scored = 0;
   let errors = 0;
@@ -40,7 +36,7 @@ export async function GET(request: Request) {
 
   try {
     // Fetch all open deals across all orgs
-    const { data: deals } = await supabase
+    const { data: deals } = await serviceDb()
       .from('crm_deals')
       .select(`
         id, org_id, title, value, currency, probability, stage_id, assigned_to,
@@ -59,13 +55,13 @@ export async function GET(request: Request) {
     const orgStats = new Map<string, { avgComms: number; avgDays: number }>();
 
     for (const orgId of orgIds) {
-      const { count: commCount } = await supabase
+      const { count: commCount } = await serviceDb()
         .from('crm_communications')
         .select('*', { count: 'exact', head: true })
         .eq('org_id', orgId)
         .gte('created_at', new Date(Date.now() - 30 * 86400000).toISOString());
 
-      const { count: dealCount } = await supabase
+      const { count: dealCount } = await serviceDb()
         .from('crm_deals')
         .select('*', { count: 'exact', head: true })
         .eq('org_id', orgId)
@@ -93,23 +89,25 @@ export async function GET(request: Request) {
 
         // Count recent communications for this deal's contact
         const contact = Array.isArray(deal.crm_contacts) ? deal.crm_contacts[0] : deal.crm_contacts;
-        const { count: dealComms } = await supabase
+        const { count: dealComms } = await serviceDb()
           .from('crm_communications')
           .select('*', { count: 'exact', head: true })
           .eq('org_id', deal.org_id)
           .gte('created_at', new Date(Date.now() - 30 * 86400000).toISOString());
 
         // Count tasks
-        const { count: openTasks } = await supabase
+        const { count: openTasks } = await serviceDb()
           .from('crm_tasks')
           .select('*', { count: 'exact', head: true })
-          .eq('related_entity_id', deal.id)
+          .eq('org_id', deal.org_id)
+          .eq('deal_id', deal.id)
           .eq('status', 'pending');
 
-        const { count: overdueTasks } = await supabase
+        const { count: overdueTasks } = await serviceDb()
           .from('crm_tasks')
           .select('*', { count: 'exact', head: true })
-          .eq('related_entity_id', deal.id)
+          .eq('org_id', deal.org_id)
+          .eq('deal_id', deal.id)
           .eq('status', 'pending')
           .lt('due_date', new Date().toISOString());
 
@@ -145,7 +143,7 @@ export async function GET(request: Request) {
         const previousScore = deal.ai_score;
 
         // Update deal
-        await supabase
+        await serviceDb()
           .from('crm_deals')
           .update({
             ai_score: result.score,
@@ -153,13 +151,14 @@ export async function GET(request: Request) {
             ai_score_reasoning: result.reasoning,
             ai_scored_at: new Date().toISOString(),
           })
-          .eq('id', deal.id);
+          .eq('id', deal.id)
+          .eq('org_id', deal.org_id);
 
         scored++;
 
         // Alert on 15+ point drop
         if (previousScore != null && previousScore - result.score >= 15 && deal.assigned_to) {
-          await supabase.from('crm_notifications').insert({
+          await serviceDb().from('crm_notifications').insert({
             org_id: deal.org_id,
             user_id: deal.assigned_to,
             title: `Score dropped: ${deal.title}`,

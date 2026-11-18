@@ -3,7 +3,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import { authenticateApiRequest, withRateLimitHeaders, hasPermission, apiError, apiList, apiSingle } from '@/middleware/apiAuth';
 
 export async function GET(request: Request) {
@@ -20,7 +20,7 @@ export async function GET(request: Request) {
   const offset = (page - 1) * limit;
 
   try {
-    let query = supabase.from('crm_deals').select('*', { count: 'exact' })
+    let query = serviceDb().from('crm_deals').select('*', { count: 'exact' })
       .eq('org_id', context.orgId).order('created_at', { ascending: false }).range(offset, offset + limit - 1);
 
     if (pipelineId) query = query.eq('pipeline_id', pipelineId);
@@ -46,14 +46,14 @@ export async function POST(request: Request) {
       return apiError('VALIDATION_ERROR', 'title, pipeline_id, and stage_id are required', 400);
     }
 
-    const { data, error } = await supabase.from('crm_deals').insert({
+    const { data, error } = await serviceDb().from('crm_deals').insert({
       org_id: context.orgId, pipeline_id: body.pipeline_id, stage_id: body.stage_id,
       title: body.title, title_ar: body.title_ar ?? null,
       contact_id: body.contact_id ?? null, company_id: body.company_id ?? null,
       value: body.value ?? null, currency: body.currency ?? 'USD',
       probability: body.probability ?? 50, expected_close: body.expected_close ?? null,
       assigned_to: body.assigned_to ?? null, source: body.source ?? 'api',
-      custom_fields: body.custom_fields ?? {}, created_by: context.apiKeyId,
+      custom_fields: body.custom_fields ?? {}, created_by: context.actorUserId,
     }).select().single();
 
     if (error) throw error;

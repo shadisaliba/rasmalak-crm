@@ -6,7 +6,7 @@
  * 3. no_activity detection
  */
 
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import { processEvent } from './engine';
 import type { TriggerEvent } from './triggers';
 
@@ -48,9 +48,9 @@ async function checkOverdueTasks(): Promise<{ processed: number; errors: number 
   let errors = 0;
 
   try {
-    const { data: overdueTasks } = await supabase
+    const { data: overdueTasks } = await serviceDb()
       .from('crm_tasks')
-      .select('id, org_id, assigned_to, title, due_date, related_entity_type, related_entity_id')
+      .select('id, org_id, assigned_to, title, due_date, deal_id, contact_id, company_id')
       .eq('status', 'pending')
       .lt('due_date', new Date().toISOString())
       .limit(100);
@@ -67,8 +67,8 @@ async function checkOverdueTasks(): Promise<{ processed: number; errors: number 
           title: task.title,
           dueDate: task.due_date,
           assignedTo: task.assigned_to,
-          relatedEntityType: task.related_entity_type,
-          relatedEntityId: task.related_entity_id,
+          relatedEntityType: task.deal_id ? 'deal' : task.contact_id ? 'contact' : task.company_id ? 'company' : null,
+          relatedEntityId: task.deal_id ?? task.contact_id ?? task.company_id ?? null,
         },
         timestamp: new Date().toISOString(),
       };
@@ -93,7 +93,7 @@ async function checkInactivity(): Promise<{ processed: number; errors: number }>
 
   try {
     // Find all no_activity workflows to know what inactivity thresholds to check
-    const { data: workflows } = await supabase
+    const { data: workflows } = await serviceDb()
       .from('crm_workflows')
       .select('org_id, trigger_config')
       .eq('trigger_type', 'no_activity')
@@ -115,7 +115,7 @@ async function checkInactivity(): Promise<{ processed: number; errors: number }>
       const minDays = Math.min(...dayThresholds);
       const cutoff = new Date(Date.now() - minDays * 86400000).toISOString();
 
-      const { data: staleDeals, error } = await supabase.rpc('find_stale_deals', {
+      const { data: staleDeals, error } = await serviceDb().rpc('find_stale_deals', {
         p_org_id: orgId,
         p_cutoff: cutoff,
       });
@@ -160,7 +160,7 @@ async function fireScheduledTriggers(): Promise<{ processed: number; errors: num
 
   try {
     // Find workflows with scheduled triggers
-    const { data: workflows } = await supabase
+    const { data: workflows } = await serviceDb()
       .from('crm_workflows')
       .select('*')
       .eq('trigger_type', 'scheduled')

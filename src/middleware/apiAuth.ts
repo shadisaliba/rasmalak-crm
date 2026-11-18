@@ -6,12 +6,14 @@
  */
 
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import crypto from 'crypto';
 
 export interface ApiContext {
   orgId: string;
   apiKeyId: string;
+  /** The member who created the key; records written through the API are attributed to them. */
+  actorUserId: string | null;
   permissions: Record<string, boolean>;
   rateLimit: number;
 }
@@ -54,9 +56,9 @@ export async function authenticateApiRequest(
   const keyPrefix = token.slice(0, 8);
 
   try {
-    const { data: apiKey, error } = await supabase
+    const { data: apiKey, error } = await serviceDb()
       .from('api_keys')
-      .select('id, org_id, permissions, rate_limit, is_active, expires_at')
+      .select('id, org_id, permissions, rate_limit, is_active, expires_at, created_by')
       .eq('key_prefix', keyPrefix)
       .eq('key_hash', keyHash)
       .single();
@@ -93,7 +95,7 @@ export async function authenticateApiRequest(
     hourStart.setMinutes(0, 0, 0);
     const hourEnd = new Date(hourStart.getTime() + 3600000);
 
-    const { count } = await supabase
+    const { count } = await serviceDb()
       .from('api_request_log')
       .select('*', { count: 'exact', head: true })
       .eq('api_key_id', apiKey.id)
@@ -117,7 +119,7 @@ export async function authenticateApiRequest(
     }
 
     // Update last_used_at
-    await supabase
+    await serviceDb()
       .from('api_keys')
       .update({ last_used_at: new Date().toISOString() })
       .eq('id', apiKey.id);
@@ -126,6 +128,7 @@ export async function authenticateApiRequest(
       context: {
         orgId: apiKey.org_id,
         apiKeyId: apiKey.id,
+        actorUserId: apiKey.created_by ?? null,
         permissions: (apiKey.permissions as Record<string, boolean>) ?? {},
         rateLimit: limit,
       },
@@ -153,7 +156,7 @@ export async function logApiRequest(
   ipAddress: string
 ): Promise<void> {
   try {
-    await supabase.from('api_request_log').insert({
+    await serviceDb().from('api_request_log').insert({
       org_id: ctx.orgId,
       api_key_id: ctx.apiKeyId,
       method,

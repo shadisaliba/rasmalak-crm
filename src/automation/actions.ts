@@ -3,7 +3,7 @@
  * Executes workflow actions: task creation, notifications, stage moves, etc.
  */
 
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import type { ActionType } from '@/types/crm';
 
 export interface ActionContext {
@@ -77,17 +77,31 @@ export async function executeAction(
   }
 }
 
+const TASK_LINK_COLUMN: Record<string, 'deal_id' | 'contact_id' | 'company_id'> = {
+  deal: 'deal_id',
+  contact: 'contact_id',
+  company: 'company_id',
+};
+
 async function createTask(
   config: Record<string, unknown>,
   ctx: ActionContext
 ): Promise<ActionResult> {
-  const { error } = await supabase.from('crm_tasks').insert({
+  // Automated tasks are attributed to the workflow's creator, or else the organization's creator.
+  let createdBy = ctx.userId ?? null;
+  if (!createdBy) {
+    const { data: org } = await serviceDb().from('organizations').select('created_by').eq('id', ctx.orgId).maybeSingle();
+    createdBy = org?.created_by ?? null;
+  }
+  const linkColumn = TASK_LINK_COLUMN[ctx.entityType];
+
+  const { error } = await serviceDb().from('crm_tasks').insert({
     org_id: ctx.orgId,
     title: resolveTemplate(config.title as string, ctx.entityData),
     description: resolveTemplate(config.description as string | undefined, ctx.entityData) ?? null,
     assigned_to: config.assignTo ?? ctx.userId ?? null,
-    related_entity_type: ctx.entityType,
-    related_entity_id: ctx.entityId,
+    created_by: createdBy,
+    ...(linkColumn ? { [linkColumn]: ctx.entityId } : {}),
     due_date: config.dueInDays
       ? new Date(Date.now() + Number(config.dueInDays) * 86400000).toISOString()
       : null,
@@ -122,7 +136,7 @@ async function sendNotification(
     entity_id: ctx.entityId,
   }));
 
-  const { error } = await supabase.from('crm_notifications').insert(rows);
+  const { error } = await serviceDb().from('crm_notifications').insert(rows);
   if (error) return { success: false, actionType: 'send_notification', error: error.message };
 
   return { success: true, actionType: 'send_notification', details: { recipientCount: recipients.length } };
@@ -136,10 +150,20 @@ async function moveDealStage(
     return { success: false, actionType: 'move_deal_stage', error: 'Entity is not a deal' };
   }
 
-  const { error } = await supabase
+  // The stage id comes from workflow configuration, so confirm it belongs to this organization.
+  const { data: stage } = await serviceDb()
+    .from('crm_deal_stages')
+    .select('id')
+    .eq('id', config.stageId as string)
+    .eq('org_id', ctx.orgId)
+    .maybeSingle();
+  if (!stage) return { success: false, actionType: 'move_deal_stage', error: 'Stage not found in this organization' };
+
+  const { error } = await serviceDb()
     .from('crm_deals')
     .update({ stage_id: config.stageId, updated_at: new Date().toISOString() })
-    .eq('id', ctx.entityId);
+    .eq('id', ctx.entityId)
+    .eq('org_id', ctx.orgId);
 
   if (error) return { success: false, actionType: 'move_deal_stage', error: error.message };
   return { success: true, actionType: 'move_deal_stage', details: { newStageId: config.stageId } };
@@ -152,7 +176,7 @@ async function addTag(
   const tag = config.tag as string;
   const table = ctx.entityType === 'contact' ? 'crm_contacts' : 'crm_deals';
 
-  const { data: entity, error: fetchErr } = await supabase
+  const { data: entity, error: fetchErr } = await serviceDb()
     .from(table)
     .select('tags')
     .eq('id', ctx.entityId)
@@ -165,7 +189,7 @@ async function addTag(
     return { success: true, actionType: 'add_tag', details: { alreadyExists: true } };
   }
 
-  const { error } = await supabase
+  const { error } = await serviceDb()
     .from(table)
     .update({ tags: [...currentTags, tag] })
     .eq('id', ctx.entityId);
@@ -181,7 +205,7 @@ async function removeTag(
   const tag = config.tag as string;
   const table = ctx.entityType === 'contact' ? 'crm_contacts' : 'crm_deals';
 
-  const { data: entity, error: fetchErr } = await supabase
+  const { data: entity, error: fetchErr } = await serviceDb()
     .from(table)
     .select('tags')
     .eq('id', ctx.entityId)
@@ -190,7 +214,7 @@ async function removeTag(
   if (fetchErr) return { success: false, actionType: 'remove_tag', error: fetchErr.message };
 
   const currentTags: string[] = (entity?.tags as string[]) ?? [];
-  const { error } = await supabase
+  const { error } = await serviceDb()
     .from(table)
     .update({ tags: currentTags.filter(t => t !== tag) })
     .eq('id', ctx.entityId);
@@ -227,7 +251,7 @@ async function updateField(
     return { success: false, actionType: 'update_field', error: `Field '${field}' is not writable via automation` };
   }
 
-  const { error } = await supabase
+  const { error } = await serviceDb()
     .from(table)
     .update({ [field]: value, updated_at: new Date().toISOString() })
     .eq('id', ctx.entityId);
@@ -242,7 +266,7 @@ async function sendEmail(
 ): Promise<ActionResult> {
   // Email sending is delegated to existing integration adapters (Gmail/Outlook)
   // This action logs the intent; actual sending handled by integration layer
-  const { error } = await supabase.from('crm_communications').insert({
+  const { error } = await serviceDb().from('crm_communications').insert({
     org_id: ctx.orgId,
     contact_id: ctx.entityType === 'contact' ? ctx.entityId : (ctx.entityData.contactId ?? null),
     type: 'email',
@@ -263,7 +287,7 @@ async function sendWhatsApp(
   ctx: ActionContext
 ): Promise<ActionResult> {
   // WhatsApp sending queued for WhatsApp Business adapter to pick up
-  const { error } = await supabase.from('crm_communications').insert({
+  const { error } = await serviceDb().from('crm_communications').insert({
     org_id: ctx.orgId,
     contact_id: ctx.entityType === 'contact' ? ctx.entityId : (ctx.entityData.contactId ?? null),
     type: 'whatsapp',
@@ -295,7 +319,7 @@ async function sendSlack(
   }
 
   // Check for Slack connection in this org
-  const { data: conn } = await supabase
+  const { data: conn } = await serviceDb()
     .from('service_connections')
     .select('id, access_token')
     .eq('org_id', ctx.orgId)
@@ -342,7 +366,7 @@ async function assignTo(
 
   if (method === 'round_robin') {
     // Fetch org members and pick next in rotation
-    const { data: members } = await supabase
+    const { data: members } = await serviceDb()
       .from('org_members')
       .select('user_id')
       .eq('org_id', ctx.orgId)
@@ -368,7 +392,7 @@ async function assignTo(
   const table = tableMap[ctx.entityType];
   if (!table) return { success: false, actionType: 'assign_to', error: `No table for ${ctx.entityType}` };
 
-  const { error } = await supabase
+  const { error } = await serviceDb()
     .from(table)
     .update({ assigned_to: assigneeId, updated_at: new Date().toISOString() })
     .eq('id', ctx.entityId);

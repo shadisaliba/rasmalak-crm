@@ -6,7 +6,7 @@
  * Deterministic, not ML — MENA clients need explainable scoring.
  */
 
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 
 export interface ScoreResult {
   totalScore: number;
@@ -36,7 +36,7 @@ export async function scoreContact(
   contactData: Record<string, unknown>
 ): Promise<ScoreResult> {
   try {
-    const { data: rules } = await supabase
+    const { data: rules } = await serviceDb()
       .from('crm_lead_scoring_rules')
       .select('id, name, field, operator, value, points')
       .eq('org_id', orgId)
@@ -77,7 +77,7 @@ export async function scoreAndPersist(
   const result = await scoreContact(orgId, contactData);
 
   try {
-    await supabase
+    await serviceDb()
       .from('crm_contacts')
       .update({
         lead_score: result.totalScore,

@@ -6,7 +6,7 @@
  */
 
 import type { IntegrationAdapter, ServiceConnection, UnifiedCalendarEvent, OAuthState } from '@/types/crm';
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import { createConnection } from '@/integrations/core/connectionManager';
 import { mapFromDb } from '@/types/crm';
 import type { SlackChannelConfig } from '@/types/crm';
@@ -87,7 +87,7 @@ export async function notifySlackChannels(
 ): Promise<void> {
   try {
     // Find active Slack configs for this org + event type
-    const { data: configs } = await supabase
+    const { data: configs } = await serviceDb()
       .from('slack_channel_configs')
       .select('*, service_connections(*)')
       .eq('org_id', orgId)

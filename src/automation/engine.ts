@@ -4,7 +4,7 @@
  * Pipeline: trigger match → condition evaluation → sequential action execution → log.
  */
 
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import { doesTriggerMatch, type TriggerEvent } from './triggers';
 import { evaluateConditions } from './conditions';
 import { executeAction, type ActionResult } from './actions';
@@ -96,7 +96,7 @@ export async function evaluateWorkflow(
     }
 
     // 5. Update workflow run stats
-    await supabase.rpc('crm_increment_workflow_run', { p_workflow_id: workflow.id });
+    await serviceDb().rpc('crm_increment_workflow_run', { p_workflow_id: workflow.id });
 
     // 6. Log execution
     const error = results.find(r => !r.success)?.error ?? null;
@@ -127,7 +127,7 @@ export async function evaluateWorkflow(
  */
 export async function processEvent(event: TriggerEvent): Promise<WorkflowExecutionResult[]> {
   try {
-    const { data: workflows, error } = await supabase
+    const { data: workflows, error } = await serviceDb()
       .from('crm_workflows')
       .select('*')
       .eq('org_id', event.orgId)
@@ -177,7 +177,7 @@ async function fetchEntityData(
   if (!table) return eventData;
 
   try {
-    const { data } = await supabase
+    const { data } = await serviceDb()
       .from(table)
       .select('*')
       .eq('id', entityId)
@@ -198,7 +198,7 @@ async function logExecution(
   startTime: number
 ): Promise<void> {
   try {
-    await supabase.from('crm_workflow_log').insert({
+    await serviceDb().from('crm_workflow_log').insert({
       workflow_id: workflow.id,
       org_id: workflow.orgId,
       trigger_event: {

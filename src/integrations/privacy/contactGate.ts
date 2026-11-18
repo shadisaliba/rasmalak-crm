@@ -6,7 +6,7 @@
  * Email: sync all, but return matched contacts for auto-linking.
  */
 
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import { mapFromDb } from '@/types/crm';
 import type { CrmContact, UnifiedCalendarEvent } from '@/types/crm';
 
@@ -33,7 +33,7 @@ export async function isEventRelevant(
   }
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await serviceDb()
       .from('crm_contacts')
       .select('*')
       .eq('org_id', orgId)

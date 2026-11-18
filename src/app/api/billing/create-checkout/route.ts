@@ -6,8 +6,7 @@
 
 import { NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
-import { supabase } from '@/lib/supabaseClient';
-import { verifyBillingAuth } from '../_auth';
+import { requireBillingAdmin } from '../_auth';
 
 
 const PRICE_MAP: Record<string, string | undefined> = {
@@ -26,10 +25,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: { code: 'INVALID_INPUT', message: 'Missing required fields' } }, { status: 400 });
     }
 
-    const auth = await verifyBillingAuth(orgId);
-    if (!auth.authorized) {
-      return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: auth.error } }, { status: auth.error === 'Unauthorized' ? 401 : 403 });
-    }
+    const auth = await requireBillingAdmin(request, orgId);
+    if ('error' in auth) return auth.error;
+    const { supabase } = auth;
 
     const priceId = PRICE_MAP[`${plan}_${billingCycle}`];
     if (!priceId) {

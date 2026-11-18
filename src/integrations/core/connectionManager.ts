@@ -5,7 +5,7 @@
  * decrypts on read. Single point of contact between adapters and Supabase.
  */
 
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import { encrypt, decrypt } from './encryption';
 import { mapFromDb, mapToDb } from '@/types/crm';
 import type { ServiceConnection, ConnectionStatus } from '@/types/crm';
@@ -26,7 +26,7 @@ export async function createConnection(
   }
 ): Promise<ServiceConnection | null> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await serviceDb()
       .from('service_connections')
       .insert({
         org_id: params.orgId,
@@ -57,7 +57,7 @@ export async function createConnection(
  */
 export async function getConnection(connectionId: string): Promise<ServiceConnection | null> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await serviceDb()
       .from('service_connections')
       .select('*')
       .eq('id', connectionId)
@@ -82,7 +82,7 @@ export async function getConnection(connectionId: string): Promise<ServiceConnec
  */
 export async function getUserConnections(userId: string): Promise<ServiceConnection[]> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await serviceDb()
       .from('service_connections')
       .select('*')
       .eq('user_id', userId)
@@ -111,7 +111,7 @@ export async function updateStatus(
   errorMessage?: string
 ): Promise<void> {
   try {
-    const { error } = await supabase
+    const { error } = await serviceDb()
       .from('service_connections')
       .update({
         status,
@@ -145,7 +145,7 @@ export async function updateTokens(
       updateData.refresh_token = encrypt(tokens.refreshToken);
     }
 
-    const { error } = await supabase
+    const { error } = await serviceDb()
       .from('service_connections')
       .update(updateData)
       .eq('id', connectionId);
@@ -165,7 +165,7 @@ export async function updateWebhook(
   expires: Date
 ): Promise<void> {
   try {
-    await supabase
+    await serviceDb()
       .from('service_connections')
       .update({
         webhook_id: webhookId,
@@ -186,7 +186,7 @@ export async function updateSyncStatus(
   stats: Record<string, unknown>
 ): Promise<void> {
   try {
-    await supabase
+    await serviceDb()
       .from('service_connections')
       .update({
         last_sync_at: new Date().toISOString(),
@@ -204,7 +204,7 @@ export async function updateSyncStatus(
  */
 export async function deleteConnection(connectionId: string, orgId: string): Promise<void> {
   try {
-    const { error } = await supabase
+    const { error } = await serviceDb()
       .from('service_connections')
       .delete()
       .eq('id', connectionId)
@@ -216,7 +216,7 @@ export async function deleteConnection(connectionId: string, orgId: string): Pro
     }
 
     // Log disconnection health event
-    await supabase.from('health_events').insert({
+    await serviceDb().from('health_events').insert({
       org_id: orgId,
       connection_id: null,
       event_type: 'disconnected',
@@ -240,7 +240,7 @@ export async function logHealthEvent(
   details?: Record<string, unknown>
 ): Promise<void> {
   try {
-    await supabase.from('health_events').insert({
+    await serviceDb().from('health_events').insert({
       org_id: orgId,
       connection_id: connectionId,
       event_type: eventType,

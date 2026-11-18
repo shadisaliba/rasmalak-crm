@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useIntl } from 'react-intl';
 import { supabase } from '@/lib/supabaseClient';
 import { useOrg } from '@/store/orgStore';
+import { getAuthState } from '@/store/authStore';
 import { Key, Plus, Copy, Trash2, ExternalLink } from 'lucide-react';
 
 interface ApiKeyDisplay {
@@ -55,6 +56,7 @@ export default function ApiSettingsPage() {
       const { error } = await supabase.from('api_keys').insert({
         org_id: currentOrg.id, name: newKeyName.trim(),
         key_hash: keyHash, key_prefix: rawKey.slice(0, 8), rate_limit: 100,
+        created_by: getAuthState().user?.id,
       });
 
       if (error) throw error;

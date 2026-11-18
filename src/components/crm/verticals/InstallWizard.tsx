@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useOrg } from '@/store/orgStore';
 import { useAuthStore } from '@/store/authStore';
 import { installTemplate } from '@/crm/verticals/templateInstaller';
+import { supabase } from '@/lib/supabaseClient';
 import { CheckCircle, Loader, AlertCircle } from 'lucide-react';
 
 interface InstallWizardProps {
@@ -30,7 +31,7 @@ export function InstallWizard({ slug, templateName, onComplete }: InstallWizardP
     setStatus('installing');
     setError('');
 
-    const result = await installTemplate(currentOrg.id, slug, user.id);
+    const result = await installTemplate(supabase, currentOrg.id, slug, user.id);
 
     if (result.success) {
       setStatus('success');

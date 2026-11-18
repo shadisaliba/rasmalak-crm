@@ -8,8 +8,8 @@
  */
 
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
-import { supabase } from '@/lib/supabaseClient';
+import { requireCronSecret } from '@/lib/serverAuth';
+import { serviceDb } from '@/lib/supabaseServer';
 import {
   reportGeneratorAgent,
   buildManagerReportContext,
@@ -32,12 +32,8 @@ async function callLLM(systemPrompt: string, userMessage: string): Promise<strin
 }
 
 export async function GET(request: Request) {
-  const cronSecret = process.env.CRON_SECRET;
-  const authHeader = request.headers.get('authorization') ?? '';
-  if (!cronSecret || authHeader.length !== `Bearer ${cronSecret}`.length ||
-      !crypto.timingSafeEqual(Buffer.from(authHeader), Buffer.from(`Bearer ${cronSecret}`))) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const unauthorized = requireCronSecret(request);
+  if (unauthorized) return unauthorized.error;
 
   const now = new Date();
   const isSunday = now.getDay() === 0;
@@ -47,7 +43,7 @@ export async function GET(request: Request) {
 
   try {
     // Get all orgs with active subscriptions
-    const { data: orgs } = await supabase
+    const { data: orgs } = await serviceDb()
       .from('subscriptions')
       .select('org_id, plan')
       .in('status', ['active', 'trialing']);
@@ -56,7 +52,7 @@ export async function GET(request: Request) {
 
     for (const org of orgs) {
       // Determine org language from settings
-      const { data: orgData } = await supabase
+      const { data: orgData } = await serviceDb()
         .from('organizations')
         .select('settings, name, currency')
         .eq('id', org.org_id)
@@ -78,21 +74,21 @@ export async function GET(request: Request) {
       if (isSunday && (org.plan === 'enterprise' || org.plan === 'organization')) {
         try {
           // Gather pipeline data
-          const { data: openDeals } = await supabase
+          const { data: openDeals } = await serviceDb()
             .from('crm_deals')
             .select('title, value, ai_score, probability, stage_id')
             .eq('org_id', org.org_id)
             .is('closed_at', null)
             .limit(50);
 
-          const { data: closedWon } = await supabase
+          const { data: closedWon } = await serviceDb()
             .from('crm_deals')
             .select('value, crm_deal_stages!inner(is_won)')
             .eq('org_id', org.org_id)
             .eq('crm_deal_stages.is_won', true)
             .gte('closed_at', new Date(Date.now() - 7 * 86400000).toISOString());
 
-          const { data: closedLost } = await supabase
+          const { data: closedLost } = await serviceDb()
             .from('crm_deals')
             .select('value, crm_deal_stages!inner(is_lost)')
             .eq('org_id', org.org_id)
@@ -132,14 +128,14 @@ export async function GET(request: Request) {
           const report = await callLLM(systemPrompt, context);
 
           // Send to org admins/owners
-          const { data: admins } = await supabase
+          const { data: admins } = await serviceDb()
             .from('org_members')
             .select('user_id')
             .eq('org_id', org.org_id)
             .in('role', ['owner', 'admin', 'manager']);
 
           for (const admin of admins ?? []) {
-            await supabase.from('crm_notifications').insert({
+            await serviceDb().from('crm_notifications').insert({
               org_id: org.org_id,
               user_id: admin.user_id,
               title: language === 'ar' ? 'تقرير خط المبيعات الأسبوعي' : 'Weekly Pipeline Report',
@@ -155,7 +151,7 @@ export async function GET(request: Request) {
 
       // Daily rep briefs
       try {
-        const { data: reps } = await supabase
+        const { data: reps } = await serviceDb()
           .from('org_members')
           .select('user_id, display_name')
           .eq('org_id', org.org_id)
@@ -163,7 +159,7 @@ export async function GET(request: Request) {
           .in('role', ['owner', 'admin', 'manager', 'sales_rep']);
 
         for (const rep of reps ?? []) {
-          const { data: repDeals } = await supabase
+          const { data: repDeals } = await serviceDb()
             .from('crm_deals')
             .select('title, value, ai_score')
             .eq('org_id', org.org_id)
@@ -171,17 +167,19 @@ export async function GET(request: Request) {
             .is('closed_at', null)
             .limit(10);
 
-          const { data: todayTasks } = await supabase
+          const { data: todayTasks } = await serviceDb()
             .from('crm_tasks')
             .select('title, priority')
+            .eq('org_id', org.org_id)
             .eq('assigned_to', rep.user_id)
             .eq('status', 'pending')
             .lte('due_date', new Date(Date.now() + 86400000).toISOString())
             .limit(10);
 
-          const { data: overdueItems } = await supabase
+          const { data: overdueItems } = await serviceDb()
             .from('crm_tasks')
             .select('title, due_date')
+            .eq('org_id', org.org_id)
             .eq('assigned_to', rep.user_id)
             .eq('status', 'pending')
             .lt('due_date', new Date().toISOString())
@@ -207,7 +205,7 @@ export async function GET(request: Request) {
 
           const brief = await callLLM(systemPrompt, context);
 
-          await supabase.from('crm_notifications').insert({
+          await serviceDb().from('crm_notifications').insert({
             org_id: org.org_id,
             user_id: rep.user_id,
             title: language === 'ar' ? 'ملخصك اليومي' : 'Your Daily Brief',

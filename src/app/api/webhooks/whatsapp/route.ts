@@ -7,7 +7,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import { processIncomingMessage } from '@/integrations/adapters/whatsappBusiness';
 import crypto from 'crypto';
 
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       // Find the WhatsApp account for this phone number
       // Meta sends phone_number_id (numeric ID), not the E.164 number.
       // Match against waba_id or use a fallback phone number lookup.
-      const { data: account } = await supabase
+      const { data: account } = await serviceDb()
         .from('whatsapp_accounts')
         .select('id, org_id')
         .eq('waba_id', phoneNumberId)
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     if (statuses && Array.isArray(statuses)) {
       for (const status of statuses) {
         try {
-          await supabase
+          await serviceDb()
             .from('crm_communications')
             .update({ metadata: { waStatus: status.status, waTimestamp: status.timestamp } })
             .contains('metadata', { waMessageId: status.id });
@@ -100,7 +100,7 @@ export async function POST(request: Request) {
     // Log error to health_events but still return 200
     console.warn('[WhatsApp Webhook] Processing error:', err);
     try {
-      await supabase.from('health_events').insert({
+      await serviceDb().from('health_events').insert({
         org_id: '00000000-0000-0000-0000-000000000000', // System-level
         event_type: 'webhook_error',
         severity: 'error',

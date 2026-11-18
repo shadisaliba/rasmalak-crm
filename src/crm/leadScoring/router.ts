@@ -6,7 +6,7 @@
  * Notifies assigned rep immediately.
  */
 
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 
 interface RoutingRule {
   id: string;
@@ -32,7 +32,7 @@ export async function routeContact(
   contactData: Record<string, unknown>
 ): Promise<RouteResult> {
   try {
-    const { data: rules } = await supabase
+    const { data: rules } = await serviceDb()
       .from('crm_routing_rules')
       .select('*')
       .eq('org_id', orgId)
@@ -86,7 +86,7 @@ export async function routeAndAssign(
 
   if (result.assignedTo) {
     try {
-      await supabase
+      await serviceDb()
         .from('crm_contacts')
         .update({
           assigned_to: result.assignedTo,
@@ -97,7 +97,7 @@ export async function routeAndAssign(
         .eq('org_id', orgId);
 
       // Notify assigned rep immediately
-      await supabase.from('crm_notifications').insert({
+      await serviceDb().from('crm_notifications').insert({
         org_id: orgId,
         user_id: result.assignedTo,
         title: `New lead assigned: ${contactData.name ?? 'Unknown'}`,
@@ -165,7 +165,7 @@ async function roundRobinAssign(
 ): Promise<string | null> {
   // Get team members eligible for assignment
   const roles = (config.roles as string[]) ?? ['sales_rep', 'manager'];
-  const { data: members } = await supabase
+  const { data: members } = await serviceDb()
     .from('org_members')
     .select('user_id')
     .eq('org_id', orgId)
@@ -176,7 +176,7 @@ async function roundRobinAssign(
   if (!members || members.length === 0) return null;
 
   // Find who was last assigned (simple round-robin via count)
-  const { count } = await supabase
+  const { count } = await serviceDb()
     .from('crm_contacts')
     .select('*', { count: 'exact', head: true })
     .eq('org_id', orgId)

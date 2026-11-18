@@ -8,7 +8,7 @@
 import { NextResponse } from 'next/server';
 import type Stripe from 'stripe';
 import { getStripe } from '@/lib/stripe';
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import { mapFromDb } from '@/types/crm';
 
 
@@ -48,7 +48,7 @@ async function handleStripeEvent(event: Stripe.Event) {
 
     case 'customer.subscription.deleted': {
       const sub = event.data.object as Stripe.Subscription;
-      await supabase.from('subscriptions')
+      await serviceDb().from('subscriptions')
         .update({ status: 'canceled', canceled_at: new Date().toISOString(), updated_at: new Date().toISOString() })
         .eq('stripe_subscription_id', sub.id);
       break;
@@ -61,7 +61,7 @@ async function handleStripeEvent(event: Stripe.Event) {
         console.error('[Stripe Webhook] Cannot resolve org for customer', invoice.customer, '— invoice', invoice.id, 'skipped');
         break;
       }
-      await supabase.from('billing_invoices').upsert({
+      await serviceDb().from('billing_invoices').upsert({
         stripe_invoice_id: invoice.id,
         org_id: invoiceOrgId,
         amount: (invoice.amount_paid || 0) / 100,
@@ -80,12 +80,12 @@ async function handleStripeEvent(event: Stripe.Event) {
       if (orgId) {
         // Set subscription to past_due with 7-day grace period
         const gracePeriodEnd = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-        await supabase.from('subscriptions')
+        await serviceDb().from('subscriptions')
           .update({ status: 'past_due', grace_period_ends_at: gracePeriodEnd, updated_at: new Date().toISOString() })
           .eq('org_id', orgId);
 
         // Create admin notification
-        await supabase.from('crm_notifications').insert({
+        await serviceDb().from('crm_notifications').insert({
           org_id: orgId,
           user_id: orgId, // Will be resolved to org owner in notification display
           type: 'payment_failed',
@@ -102,7 +102,7 @@ async function handleStripeEvent(event: Stripe.Event) {
       const sub = event.data.object as Stripe.Subscription;
       const orgId = await getOrgIdFromCustomer(sub.customer as string);
       if (orgId) {
-        await supabase.from('crm_notifications').insert({
+        await serviceDb().from('crm_notifications').insert({
           org_id: orgId,
           user_id: orgId,
           type: 'trial_ending',
@@ -134,7 +134,7 @@ async function upsertSubscription(sub: Stripe.Subscription) {
   };
   const limits = seatLimits[plan] || seatLimits.entrepreneur;
 
-  await supabase.from('subscriptions').upsert({
+  await serviceDb().from('subscriptions').upsert({
     org_id: orgId,
     plan,
     status: sub.status === 'trialing' ? 'trialing' : sub.status === 'active' ? 'active' : sub.status === 'past_due' ? 'past_due' : 'canceled',
@@ -173,7 +173,7 @@ function getPlanFromPrice(priceId: string): string | null {
 }
 
 async function getOrgIdFromCustomer(customerId: string): Promise<string | null> {
-  const { data } = await supabase
+  const { data } = await serviceDb()
     .from('subscriptions')
     .select('org_id')
     .eq('stripe_customer_id', customerId)

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { authorizedFetch } from '@/lib/authorizedFetch';
 import { useAuthStore, getAuthState } from '@/store/authStore';
 import { useOrg } from '@/store/orgStore';
 import { mapFromDb, PLAN_FEATURE_MAP } from '@/types/crm';
@@ -103,7 +104,7 @@ export function BillingProvider({ children }: { children: ReactNode }) {
     const { user } = getAuthState();
     if (!user || !currentOrg) return null;
     try {
-      const res = await fetch('/api/billing/create-checkout', {
+      const res = await authorizedFetch('/api/billing/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orgId: currentOrg.id, plan, billingCycle }),
@@ -116,7 +117,7 @@ export function BillingProvider({ children }: { children: ReactNode }) {
   const createPortalSession = useCallback(async (): Promise<string | null> => {
     if (!currentOrg) return null;
     try {
-      const res = await fetch('/api/billing/create-portal', {
+      const res = await authorizedFetch('/api/billing/create-portal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orgId: currentOrg.id }),
@@ -129,7 +130,7 @@ export function BillingProvider({ children }: { children: ReactNode }) {
   const addSeat = useCallback(async (): Promise<boolean> => {
     if (!currentOrg) return false;
     try {
-      const res = await fetch('/api/billing/add-seat', {
+      const res = await authorizedFetch('/api/billing/add-seat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orgId: currentOrg.id }),
@@ -142,7 +143,7 @@ export function BillingProvider({ children }: { children: ReactNode }) {
   const changePlan = useCallback(async (newPlan: string): Promise<boolean> => {
     if (!currentOrg) return false;
     try {
-      const res = await fetch('/api/billing/change-plan', {
+      const res = await authorizedFetch('/api/billing/change-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orgId: currentOrg.id, plan: newPlan }),

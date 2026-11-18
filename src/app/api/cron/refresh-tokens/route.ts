@@ -5,14 +5,13 @@
  */
 
 import { NextResponse } from 'next/server';
+import { requireCronSecret } from '@/lib/serverAuth';
 import { refreshExpiring } from '@/integrations/core/tokenRefresher';
 
 export async function GET(request: Request) {
   // Verify cron secret (Vercel sets this automatically for cron requests)
-  const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const unauthorized = requireCronSecret(request);
+  if (unauthorized) return unauthorized.error;
 
   try {
     const result = await refreshExpiring();

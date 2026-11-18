@@ -4,10 +4,12 @@
  * Server-side check: does the org's subscription plan include this feature?
  * Seat check: does the org have room for more members?
  *
- * Used by API routes (server) and React hooks (client, via API call).
+ * Used by API routes (server) and React components (client). Callers pass the client so the
+ * check runs with the caller's own access: the user's session in the browser, the user's JWT
+ * or the service client on the server.
  */
 
-import { supabase } from '@/lib/supabaseClient';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { PLAN_FEATURE_MAP, PLAN_SEAT_LIMITS, PLAN_CONTACT_LIMITS } from '@/types/crm';
 import type { GatedFeature, PlanTier, Subscription } from '@/types/crm';
 import { mapFromDb } from '@/types/crm';
@@ -15,7 +17,7 @@ import { mapFromDb } from '@/types/crm';
 /**
  * Check if an org's plan includes a specific feature.
  */
-export async function checkFeatureAccess(orgId: string, feature: GatedFeature): Promise<boolean> {
+export async function checkFeatureAccess(supabase: SupabaseClient, orgId: string, feature: GatedFeature): Promise<boolean> {
   try {
     const { data } = await supabase
       .from('subscriptions')
@@ -54,7 +56,7 @@ export interface SeatStatus {
 /**
  * Check seat availability for an org.
  */
-export async function checkSeatAvailability(orgId: string): Promise<SeatStatus> {
+export async function checkSeatAvailability(supabase: SupabaseClient, orgId: string): Promise<SeatStatus> {
   const defaultStatus: SeatStatus = {
     available: false, current: 0, included: 0, purchased: 0, max: 0,
     canPurchaseAddon: false, mustUpgrade: true,
@@ -101,7 +103,7 @@ export async function checkSeatAvailability(orgId: string): Promise<SeatStatus> 
 /**
  * Check contact limit for an org.
  */
-export async function checkContactLimit(orgId: string): Promise<{ allowed: boolean; current: number; limit: number }> {
+export async function checkContactLimit(supabase: SupabaseClient, orgId: string): Promise<{ allowed: boolean; current: number; limit: number }> {
   try {
     const { data: subRow } = await supabase
       .from('subscriptions')

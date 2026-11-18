@@ -6,8 +6,7 @@
 
 import { NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
-import { supabase } from '@/lib/supabaseClient';
-import { verifyBillingAuth } from '../_auth';
+import { requireBillingAdmin } from '../_auth';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
@@ -15,10 +14,9 @@ export async function POST(request: Request) {
   try {
     const { orgId } = await request.json();
 
-    const auth = await verifyBillingAuth(orgId);
-    if (!auth.authorized) {
-      return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: auth.error } }, { status: auth.error === 'Unauthorized' ? 401 : 403 });
-    }
+    const auth = await requireBillingAdmin(request, orgId);
+    if ('error' in auth) return auth.error;
+    const { supabase } = auth;
 
     const { data: sub } = await supabase.from('subscriptions').select('stripe_customer_id').eq('org_id', orgId).single();
     if (!sub?.stripe_customer_id) {

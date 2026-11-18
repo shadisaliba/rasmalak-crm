@@ -1,16 +1,16 @@
+import 'server-only';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 /**
- * Server-side Supabase client.
+ * Service-role client: bypasses row-level security.
  *
- * Used by API routes that need to read/write tables independent of
- * a logged-in user (e.g. the FX rate cache, which is a global
- * read-only resource for clients but written by the cron route).
+ * Allowed only in cron and outbox workers, webhook handlers and the public API after the API
+ * key has been resolved to an organization (rule R11). Every query through it must filter by
+ * org_id explicitly. Never use it in a request made by a signed-in user; use
+ * getSupabaseUserClient for that.
  *
- * Falls back to the anon key when SUPABASE_SERVICE_ROLE_KEY is not
- * configured. In that mode RLS still applies, which is fine for
- * fx_rates because the table has a public read policy and writes
- * go through routes that pass user context anyway.
+ * There is deliberately no fallback to the anon key: a missing service key must fail loudly
+ * rather than silently turn privileged jobs into no-ops behind RLS.
  */
 let cachedClient: SupabaseClient | null = null;
 
@@ -23,26 +23,24 @@ export function getSupabaseServerClient(): SupabaseClient {
   }
 
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const key = serviceKey || anonKey;
-  if (!key) {
-    throw new Error('No Supabase key configured (SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY)');
+  if (!serviceKey) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY is not set');
   }
 
-  cachedClient = createClient(url, key, {
+  cachedClient = createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   return cachedClient;
 }
 
+/** Short alias for server-only modules that query in many places. Same rules as above. */
+export const serviceDb = getSupabaseServerClient;
+
 /**
  * Per-request client that acts AS the calling user: anon key + the user's
  * JWT on every request, so RLS resolves auth.uid() server-side.
  *
- * Required for any route that reads/writes user-scoped tables (e.g.
- * user_semantic_state): the plain anon server client has no session, so
- * RLS silently returns nothing / rejects writes. Never cached — the token
- * is request-scoped.
+ * Use it for every route a signed-in user calls. Never cached: the token is request-scoped.
  */
 export function getSupabaseUserClient(accessToken: string): SupabaseClient {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

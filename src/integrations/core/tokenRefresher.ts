@@ -5,7 +5,7 @@
  * Called by cron job (/api/cron/refresh-tokens).
  */
 
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import { mapFromDb } from '@/types/crm';
 import type { ServiceConnection } from '@/types/crm';
 import { getConnection, updateTokens, updateStatus, logHealthEvent } from './connectionManager';
@@ -27,7 +27,7 @@ export async function refreshExpiring(): Promise<{ refreshed: number; failed: nu
   let failed = 0;
 
   try {
-    const { data: rows } = await supabase
+    const { data: rows } = await serviceDb()
       .from('service_connections')
       .select('id, org_id, provider')
       .eq('status', 'active')

@@ -5,12 +5,13 @@
  * Handles 24h conversation window tracking.
  */
 
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import { encrypt, decrypt } from '@/integrations/core/encryption';
 
 const GRAPH_API = 'https://graph.facebook.com/v18.0';
 
 interface SendTemplateParams {
+  orgId: string;
   accountId: string;
   to: string;
   templateName: string;
@@ -22,6 +23,7 @@ interface SendTemplateParams {
 }
 
 interface SendTextParams {
+  orgId: string;
   accountId: string;
   to: string;
   text: string;
@@ -32,7 +34,7 @@ interface SendTextParams {
  */
 export async function sendTemplateMessage(params: SendTemplateParams): Promise<{ messageId: string } | null> {
   try {
-    const account = await getAccount(params.accountId);
+    const account = await getAccount(params.orgId, params.accountId);
     if (!account) return null;
 
     const token = decrypt(account.access_token);
@@ -80,13 +82,13 @@ export async function sendTemplateMessage(params: SendTemplateParams): Promise<{
 export async function sendTextMessage(params: SendTextParams): Promise<{ messageId: string } | null> {
   try {
     // Check 24h window
-    const windowOpen = await isConversationWindowOpen(params.accountId, params.to);
+    const windowOpen = await isConversationWindowOpen(params.orgId, params.accountId, params.to);
     if (!windowOpen) {
       console.warn('[WhatsApp] 24h window expired — use template message instead');
       return null;
     }
 
-    const account = await getAccount(params.accountId);
+    const account = await getAccount(params.orgId, params.accountId);
     if (!account) return null;
 
     const token = decrypt(account.access_token);
@@ -133,23 +135,25 @@ export function substituteTemplateVariables(
 
 // ── Internal helpers ────────────────��────────────────────────
 
-async function getAccount(accountId: string) {
+async function getAccount(orgId: string, accountId: string) {
   try {
-    const { data } = await supabase
+    const { data } = await serviceDb()
       .from('whatsapp_accounts')
       .select('*')
       .eq('id', accountId)
+      .eq('org_id', orgId)
       .eq('status', 'active')
       .single();
     return data;
   } catch { return null; }
 }
 
-async function isConversationWindowOpen(accountId: string, phone: string): Promise<boolean> {
+async function isConversationWindowOpen(orgId: string, accountId: string, phone: string): Promise<boolean> {
   try {
-    const { data } = await supabase
+    const { data } = await serviceDb()
       .from('whatsapp_conversations')
       .select('window_expires')
+      .eq('org_id', orgId)
       .eq('account_id', accountId)
       .eq('contact_phone', phone)
       .eq('status', 'active')
@@ -164,7 +168,7 @@ async function upsertConversation(
   orgId: string, accountId: string, phone: string, contactId: string | null
 ): Promise<void> {
   try {
-    await supabase
+    await serviceDb()
       .from('whatsapp_conversations')
       .upsert({
         org_id: orgId,
@@ -194,7 +198,7 @@ export async function processIncomingMessage(payload: {
     const windowExpires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
     // Find contact by phone number
-    const { data: contact } = await supabase
+    const { data: contact } = await serviceDb()
       .from('crm_contacts')
       .select('id, assigned_to')
       .eq('org_id', payload.orgId)
@@ -202,7 +206,7 @@ export async function processIncomingMessage(payload: {
       .single();
 
     // Upsert conversation with window
-    await supabase
+    await serviceDb()
       .from('whatsapp_conversations')
       .upsert({
         org_id: payload.orgId,
@@ -216,7 +220,7 @@ export async function processIncomingMessage(payload: {
       }, { onConflict: 'account_id,contact_phone' });
 
     // Log as CRM communication
-    await supabase.from('crm_communications').insert({
+    await serviceDb().from('crm_communications').insert({
       org_id: payload.orgId,
       contact_id: contact?.id ?? null,
       type: 'whatsapp',
@@ -232,7 +236,7 @@ export async function processIncomingMessage(payload: {
     // If no matching contact, notify rep to create one
     if (!contact) {
       // Get org admins
-      const { data: admins } = await supabase
+      const { data: admins } = await serviceDb()
         .from('org_members')
         .select('user_id')
         .eq('org_id', payload.orgId)
@@ -240,7 +244,7 @@ export async function processIncomingMessage(payload: {
         .limit(3);
 
       for (const admin of admins ?? []) {
-        await supabase.from('crm_notifications').insert({
+        await serviceDb().from('crm_notifications').insert({
           org_id: payload.orgId,
           user_id: admin.user_id,
           title: `New WhatsApp message from ${payload.from}`,
@@ -251,7 +255,7 @@ export async function processIncomingMessage(payload: {
       }
     } else if (contact.assigned_to) {
       // Notify assigned rep
-      await supabase.from('crm_notifications').insert({
+      await serviceDb().from('crm_notifications').insert({
         org_id: payload.orgId,
         user_id: contact.assigned_to,
         title: `WhatsApp message from ${payload.from}`,

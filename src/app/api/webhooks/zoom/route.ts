@@ -7,7 +7,7 @@
 
 import { NextResponse } from 'next/server';
 import { createHmac } from 'crypto';
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 
 export async function POST(request: Request) {
   const body = await request.text();
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
 
         if (participantEmails.length > 0) {
           // Find matching contacts across all orgs (RLS will scope properly)
-          const { data: contacts } = await supabase
+          const { data: contacts } = await serviceDb()
             .from('crm_contacts')
             .select('id, org_id')
             .in('email', participantEmails)
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
           if (contacts && contacts.length > 0) {
             // Auto-log communication for each matched contact
             for (const contact of contacts) {
-              await supabase.from('crm_communications').insert({
+              await serviceDb().from('crm_communications').insert({
                 org_id: contact.org_id,
                 contact_id: contact.id,
                 type: 'meeting',

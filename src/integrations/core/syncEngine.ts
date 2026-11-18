@@ -5,7 +5,7 @@
  * Uses contactGate for privacy filtering and event_sync_map for dedup.
  */
 
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import { mapFromDb, mapToDb } from '@/types/crm';
 import type { ServiceConnection, UnifiedCalendarEvent, EventSyncMap, SyncResult } from '@/types/crm';
 import { createHash } from 'crypto';
@@ -32,7 +32,7 @@ export async function syncEventToCRM(
 
   try {
     // Check if this event was already synced
-    const { data: existing } = await supabase
+    const { data: existing } = await serviceDb()
       .from('event_sync_map')
       .select('*')
       .eq('connection_id', connection.id)
@@ -48,16 +48,16 @@ export async function syncEventToCRM(
 
       // Update existing CRM entity
       if (syncMap.entityType === 'task') {
-        await supabase.from('crm_tasks').update({
+        await serviceDb().from('crm_tasks').update({
           title: event.title,
           description: event.description,
           due_date: event.startTime,
           updated_at: new Date().toISOString(),
-        }).eq('id', syncMap.entityId);
+        }).eq('id', syncMap.entityId).eq('org_id', orgId);
       }
 
       // Update sync hash
-      await supabase.from('event_sync_map').update({
+      await serviceDb().from('event_sync_map').update({
         sync_hash: newHash,
         last_synced_at: new Date().toISOString(),
       }).eq('id', syncMap.id);
@@ -71,7 +71,7 @@ export async function syncEventToCRM(
 
     if (event.type === 'meeting' || event.type === 'call') {
       // Create as task (meeting/call to attend)
-      const { data: task, error } = await supabase.from('crm_tasks').insert({
+      const { data: task, error } = await serviceDb().from('crm_tasks').insert({
         org_id: orgId,
         title: event.title,
         description: event.description,
@@ -88,7 +88,7 @@ export async function syncEventToCRM(
 
       // Also log as communication if it has already occurred
       if (new Date(event.startTime) < new Date()) {
-        await supabase.from('crm_communications').insert({
+        await serviceDb().from('crm_communications').insert({
           org_id: orgId,
           contact_id: matchedContactIds[0] || null,
           type: event.type === 'meeting' ? 'meeting' : 'call',
@@ -101,7 +101,7 @@ export async function syncEventToCRM(
       }
     } else {
       // Email messages → communication only
-      const { data: comm, error } = await supabase.from('crm_communications').insert({
+      const { data: comm, error } = await serviceDb().from('crm_communications').insert({
         org_id: orgId,
         contact_id: matchedContactIds[0] || null,
         type: 'email',
@@ -118,7 +118,7 @@ export async function syncEventToCRM(
     }
 
     // Record in sync map
-    await supabase.from('event_sync_map').insert({
+    await serviceDb().from('event_sync_map').insert({
       connection_id: connection.id,
       external_event_id: event.externalId,
       entity_type: entityType,

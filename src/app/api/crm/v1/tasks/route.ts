@@ -3,7 +3,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import { authenticateApiRequest, withRateLimitHeaders, hasPermission, apiError, apiList, apiSingle } from '@/middleware/apiAuth';
 
 export async function GET(request: Request) {
@@ -20,7 +20,7 @@ export async function GET(request: Request) {
   const offset = (page - 1) * limit;
 
   try {
-    let query = supabase.from('crm_tasks').select('*', { count: 'exact' })
+    let query = serviceDb().from('crm_tasks').select('*', { count: 'exact' })
       .eq('org_id', context.orgId).order('due_date', { ascending: true }).range(offset, offset + limit - 1);
 
     if (status) query = query.eq('status', status);
@@ -44,14 +44,13 @@ export async function POST(request: Request) {
     const body = await request.json();
     if (!body.title) return apiError('VALIDATION_ERROR', 'title is required', 400);
 
-    const { data, error } = await supabase.from('crm_tasks').insert({
+    const { data, error } = await serviceDb().from('crm_tasks').insert({
       org_id: context.orgId, title: body.title, title_ar: body.title_ar ?? null,
       description: body.description ?? null, status: body.status ?? 'pending',
       priority: body.priority ?? 'medium', type: body.type ?? 'task',
       due_date: body.due_date ?? null, assigned_to: body.assigned_to ?? null,
       deal_id: body.deal_id ?? null, contact_id: body.contact_id ?? null,
-      related_entity_type: body.related_entity_type ?? null,
-      related_entity_id: body.related_entity_id ?? null,
+      created_by: context.actorUserId,
     }).select().single();
 
     if (error) throw error;

@@ -5,6 +5,7 @@ import { useIntl } from 'react-intl';
 import { Users, Plus } from 'lucide-react';
 import { useBilling } from '@/store/billingStore';
 import { checkSeatAvailability, type SeatStatus } from '@/middleware/planGate';
+import { supabase } from '@/lib/supabaseClient';
 import { useOrg } from '@/store/orgStore';
 
 export function SeatManager() {
@@ -17,7 +18,7 @@ export function SeatManager() {
 
   useEffect(() => {
     if (!currentOrg) return;
-    checkSeatAvailability(currentOrg.id).then(setSeatStatus);
+    checkSeatAvailability(supabase, currentOrg.id).then(setSeatStatus);
   }, [currentOrg, subscription]);
 
   if (!seatStatus || !subscription) return null;
@@ -28,7 +29,7 @@ export function SeatManager() {
     setAdding(true);
     await addSeat();
     if (currentOrg) {
-      const updated = await checkSeatAvailability(currentOrg.id);
+      const updated = await checkSeatAvailability(supabase, currentOrg.id);
       setSeatStatus(updated);
     }
     setAdding(false);

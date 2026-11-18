@@ -6,7 +6,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 
 export async function GET(
   _request: Request,
@@ -17,7 +17,7 @@ export async function GET(
   let redirectUrl = 'https://crm.rasmalak.com'; // Fallback
 
   try {
-    const { data: comm } = await supabase
+    const { data: comm } = await serviceDb()
       .from('crm_communications')
       .select('id, attachments')
       .eq('id', communicationId)
@@ -36,7 +36,7 @@ export async function GET(
       const clicks = ((metadata.clicks as Record<string, unknown>[]) || []);
       clicks.push({ hash, url: redirectUrl, clickedAt: new Date().toISOString() });
 
-      await supabase.from('crm_communications').update({
+      await serviceDb().from('crm_communications').update({
         attachments: { ...metadata, clicks },
       }).eq('id', communicationId);
     }

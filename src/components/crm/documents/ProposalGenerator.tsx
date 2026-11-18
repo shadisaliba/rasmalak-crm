@@ -46,7 +46,7 @@ export function ProposalGenerator({ orgId }: ProposalGeneratorProps) {
       const tpl = templates.find(t => t.id === selectedTemplate);
       if (!tpl) return;
 
-      const context = await getMergeContext(selectedDeal);
+      const context = await getMergeContext(supabase, selectedDeal);
       const content = isAr && tpl.contentAr ? tpl.contentAr : tpl.content;
       const rendered = parseTemplate(content, context as unknown as Record<string, unknown>, {
         language: isAr ? 'ar' : 'en',

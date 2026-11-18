@@ -3,7 +3,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import { authenticateApiRequest, withRateLimitHeaders, hasPermission, apiError, apiSingle } from '@/middleware/apiAuth';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -13,7 +13,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const { context, rateLimit } = auth;
   if (!hasPermission(context, 'tasks.read')) return apiError('FORBIDDEN', 'Missing permission', 403);
 
-  const { data, error } = await supabase.from('crm_tasks').select('*').eq('id', id).eq('org_id', context.orgId).single();
+  const { data, error } = await serviceDb().from('crm_tasks').select('*').eq('id', id).eq('org_id', context.orgId).single();
   if (error || !data) return apiError('NOT_FOUND', 'Task not found', 404);
   return withRateLimitHeaders(apiSingle(data), rateLimit);
 }
@@ -31,7 +31,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (body[key] !== undefined) updates[key] = body[key];
   }
 
-  const { data, error } = await supabase.from('crm_tasks').update(updates).eq('id', id).eq('org_id', context.orgId).select().single();
+  const { data, error } = await serviceDb().from('crm_tasks').update(updates).eq('id', id).eq('org_id', context.orgId).select().single();
   if (error || !data) return apiError('NOT_FOUND', 'Task not found', 404);
   return withRateLimitHeaders(apiSingle(data), rateLimit);
 }
@@ -43,7 +43,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   const { context, rateLimit } = auth;
   if (!hasPermission(context, 'tasks.delete')) return apiError('FORBIDDEN', 'Missing permission', 403);
 
-  const { error } = await supabase.from('crm_tasks').delete().eq('id', id).eq('org_id', context.orgId);
+  const { error } = await serviceDb().from('crm_tasks').delete().eq('id', id).eq('org_id', context.orgId);
   if (error) return apiError('INTERNAL_ERROR', error.message, 500);
   return withRateLimitHeaders(NextResponse.json({ data: { deleted: true } }), rateLimit);
 }

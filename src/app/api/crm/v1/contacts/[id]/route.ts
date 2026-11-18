@@ -6,7 +6,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import {
   authenticateApiRequest, logApiRequest, withRateLimitHeaders,
   hasPermission, apiError, apiSingle,
@@ -22,7 +22,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   if (!hasPermission(context, 'contacts.read')) return apiError('FORBIDDEN', 'Missing permission', 403);
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await serviceDb()
       .from('crm_contacts')
       .select('*')
       .eq('id', id)
@@ -63,7 +63,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return apiError('VALIDATION_ERROR', 'No valid fields provided for update', 400);
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await serviceDb()
       .from('crm_contacts')
       .update(updates)
       .eq('id', id)
@@ -92,7 +92,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   if (!hasPermission(context, 'contacts.delete')) return apiError('FORBIDDEN', 'Missing permission', 403);
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await serviceDb()
       .from('crm_contacts')
       .delete()
       .eq('id', id)

@@ -3,7 +3,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import crypto from 'crypto';
 import { authenticateApiRequest, withRateLimitHeaders, hasPermission, apiError, apiList, apiSingle } from '@/middleware/apiAuth';
 
@@ -13,7 +13,7 @@ export async function GET(request: Request) {
   const { context, rateLimit } = auth;
 
   try {
-    const { data, error } = await supabase.from('api_webhook_subscriptions').select('id, url, event_types, status, failure_count, last_success, last_failure, created_at')
+    const { data, error } = await serviceDb().from('api_webhook_subscriptions').select('id, url, event_types, status, failure_count, last_success, last_failure, created_at')
       .eq('org_id', context.orgId).eq('api_key_id', context.apiKeyId).order('created_at', { ascending: false }).limit(100);
 
     if (error) throw error;
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     // Generate signing secret for this subscription
     const secret = `whsec_${crypto.randomBytes(24).toString('hex')}`;
 
-    const { data, error } = await supabase.from('api_webhook_subscriptions').insert({
+    const { data, error } = await serviceDb().from('api_webhook_subscriptions').insert({
       org_id: context.orgId, api_key_id: context.apiKeyId,
       url: body.url, event_types: body.event_types, secret,
     }).select().single();
@@ -79,7 +79,7 @@ export async function DELETE(request: Request) {
   if (!subId) return apiError('VALIDATION_ERROR', 'id query parameter is required', 400);
 
   try {
-    const { error } = await supabase.from('api_webhook_subscriptions').delete()
+    const { error } = await serviceDb().from('api_webhook_subscriptions').delete()
       .eq('id', subId).eq('org_id', context.orgId).eq('api_key_id', context.apiKeyId);
 
     if (error) throw error;

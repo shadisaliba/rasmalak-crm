@@ -3,7 +3,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import { authenticateApiRequest, withRateLimitHeaders, hasPermission, apiError, apiList, apiSingle } from '@/middleware/apiAuth';
 
 export async function GET(request: Request) {
@@ -20,7 +20,7 @@ export async function GET(request: Request) {
   const offset = (page - 1) * limit;
 
   try {
-    let query = supabase.from('crm_communications').select('*', { count: 'exact' })
+    let query = serviceDb().from('crm_communications').select('*', { count: 'exact' })
       .eq('org_id', context.orgId).order('created_at', { ascending: false }).range(offset, offset + limit - 1);
 
     if (contactId) query = query.eq('contact_id', contactId);
@@ -44,11 +44,12 @@ export async function POST(request: Request) {
     const body = await request.json();
     if (!body.type || !body.direction) return apiError('VALIDATION_ERROR', 'type and direction are required', 400);
 
-    const { data, error } = await supabase.from('crm_communications').insert({
+    const { data, error } = await serviceDb().from('crm_communications').insert({
       org_id: context.orgId, contact_id: body.contact_id ?? null,
       type: body.type, direction: body.direction,
       subject: body.subject ?? null, body: body.body ?? null,
       source: 'api', metadata: body.metadata ?? {},
+      logged_by: context.actorUserId,
     }).select().single();
 
     if (error) throw error;

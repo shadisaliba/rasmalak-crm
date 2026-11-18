@@ -6,14 +6,14 @@
  * Email syncs all by default (user curates linking).
  */
 
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 
 /**
  * Confirm sync for a connection — enables actual data syncing.
  */
 export async function confirmSync(connectionId: string): Promise<boolean> {
   try {
-    const { error } = await supabase
+    const { error } = await serviceDb()
       .from('service_connections')
       .update({
         privacy_confirmed: true,
@@ -32,7 +32,7 @@ export async function confirmSync(connectionId: string): Promise<boolean> {
  */
 export async function revokeConsent(connectionId: string): Promise<boolean> {
   try {
-    const { error } = await supabase
+    const { error } = await serviceDb()
       .from('service_connections')
       .delete()
       .eq('id', connectionId);
@@ -48,7 +48,7 @@ export async function revokeConsent(connectionId: string): Promise<boolean> {
  */
 export async function isConfirmed(connectionId: string): Promise<boolean> {
   try {
-    const { data } = await supabase
+    const { data } = await serviceDb()
       .from('service_connections')
       .select('privacy_confirmed')
       .eq('id', connectionId)

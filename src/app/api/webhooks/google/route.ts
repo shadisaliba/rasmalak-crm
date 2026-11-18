@@ -6,7 +6,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import { getConnection } from '@/integrations/core/connectionManager';
 import { logHealthEvent } from '@/integrations/core/connectionManager';
 import { verifyGoogleChannel } from '@/integrations/core/webhookRouter';
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
 
   try {
     // Find the connection that owns this webhook channel
-    const { data: connRow } = await supabase
+    const { data: connRow } = await serviceDb()
       .from('service_connections')
       .select('*')
       .eq('webhook_id', channelId)
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     // Process async: re-fetch events since last sync
     // The actual sync is handled by the adapter + syncEngine
     // For now, mark the connection as needing a sync
-    await supabase.from('service_connections').update({
+    await serviceDb().from('service_connections').update({
       updated_at: new Date().toISOString(),
     }).eq('id', connRow.id);
 

@@ -6,7 +6,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 
 export async function POST(request: Request) {
   const url = new URL(request.url);
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 
     for (const notification of notifications) {
       // Find connection by webhook_id (subscription ID)
-      const { data: connRow } = await supabase
+      const { data: connRow } = await serviceDb()
         .from('service_connections')
         .select('id, org_id')
         .eq('webhook_id', notification.subscriptionId)
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
       if (!connRow) continue;
 
       // Mark connection as needing sync
-      await supabase.from('service_connections').update({
+      await serviceDb().from('service_connections').update({
         updated_at: new Date().toISOString(),
       }).eq('id', connRow.id);
     }

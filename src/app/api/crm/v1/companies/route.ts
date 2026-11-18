@@ -5,7 +5,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 import {
   authenticateApiRequest, logApiRequest, withRateLimitHeaders,
   hasPermission, apiError, apiList, apiSingle,
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     const search = url.searchParams.get('search') ?? '';
     const offset = (page - 1) * limit;
 
-    let query = supabase.from('crm_companies').select('*', { count: 'exact' })
+    let query = serviceDb().from('crm_companies').select('*', { count: 'exact' })
       .eq('org_id', context.orgId).order('created_at', { ascending: false }).range(offset, offset + limit - 1);
 
     if (search) {
@@ -56,11 +56,12 @@ export async function POST(request: Request) {
     const body = await request.json();
     if (!body.name) return apiError('VALIDATION_ERROR', 'name is required', 400);
 
-    const { data, error } = await supabase.from('crm_companies').insert({
+    const { data, error } = await serviceDb().from('crm_companies').insert({
       org_id: context.orgId, name: body.name, name_ar: body.name_ar ?? null,
       domain: body.domain ?? null, industry: body.industry ?? null,
       country: body.country ?? null, city: body.city ?? null,
       size_range: body.size_range ?? null, custom_fields: body.custom_fields ?? {},
+      created_by: context.actorUserId,
     }).select().single();
 
     if (error) throw error;

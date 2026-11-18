@@ -5,7 +5,7 @@
  * into a merge context for the template engine.
  */
 
-import { supabase } from '@/lib/supabaseClient';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export interface MergeContext {
   contact: Record<string, unknown>;
@@ -19,7 +19,7 @@ export interface MergeContext {
 /**
  * Fetch all data needed for merge field substitution.
  */
-export async function getMergeContext(dealId: string): Promise<MergeContext> {
+export async function getMergeContext(supabase: SupabaseClient, dealId: string): Promise<MergeContext> {
   const context: MergeContext = {
     contact: {},
     deal: {},

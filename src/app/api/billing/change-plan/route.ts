@@ -6,10 +6,9 @@
 
 import { NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
-import { supabase } from '@/lib/supabaseClient';
 import { mapFromDb } from '@/types/crm';
 import type { Subscription } from '@/types/crm';
-import { verifyBillingAuth } from '../_auth';
+import { requireBillingAdmin } from '../_auth';
 
 
 const PRICE_MAP: Record<string, string | undefined> = {
@@ -25,10 +24,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: { code: 'INVALID_INPUT', message: 'Missing orgId or plan' } }, { status: 400 });
     }
 
-    const auth = await verifyBillingAuth(orgId);
-    if (!auth.authorized) {
-      return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: auth.error } }, { status: auth.error === 'Unauthorized' ? 401 : 403 });
-    }
+    const auth = await requireBillingAdmin(request, orgId);
+    if ('error' in auth) return auth.error;
+    const { supabase } = auth;
 
     const newPriceId = PRICE_MAP[plan];
     if (!newPriceId) {

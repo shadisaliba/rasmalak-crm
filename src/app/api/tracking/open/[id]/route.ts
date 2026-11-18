@@ -6,7 +6,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { serviceDb } from '@/lib/supabaseServer';
 
 // 1x1 transparent PNG (hardcoded base64 — no file dependency)
 const PIXEL = Buffer.from(
@@ -23,7 +23,7 @@ export async function GET(
   // Fire-and-forget: log open event without blocking the response
   try {
     // Increment open count in communication metadata
-    const { data: comm } = await supabase
+    const { data: comm } = await serviceDb()
       .from('crm_communications')
       .select('id, attachments')
       .eq('id', communicationId)
@@ -32,7 +32,7 @@ export async function GET(
     if (comm) {
       const metadata = (comm.attachments as Record<string, unknown>) || {};
       const openCount = ((metadata as Record<string, unknown>).openCount as number) || 0;
-      await supabase.from('crm_communications').update({
+      await serviceDb().from('crm_communications').update({
         attachments: {
           ...metadata,
           opened: true,

@@ -5,7 +5,8 @@
  */
 
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { requireCronSecret } from '@/lib/serverAuth';
+import { serviceDb } from '@/lib/supabaseServer';
 import { getConnection, logHealthEvent } from '@/integrations/core/connectionManager';
 import { googleCalendarAdapter } from '@/integrations/adapters/googleCalendar';
 import { microsoftCalendarAdapter } from '@/integrations/adapters/microsoftCalendar';
@@ -17,17 +18,15 @@ const ADAPTERS: Record<string, IntegrationAdapter> = {
 };
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const unauthorized = requireCronSecret(request);
+  if (unauthorized) return unauthorized.error;
 
   const cutoff = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
   let renewed = 0;
   let failed = 0;
 
   try {
-    const { data: connections } = await supabase
+    const { data: connections } = await serviceDb()
       .from('service_connections')
       .select('id, provider, service_type, org_id')
       .eq('status', 'active')
