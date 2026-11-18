@@ -115,46 +115,35 @@ async function checkInactivity(): Promise<{ processed: number; errors: number }>
       const minDays = Math.min(...dayThresholds);
       const cutoff = new Date(Date.now() - minDays * 86400000).toISOString();
 
-      // Find deals with no recent communication
-      const { data: staleDealIds } = await supabase.rpc('find_stale_deals', {
+      const { data: staleDeals, error } = await supabase.rpc('find_stale_deals', {
         p_org_id: orgId,
         p_cutoff: cutoff,
       });
+      if (error) {
+        errors++;
+        continue;
+      }
 
-      // Fallback: if RPC doesn't exist, query directly
-      if (!staleDealIds) {
-        const { data: deals } = await supabase
-          .from('crm_deals')
-          .select('id, title, value, assigned_to, updated_at')
-          .eq('org_id', orgId)
-          .not('status', 'eq', 'won')
-          .not('status', 'eq', 'lost')
-          .lt('updated_at', cutoff)
-          .limit(50);
+      for (const deal of (staleDeals ?? []) as Array<{ id: string; title: string; value: number | null; assigned_to: string | null; last_activity_at: string }>) {
+        const event: TriggerEvent = {
+          type: 'no_activity',
+          orgId,
+          entityType: 'deal',
+          entityId: deal.id,
+          data: {
+            title: deal.title,
+            value: deal.value,
+            assignedTo: deal.assigned_to,
+            lastActivityAt: deal.last_activity_at,
+          },
+          timestamp: new Date().toISOString(),
+        };
 
-        if (deals) {
-          for (const deal of deals) {
-            const event: TriggerEvent = {
-              type: 'no_activity',
-              orgId,
-              entityType: 'deal',
-              entityId: deal.id,
-              data: {
-                title: deal.title,
-                value: deal.value,
-                assignedTo: deal.assigned_to,
-                lastActivityAt: deal.updated_at,
-              },
-              timestamp: new Date().toISOString(),
-            };
-
-            try {
-              await processEvent(event);
-              processed++;
-            } catch {
-              errors++;
-            }
-          }
+        try {
+          await processEvent(event);
+          processed++;
+        } catch {
+          errors++;
         }
       }
     }

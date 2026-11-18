@@ -90,7 +90,7 @@ export function BillingProvider({ children }: { children: ReactNode }) {
     if (!currentOrg) return;
     try {
       const { data } = await supabase
-        .from('invoices')
+        .from('billing_invoices')
         .select('*')
         .eq('org_id', currentOrg.id)
         .order('created_at', { ascending: false });

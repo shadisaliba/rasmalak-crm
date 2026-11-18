@@ -61,7 +61,7 @@ async function handleStripeEvent(event: Stripe.Event) {
         console.error('[Stripe Webhook] Cannot resolve org for customer', invoice.customer, '— invoice', invoice.id, 'skipped');
         break;
       }
-      await supabase.from('invoices').upsert({
+      await supabase.from('billing_invoices').upsert({
         stripe_invoice_id: invoice.id,
         org_id: invoiceOrgId,
         amount: (invoice.amount_paid || 0) / 100,

@@ -96,13 +96,7 @@ export async function evaluateWorkflow(
     }
 
     // 5. Update workflow run stats
-    await supabase
-      .from('crm_workflows')
-      .update({
-        run_count: (workflow.runCount ?? 0) + 1,
-        last_run_at: new Date().toISOString(),
-      })
-      .eq('id', workflow.id);
+    await supabase.rpc('crm_increment_workflow_run', { p_workflow_id: workflow.id });
 
     // 6. Log execution
     const error = results.find(r => !r.success)?.error ?? null;

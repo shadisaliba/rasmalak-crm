@@ -14,7 +14,7 @@ export async function GET(request: Request) {
 
   try {
     const { data, error } = await supabase
-      .from('invoices')
+      .from('billing_invoices')
       .select('*')
       .eq('org_id', orgId)
       .order('created_at', { ascending: false })
