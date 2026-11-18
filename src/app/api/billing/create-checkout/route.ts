@@ -5,11 +5,10 @@
  */
 
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
+import { getStripe } from '@/lib/stripe';
 import { supabase } from '@/lib/supabaseClient';
-import { verifyBillingAuth } from './_auth';
+import { verifyBillingAuth } from '../_auth';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', { apiVersion: '2024-12-18.acacia' as Stripe.LatestApiVersion });
 
 const PRICE_MAP: Record<string, string | undefined> = {
   'entrepreneur_monthly': process.env.STRIPE_PRICE_ENTREPRENEUR_MONTHLY,
@@ -43,7 +42,7 @@ export async function POST(request: Request) {
 
     if (!customerId) {
       const { data: org } = await supabase.from('organizations').select('name').eq('id', orgId).single();
-      const customer = await stripe.customers.create({ metadata: { org_id: orgId }, name: org?.name || undefined });
+      const customer = await getStripe().customers.create({ metadata: { org_id: orgId }, name: org?.name || undefined });
       customerId = customer.id;
 
       // Upsert subscription record with customer ID
@@ -55,7 +54,7 @@ export async function POST(request: Request) {
       }, { onConflict: 'org_id' });
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],

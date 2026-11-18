@@ -89,7 +89,7 @@ export function findDuplicates(
         duplicates.push({
           existingId: match.id,
           existingName: `${match.firstName} ${match.lastName || ''}`.trim(),
-          existingEmail: match.email,
+          existingEmail: match.email ?? null,
           importedIndex: record.index,
           importedName: importedFullName,
           importedEmail: record.email,
@@ -108,7 +108,7 @@ export function findDuplicates(
         duplicates.push({
           existingId: match.id,
           existingName: `${match.firstName} ${match.lastName || ''}`.trim(),
-          existingEmail: match.email,
+          existingEmail: match.email ?? null,
           importedIndex: record.index,
           importedName: importedFullName,
           importedEmail: record.email || null,
@@ -127,7 +127,7 @@ export function findDuplicates(
         duplicates.push({
           existingId: contact.id,
           existingName: existingFullName,
-          existingEmail: contact.email,
+          existingEmail: contact.email ?? null,
           importedIndex: record.index,
           importedName: importedFullName,
           importedEmail: record.email || null,

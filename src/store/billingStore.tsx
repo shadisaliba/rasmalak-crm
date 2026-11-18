@@ -153,7 +153,7 @@ export function BillingProvider({ children }: { children: ReactNode }) {
     const allowedPlans = PLAN_FEATURE_MAP[feature];
     if (!allowedPlans) return false;
     const isActive = subscription.status === 'active' || subscription.status === 'trialing' ||
-      (subscription.status === 'past_due' && subscription.gracePeriodEndsAt && new Date(subscription.gracePeriodEndsAt) > new Date());
+      (subscription.status === 'past_due' && !!subscription.gracePeriodEndsAt && new Date(subscription.gracePeriodEndsAt) > new Date());
     return isActive && allowedPlans.includes(subscription.plan);
   }, [subscription]);
 

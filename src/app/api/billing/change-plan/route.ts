@@ -5,13 +5,12 @@
  */
 
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
+import { getStripe } from '@/lib/stripe';
 import { supabase } from '@/lib/supabaseClient';
 import { mapFromDb } from '@/types/crm';
 import type { Subscription } from '@/types/crm';
-import { verifyBillingAuth } from './_auth';
+import { verifyBillingAuth } from '../_auth';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', { apiVersion: '2024-12-18.acacia' as Stripe.LatestApiVersion });
 
 const PRICE_MAP: Record<string, string | undefined> = {
   entrepreneur: process.env.STRIPE_PRICE_ENTREPRENEUR_MONTHLY,
@@ -42,11 +41,11 @@ export async function POST(request: Request) {
     const sub = mapFromDb<Subscription>(subRow);
 
     if (sub.stripeSubscriptionId) {
-      const stripeSub = await stripe.subscriptions.retrieve(sub.stripeSubscriptionId);
+      const stripeSub = await getStripe().subscriptions.retrieve(sub.stripeSubscriptionId);
       const mainItem = stripeSub.items.data[0];
 
       if (mainItem) {
-        await stripe.subscriptions.update(sub.stripeSubscriptionId, {
+        await getStripe().subscriptions.update(sub.stripeSubscriptionId, {
           items: [{ id: mainItem.id, price: newPriceId }],
           proration_behavior: 'create_prorations',
         });

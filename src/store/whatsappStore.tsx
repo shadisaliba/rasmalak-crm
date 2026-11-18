@@ -20,7 +20,7 @@ function mapAccount(row: Record<string, unknown>): WhatsAppAccount {
     wabaId: row.waba_id as string,
     accessToken: '', // Never expose encrypted token to frontend
     status: row.status as WhatsAppAccount['status'],
-    numberModel: (row.number_model as string) ?? 'shared',
+    numberModel: (row.number_model as WhatsAppAccount['numberModel']) ?? 'shared',
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
   };

@@ -12,17 +12,18 @@ import { supabase } from '@/lib/supabaseClient';
 import { dealScoringAgent, buildDealScoringContext } from '@/ai/agents/dealScoringAgent';
 import { AI_CONFIG } from '@/ai/config';
 
-// Dynamic import based on provider to follow the orchestrator pattern
 async function callLLM(systemPrompt: string, userMessage: string): Promise<string> {
-  const isGemini = AI_CONFIG.provider === 'gemini';
-
-  if (isGemini) {
-    const { sendChatCompletion } = await import('@/ai/providers/gemini');
-    return sendChatCompletion(systemPrompt, [{ role: 'user', content: userMessage }], { maxTokens: 500 });
-  } else {
-    const { sendChatCompletion } = await import('@/ai/providers/openai');
-    return sendChatCompletion(systemPrompt, [{ role: 'user', content: userMessage }], { maxTokens: 500 });
-  }
+  const messages = [
+    { role: 'system' as const, content: systemPrompt },
+    { role: 'user' as const, content: userMessage },
+  ];
+  const options = { max_tokens: 500 };
+  const result = AI_CONFIG.provider === 'gemini'
+    ? await (await import('@/ai/providers/gemini')).sendChatCompletion(messages, options)
+    : await (await import('@/ai/providers/openai')).sendChatCompletion(messages, options);
+  // Throwing keeps a provider error message from being stored as a score or report.
+  if (!result.success) throw new Error(result.error);
+  return result.content;
 }
 
 export async function GET(request: Request) {

@@ -1,5 +1,5 @@
 {
-  "name": "rasmalak-app",
+  "name": "rasmalak-crm",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -24,6 +24,7 @@
     "react-dom": "19.2.3",
     "react-intl": "^8.1.1",
     "recharts": "^3.6.0",
+    "stripe": "^17.7.0",
     "zustand": "^5.0.9"
   },
   "devDependencies": {

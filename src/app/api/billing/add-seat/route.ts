@@ -6,13 +6,12 @@
  */
 
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
+import { getStripe } from '@/lib/stripe';
 import { supabase } from '@/lib/supabaseClient';
 import { mapFromDb } from '@/types/crm';
 import type { Subscription } from '@/types/crm';
-import { verifyBillingAuth } from './_auth';
+import { verifyBillingAuth } from '../_auth';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', { apiVersion: '2024-12-18.acacia' as Stripe.LatestApiVersion });
 
 export async function POST(request: Request) {
   try {
@@ -43,13 +42,13 @@ export async function POST(request: Request) {
     }
 
     // Charge via Stripe FIRST — only update DB on success
-    const stripeSub = await stripe.subscriptions.retrieve(sub.stripeSubscriptionId);
+    const stripeSub = await getStripe().subscriptions.retrieve(sub.stripeSubscriptionId);
     const addonItem = stripeSub.items.data.find(i => i.price.id === addonPriceId);
 
     if (addonItem) {
-      await stripe.subscriptionItems.update(addonItem.id, { quantity: sub.seatsPurchased + 1, proration_behavior: 'create_prorations' });
+      await getStripe().subscriptionItems.update(addonItem.id, { quantity: sub.seatsPurchased + 1, proration_behavior: 'create_prorations' });
     } else {
-      await stripe.subscriptionItems.create({ subscription: sub.stripeSubscriptionId, price: addonPriceId, quantity: 1, proration_behavior: 'create_prorations' });
+      await getStripe().subscriptionItems.create({ subscription: sub.stripeSubscriptionId, price: addonPriceId, quantity: 1, proration_behavior: 'create_prorations' });
     }
 
     // Update local DB only after Stripe succeeds

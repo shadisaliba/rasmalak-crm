@@ -58,7 +58,7 @@ interface CrmContextType {
   // Contact CRUD
   addContact: (data: CreateContactInput) => Promise<CrmContact | null>;
   updateContact: (id: string, data: Partial<CrmContact>) => Promise<void>;
-  deleteContact: (id: string) => Promise<void>;
+  deleteContact: (id: string) => Promise<boolean>;
   searchContacts: (query: string) => Promise<CrmContact[]>;
 
   // Company CRUD
@@ -389,6 +389,15 @@ export function CrmProvider({ children }: { children: ReactNode }) {
     } catch (err) { console.warn('[CrmStore] Unexpected error updating deal:', err); }
   }, [currentOrg, logAudit]);
 
+  const refreshDeals = useCallback(async () => {
+    if (!currentOrg) return;
+    try {
+      const { data } = await supabase
+        .from('crm_deals').select('*').eq('org_id', currentOrg.id).order('created_at', { ascending: false });
+      if (data) setDeals(data.map(r => mapFromDb<CrmDeal>(r)));
+    } catch { /* silent */ }
+  }, [currentOrg]);
+
   const moveDealToStage = useCallback(async (dealId: string, stageId: string) => {
     const { user } = getAuthState();
     if (!user || !currentOrg) return;
@@ -432,15 +441,6 @@ export function CrmProvider({ children }: { children: ReactNode }) {
       logAudit('delete', 'deal', id);
     } catch (err) { console.warn('[CrmStore] Unexpected error deleting deal:', err); }
   }, [currentOrg, logAudit]);
-
-  const refreshDeals = useCallback(async () => {
-    if (!currentOrg) return;
-    try {
-      const { data } = await supabase
-        .from('crm_deals').select('*').eq('org_id', currentOrg.id).order('created_at', { ascending: false });
-      if (data) setDeals(data.map(r => mapFromDb<CrmDeal>(r)));
-    } catch { /* silent */ }
-  }, [currentOrg]);
 
   // ─── TASK CRUD ───────────────────────────────────────────
 

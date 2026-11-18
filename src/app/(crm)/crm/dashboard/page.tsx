@@ -95,7 +95,8 @@ export default function CrmDashboardPage() {
       const recentActivity = (comms ?? []).map(c => ({
         id: c.id,
         type: c.type,
-        contactName: (c.crm_contacts as Record<string, unknown>)?.name as string ?? '',
+        // PostgREST types a to-one embed as an array; at runtime it is a single object.
+        contactName: (c.crm_contacts as unknown as { name?: string } | null)?.name ?? '',
         body: (c.body ?? '').slice(0, 100),
         createdAt: c.created_at,
       }));

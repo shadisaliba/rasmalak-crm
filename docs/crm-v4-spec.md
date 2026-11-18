@@ -1,3 +1,5 @@
+> Deferred. Migration numbers in this spec are obsolete; renumber onto the timestamped history if it is ever built.
+
 # V4 BUILD INSTRUCTIONS FOR CLAUDE CODE
 
 Read everything below. This is the complete V4 specification. V1+V2+V3 are built — refer to source code for those. Do not start building until you've read all sections.

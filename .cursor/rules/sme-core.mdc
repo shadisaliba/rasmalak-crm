@@ -1,0 +1,59 @@
+---
+description: SME Jordan core rules
+alwaysApply: true
+---
+
+<!-- Source: SME_JORDAN_CURSOR_PLAYBOOK.md §2 (v1.0, 18 Nov 2026). Edit the playbook, then regenerate this file. -->
+
+## 2. Non-negotiable rules
+
+Prompt 0 saves this section as `.cursor/rules/sme-core.mdc` with `alwaysApply: true`, so it applies to every request.
+
+### 2.1 Product and UX
+
+- **R1 Arabic first.** Default `lang="ar" dir="rtl"`. Every user-facing string exists in `src/messages/ar/*` and `src/messages/en/*`. Arabic UI numerals use `ar-JO-u-nu-arab`. Use logical CSS properties only. Test every screen in RTL and LTR.
+- **R2 Design system.** Use the tokens in `src/app/globals.css`. No purple, violet or indigo.
+- **R3 Screen states.** Every SME screen implements the eight states from blueprint §2: loading, empty, partial-data warning, validated, stale data, regulatory review needed, permission denied, processing failure. Build them once as `src/sme/ui/DataState.tsx` and reuse them.
+- **R4 Source-aware numbers.** Every material number shows its basis, its as-of time and a data-quality label, and links to a drill-down.
+
+### 2.2 Money and the ledger
+
+- **R5 Money type.** Store money as `bigint` minor units plus an ISO 4217 code. JOD has 3 decimal places (1 JOD = 1,000 fils). Never store money as a float or an unscaled `numeric`. Never do money arithmetic with JS `number`; use `src/sme/money` (bigint) and `decimal.js` for rates and ratios. Round only at the final step, half away from zero, and record the rounding in the calculation trace.
+- **R6 Append-only ledger.** Posted transactions are never updated or deleted. Corrections are reversal entries. The database enforces this, not the UI.
+- **R7 Cash, revenue and profit are different things.** Issuing an invoice never changes cash. Only posted account transactions change cash. Transfers between the organization's own accounts are never income or expense.
+- **R8 Idempotency.** Every mutating endpoint requires an `Idempotency-Key` header; the database enforces uniqueness per organization. A replay returns the original result.
+
+### 2.3 Security and tenancy
+
+- **R9 Tenant isolation is server-side.** Every SME table has `org_id`, has RLS enabled in the migration that creates it, and its policies call `sme_has_perm()`. This covers queries, exports, search, storage objects and assistant tools.
+- **R10 Write path.** SME writes go through Postgres functions (`sme_*` RPCs) called with the user's JWT, or through route handlers that call them. There are no INSERT, UPDATE or DELETE policies on SME tables for the `authenticated` role. Reads may be RLS-protected selects.
+- **R11 Service role.** The service-role client is allowed only in cron and outbox workers and webhook handlers, never in a user request path. Code that uses it must filter by `org_id` explicitly.
+- **R12 Audit.** Every posting, reversal, allocation, import commit, permission grant or revocation, rule publication, export and obligation completion writes `sme_audit_events` inside the same database transaction.
+- **R13 Error contract.** Errors are `{ "error": { "code", "message_en", "message_ar", "details"? } }` with a code from Appendix C. No stack traces leave the server.
+
+### 2.4 AI, rules and content
+
+- **R14 One door to the LLM.** All LLM calls go through `src/ai/orchestrator.ts`. Nothing outside `src/ai/` imports `src/ai/providers/*`.
+- **R15 The AI never computes figures.** Numbers come from the calculation service, the financial summary or bounded ledger queries, as evidence with IDs. The validator rejects any number in an answer that is not in the evidence.
+- **R16 Regulatory content is never invented.** Jordanian legal, tax, SSC, licensing and e-invoicing statements come only from published `legal_rule_versions` with source URL, reviewer and effective dates. Otherwise, show the no-verified-answer state. **Cursor must not write Jordanian legal content, rates, thresholds, fees or deadlines**; it creates `draft` placeholders for reviewers.
+- **R17 No external action without confirmation.** No automatic messages to customers or suppliers, no payments, no filings. Outbound actions that originate from SME data are created as drafts that a person sends.
+- **R18 Documents are untrusted.** Uploaded document text never enters a system prompt, never selects tools and never changes permissions.
+- **R19 Deterministic engines.** Calculators and engines are pure functions with a `VERSION` constant and Vitest tests for normal, zero, negative, decimal and currency edge cases. Any formula change bumps the version.
+
+### 2.5 Engineering
+
+- **R20** TypeScript strict. `zod` schemas validate every API boundary. No `any` in new code.
+- **R21 Migrations.** Supabase CLI timestamped files: `supabase/migrations/YYYYMMDDHHMMSS_<name>.sql`. Never edit a merged migration. pgTAP tests live in `supabase/tests/*.sql` and run with `supabase test db`.
+- **R22 Module boundaries.** SME code lives in `src/sme/<module>/` with `domain/` (pure logic, no I/O), `server/` (database access, RPC calls), `api/` (zod schemas and handlers) and `ui/` (components). Modules call each other through exported service functions, never through each other's tables.
+- **R23 Comments** explain intent only (`CLAUDE.md` rule 7).
+
+### 2.6 Per-PR checklist
+
+- [ ] `npm run lint` and `npx tsc --noEmit` pass
+- [ ] `npm run test:unit` (Vitest) passes; new pure logic has tests
+- [ ] `supabase db reset && supabase test db` passes; every new table has an RLS test for a second organization
+- [ ] Playwright passes for affected flows
+- [ ] `node scripts/check-i18n.mjs` passes (every key used exists in both locales)
+- [ ] Screenshots attached in Arabic (RTL) and English (LTR)
+- [ ] Blueprint IDs listed; Appendix F updated
+- [ ] Any port recorded in `docs/PORTED_FROM_CONSUMER.md`
