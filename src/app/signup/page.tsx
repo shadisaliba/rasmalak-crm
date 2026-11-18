@@ -7,7 +7,7 @@ import { useSignup, useIsAuthenticated } from '@/store/useStore';
 import { useIntl } from 'react-intl';
 import { Button, Input } from '@/components/ui';
 import { ThemeLanguageSwitcher } from '@/components';
-import { HOME_ROUTE, ORG_SETUP_ROUTE } from '@/lib/routes';
+import { HOME_ROUTE, ORG_SETUP_ROUTE, nextPathFromLocation } from '@/lib/routes';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -24,7 +24,7 @@ export default function SignupPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push(HOME_ROUTE);
+      router.push(nextPathFromLocation() ?? HOME_ROUTE);
     }
   }, [isAuthenticated, router]);
 
@@ -57,7 +57,7 @@ export default function SignupPage() {
     setIsLoading(false);
 
     if (result.success) {
-      router.push(ORG_SETUP_ROUTE);
+      router.push(nextPathFromLocation() ?? ORG_SETUP_ROUTE);
     } else {
       setError(result.error || intl.formatMessage({ id: 'auth.signup_error', defaultMessage: 'Signup failed' }));
     }

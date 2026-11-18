@@ -38,6 +38,16 @@ export interface OrgMember {
   isActive: boolean;
 }
 
+export interface OrgInvitation {
+  id: string;
+  orgId: string;
+  email: string;
+  role: string;
+  invitedBy: string;
+  expiresAt: string;
+  createdAt: string;
+}
+
 export interface OrgRole {
   id: string;
   orgId: string;

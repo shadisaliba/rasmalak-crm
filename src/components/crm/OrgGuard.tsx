@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { withNext } from '@/lib/routes';
 import { useAuth } from '@/store/authStore';
 import { useOrg } from '@/store/orgStore';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -15,18 +16,19 @@ export function OrgGuard({ children }: { children: React.ReactNode }) {
   const { user, initialized } = useAuth();
   const { currentOrg, isLoading } = useOrg();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!initialized) return;
     if (!user) {
-      router.replace('/login');
+      router.replace(withNext('/login', pathname));
       return;
     }
     if (!isLoading && !currentOrg) {
       router.replace('/crm/setup');
       return;
     }
-  }, [initialized, user, isLoading, currentOrg, router]);
+  }, [initialized, user, isLoading, currentOrg, router, pathname]);
 
   // Show skeleton while loading OR while redirect is pending (prevents flash of null)
   if (!initialized || isLoading || !user || !currentOrg) {

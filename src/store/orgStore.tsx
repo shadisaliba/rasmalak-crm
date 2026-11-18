@@ -7,10 +7,12 @@ import type {
   Organization,
   OrgMember,
   OrgRole,
+  OrgInvitation,
   CrmPermissions,
   CreateOrgInput,
 } from '@/types/crm';
 import { mapFromDb as mapRow, mapToDb } from '@/types/crm';
+import { parseRpcError, type RpcFailure } from '@/lib/rpcError';
 
 /* ============================================
    ORG STORE
@@ -56,9 +58,13 @@ interface OrgContextType {
 
   createOrg: (data: CreateOrgInput) => Promise<Organization | null>;
   updateOrg: (data: Partial<Organization>) => Promise<void>;
-  inviteMember: (userId: string, role: string) => Promise<void>;
-  updateMemberRole: (memberId: string, role: string) => Promise<void>;
-  removeMember: (memberId: string) => Promise<void>;
+  invitations: OrgInvitation[];
+  inviteMember: (email: string, role: string) => Promise<{ ok: true; token: string } | ({ ok: false } & RpcFailure)>;
+  revokeInvitation: (invitationId: string) => Promise<boolean>;
+  refreshInvitations: () => Promise<void>;
+  acceptInvitation: (token: string) => Promise<{ ok: true; orgId: string } | ({ ok: false } & RpcFailure)>;
+  updateMemberRole: (memberId: string, role: string) => Promise<boolean>;
+  removeMember: (memberId: string) => Promise<boolean>;
   refreshMembers: () => Promise<void>;
 }
 
@@ -71,6 +77,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userPermissions, setUserPermissions] = useState<CrmPermissions>(DEFAULT_PERMISSIONS);
   const [isLoading, setIsLoading] = useState(true);
+  const [invitations, setInvitations] = useState<OrgInvitation[]>([]);
 
   // Keyed on the id: Supabase hands out a new user object on every token refresh.
   const userId = useAuthStore((state) => state.user?.id ?? null);
@@ -262,80 +269,94 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     } catch (err) { console.warn('[OrgStore] Unexpected error refreshing members:', err); }
   }, [currentOrg]);
 
-  // Invite a member (by user_id for now; email invite flow is roadmap)
-  const inviteMember = useCallback(async (userId: string, role: string) => {
-    const { user: authUser, initialized } = getAuthState();
-    if (!initialized || !authUser || !currentOrg) return;
+  const refreshInvitations = useCallback(async () => {
+    if (!currentOrg) return;
+    const { data, error } = await supabase
+      .from('org_invitations')
+      .select('id, org_id, email, role, invited_by, expires_at, created_at')
+      .eq('org_id', currentOrg.id)
+      .is('accepted_at', null)
+      .is('revoked_at', null)
+      .gt('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false });
+    if (error) { console.warn('[OrgStore] Error loading invitations:', error.message); return; }
+    setInvitations((data ?? []).map(r => mapRow<OrgInvitation>(r)));
+  }, [currentOrg]);
 
-    try {
-      const { error } = await supabase
-        .from('org_members')
-        .insert({
-          org_id: currentOrg.id,
-          user_id: userId,
-          role,
-          invited_by: authUser.id,
-          invited_at: new Date().toISOString(),
-        });
+  // Returns the one-time token; only its hash is stored, so this is the only chance to share the link.
+  const inviteMember = useCallback(async (email: string, role: string) => {
+    if (!currentOrg) return { ok: false as const, code: 'ACCESS_DENIED', details: {} };
+    const { data, error } = await supabase.rpc('org_invite', { p_org: currentOrg.id, p_email: email, p_role: role });
+    if (error || typeof data !== 'string') return { ok: false as const, ...parseRpcError(error) };
+    await refreshInvitations();
+    return { ok: true as const, token: data };
+  }, [currentOrg, refreshInvitations]);
 
-      if (error) {
-        console.warn('[OrgStore] Error inviting member:', error.message);
-        return;
-      }
+  const revokeInvitation = useCallback(async (invitationId: string) => {
+    const { error } = await supabase.rpc('org_revoke_invitation', { p_invitation: invitationId });
+    if (error) { console.warn('[OrgStore] Error revoking invitation:', error.message); return false; }
+    setInvitations(prev => prev.filter(i => i.id !== invitationId));
+    return true;
+  }, []);
 
-      await refreshMembers();
-    } catch (err) {
-      console.warn('[OrgStore] Unexpected error inviting member:', err);
-    }
-  }, [currentOrg, refreshMembers]);
+  const acceptInvitation = useCallback(async (token: string) => {
+    const { data, error } = await supabase.rpc('org_accept_invitation', { p_token: token });
+    if (error || typeof data !== 'string') return { ok: false as const, ...parseRpcError(error) };
+    return { ok: true as const, orgId: data };
+  }, []);
 
   // Update a member's role
   const updateMemberRole = useCallback(async (memberId: string, role: string) => {
     const { user, initialized } = getAuthState();
-    if (!initialized || !user || !currentOrg) return;
+    if (!initialized || !user || !currentOrg) return false;
 
     try {
-      const { error } = await supabase
+      // RLS rejects out-of-rank changes either with an error or by matching no rows.
+      const { data, error } = await supabase
         .from('org_members')
         .update({ role })
-        .eq('id', memberId);
+        .eq('id', memberId)
+        .select('id');
 
-      if (error) {
-        console.warn('[OrgStore] Error updating member role:', error.message);
-        return;
+      if (error || !data?.length) {
+        if (error) console.warn('[OrgStore] Error updating member role:', error.message);
+        return false;
       }
 
       setOrgMembers(prev =>
         prev.map(m => m.id === memberId ? { ...m, role: role as OrgMember['role'] } : m)
       );
+      return true;
     } catch (err) {
       console.warn('[OrgStore] Unexpected error updating member role:', err);
+      return false;
     }
   }, [currentOrg]);
 
   // Soft-delete a member (set is_active = false)
   const removeMember = useCallback(async (memberId: string) => {
     const { user, initialized } = getAuthState();
-    if (!initialized || !user || !currentOrg) return;
+    if (!initialized || !user || !currentOrg) return false;
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('org_members')
         .update({ is_active: false })
-        .eq('id', memberId);
+        .eq('id', memberId)
+        .select('id');
 
-      if (error) {
-        console.warn('[OrgStore] Error removing member:', error.message);
-        return;
+      if (error || !data?.length) {
+        if (error) console.warn('[OrgStore] Error removing member:', error.message);
+        return false;
       }
 
       setOrgMembers(prev => prev.filter(m => m.id !== memberId));
+      return true;
     } catch (err) {
       console.warn('[OrgStore] Unexpected error removing member:', err);
+      return false;
     }
   }, [currentOrg]);
-
-  // refreshMembers is defined above inviteMember to avoid stale closure
 
   const value: OrgContextType = {
     currentOrg,
@@ -346,7 +367,11 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     isLoading,
     createOrg,
     updateOrg,
+    invitations,
     inviteMember,
+    revokeInvitation,
+    refreshInvitations,
+    acceptInvitation,
     updateMemberRole,
     removeMember,
     refreshMembers,

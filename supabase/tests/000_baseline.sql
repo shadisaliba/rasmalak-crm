@@ -115,6 +115,8 @@ begin
   insert into whatsapp_templates (org_id, account_id, name, language, category, body)
     values (b, v_wa, 'b_template', 'ar', 'utility', 'x');
   insert into whatsapp_conversations (org_id, contact_phone) values (b, '+962700000001');
+  insert into org_invitations (org_id, email, role, token_hash, invited_by)
+    values (b, 'invitee.b@example.test', 'viewer', 'hash-of-b-token', ub);
 end $$;
 
 select is_empty(

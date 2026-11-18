@@ -5,6 +5,7 @@ dotenv.config({ path: '.env.test.local' });
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: false,       // sequential — auth state carries across tests
+  workers: 1,                 // some tests change shared database state
   forbidOnly: !!process.env.CI,
   retries: 1,
   timeout: 60_000,

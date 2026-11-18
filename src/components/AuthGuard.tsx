@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useIntl } from 'react-intl';
 import { useIsAuthenticated } from '@/store/useStore';
-import { HOME_ROUTE } from '@/lib/routes';
+import { HOME_ROUTE, withNext } from '@/lib/routes';
 
 const PUBLIC_ROUTES = ['/login', '/signup', '/forgot-password'];
 
@@ -25,7 +25,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
 
       if (!isAuthenticated && !isPublicRoute) {
-        router.replace('/login');
+        router.replace(withNext('/login', pathname));
       } else if (isAuthenticated && isPublicRoute) {
         router.replace(HOME_ROUTE);
       }

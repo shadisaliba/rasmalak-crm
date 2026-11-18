@@ -5,6 +5,7 @@
 --   Org A  00000000-0000-4000-a000-00000000000a   owner  a0000000-0000-4000-a000-000000000001  owner.a@example.test
 --   Org B  00000000-0000-4000-b000-00000000000b   owner  b0000000-0000-4000-b000-000000000001  owner.b@example.test
 --   No org                                       user   c0000000-0000-4000-c000-000000000001  no.org@example.test
+--   Invitee for the e2e invitation test          user   e0000000-0000-4000-e000-000000000001  join.me@example.test
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
@@ -19,7 +20,8 @@ select
 from (values
   ('a0000000-0000-4000-a000-000000000001'::uuid, 'owner.a@example.test', 'Owner A'),
   ('b0000000-0000-4000-b000-000000000001'::uuid, 'owner.b@example.test', 'Owner B'),
-  ('c0000000-0000-4000-c000-000000000001'::uuid, 'no.org@example.test', 'No Org')
+  ('c0000000-0000-4000-c000-000000000001'::uuid, 'no.org@example.test', 'No Org'),
+  ('e0000000-0000-4000-e000-000000000001'::uuid, 'join.me@example.test', 'Join Me')
 ) as u(id, email, name);
 
 insert into auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
