@@ -683,6 +683,8 @@ export interface CrmWorkflow {
   actions: WorkflowAction[];
   isActive: boolean;
   runCount: number;
+  /** Outbound actions wait for a person to approve them. */
+  requiresConfirmation: boolean;
   lastRunAt: string | null;
   installedFrom: string | null;
   createdBy: string | null;

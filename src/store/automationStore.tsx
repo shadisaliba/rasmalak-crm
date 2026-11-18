@@ -34,6 +34,7 @@ function mapWorkflow(row: Record<string, unknown>): CrmWorkflow {
     actions: (row.actions as WorkflowAction[]) ?? [],
     isActive: row.is_active as boolean,
     runCount: (row.run_count as number) ?? 0,
+    requiresConfirmation: (row.requires_confirmation as boolean) ?? false,
     lastRunAt: (row.last_run_at as string) ?? null,
     installedFrom: (row.installed_from as string) ?? null,
     createdBy: (row.created_by as string) ?? null,
@@ -196,6 +197,7 @@ export function AutomationProvider({ children }: { children: ReactNode }) {
           conditions: data.conditions ?? [],
           actions: data.actions ?? [],
           is_active: data.isActive ?? true,
+          requires_confirmation: data.requiresConfirmation ?? false,
           created_by: userId,
         })
         .select()
@@ -223,6 +225,7 @@ export function AutomationProvider({ children }: { children: ReactNode }) {
       if (data.conditions !== undefined) updates.conditions = data.conditions;
       if (data.actions !== undefined) updates.actions = data.actions;
       if (data.isActive !== undefined) updates.is_active = data.isActive;
+      if (data.requiresConfirmation !== undefined) updates.requires_confirmation = data.requiresConfirmation;
 
       const { error } = await supabase
         .from('crm_workflows')

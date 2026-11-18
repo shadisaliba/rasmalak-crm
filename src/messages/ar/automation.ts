@@ -166,4 +166,27 @@ export default {
   'gate.title': 'منشئ الأتمتة المرئي',
   'gate.desc': 'قم بالترقية إلى خطة المؤسسة أو أعلى لاستخدام منشئ سير العمل المرئي.',
   'gate.upgrade': 'ترقية الخطة',
+
+  // Outbound confirmation
+  'builder.requiresConfirmation': 'اطلب موافقة شخص قبل إرسال أي رسالة أو استدعاء ويب',
+  'builder.requiresConfirmationHint': 'تنتظر رسائل البريد الإلكتروني وواتساب الموافقة دائمًا في صندوق الصادر.',
+
+  // Outbox
+  'tab.outbox': 'صندوق الصادر',
+  'outbox.description': 'الرسائل التي يريد سير العمل إرسالها. لا يُرسَل شيء حتى يوافق عليه شخص.',
+  'outbox.empty': 'لا يوجد ما ينتظر الموافقة.',
+  'outbox.approve': 'الموافقة والإرسال',
+  'outbox.discard': 'تجاهل',
+  'outbox.status.draft': 'بانتظار الموافقة',
+  'outbox.status.approved': 'تمت الموافقة، سيُرسَل قريبًا',
+  'outbox.status.sent': 'تم الإرسال',
+  'outbox.status.failed': 'لم يُرسَل',
+  'outbox.status.discarded': 'تم التجاهل',
+  'outbox.channel.email': 'بريد إلكتروني',
+  'outbox.channel.whatsapp': 'واتساب',
+  'outbox.channel.slack': 'Slack',
+  'outbox.channel.webhook': 'استدعاء ويب',
+  'outbox.from': 'من {workflow}',
+  'outbox.error': 'تعذّر التحديث. يرجى المحاولة مرة أخرى.',
+  'outbox.emailUnavailable': 'إرسال البريد الإلكتروني غير متصل بعد، لذا يمكن تجاهل هذه الرسالة فقط. انسخ النص وأرسله بنفسك عند الحاجة.',
 };

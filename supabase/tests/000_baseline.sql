@@ -119,6 +119,8 @@ begin
     values (b, 'invitee.b@example.test', 'viewer', 'hash-of-b-token', ub);
   insert into ai_task_runs (org_id, task, provider, model, status, latency_ms, input_digest)
     values (b, 'deal_scoring', 'gemini', 'test-model', 'ok', 10, 'digest-b');
+  insert into crm_outbound_drafts (org_id, workflow_id, channel, recipient, payload)
+    values (b, v_workflow, 'slack', 'C-B', '{"message":"b"}');
 end $$;
 
 select is_empty(

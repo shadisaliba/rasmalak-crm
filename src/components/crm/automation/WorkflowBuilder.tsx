@@ -27,6 +27,7 @@ export function WorkflowBuilder({ workflow, onClose }: WorkflowBuilderProps) {
   const [triggerConfig, setTriggerConfig] = useState<Record<string, unknown>>(workflow?.triggerConfig ?? {});
   const [conditions, setConditions] = useState<WorkflowCondition[]>(workflow?.conditions ?? []);
   const [actions, setActions] = useState<WorkflowAction[]>(workflow?.actions ?? []);
+  const [requiresConfirmation, setRequiresConfirmation] = useState(workflow?.requiresConfirmation ?? false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -47,7 +48,7 @@ export function WorkflowBuilder({ workflow, onClose }: WorkflowBuilderProps) {
     const data = {
       name, nameAr: nameAr || null, description: description || null,
       descriptionAr: descriptionAr || null, triggerType: triggerType as TriggerType,
-      triggerConfig, conditions, actions,
+      triggerConfig, conditions, actions, requiresConfirmation,
     };
 
     let success: boolean;
@@ -140,6 +141,15 @@ export function WorkflowBuilder({ workflow, onClose }: WorkflowBuilderProps) {
             <textarea style={{ ...inputStyle, minHeight: '56px', resize: 'vertical' }} value={descriptionAr} onChange={e => setDescriptionAr(e.target.value)} dir="rtl" />
           </div>
         </div>
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginTop: '12px', fontSize: '13px', color: 'var(--ds-text-body)', cursor: 'pointer' }}>
+          <input type="checkbox" checked={requiresConfirmation} onChange={e => setRequiresConfirmation(e.target.checked)} style={{ marginTop: '2px' }} />
+          <span>
+            {t('automation.builder.requiresConfirmation', 'Ask a person before sending any message or webhook')}
+            <span style={{ display: 'block', fontSize: '12px', color: 'var(--ds-text-muted)' }}>
+              {t('automation.builder.requiresConfirmationHint', 'Email and WhatsApp always wait for approval in the Outbox.')}
+            </span>
+          </span>
+        </label>
       </div>
 
       {/* Vertical flow: Trigger → Conditions → Actions */}

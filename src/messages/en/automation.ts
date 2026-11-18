@@ -166,4 +166,27 @@ export default {
   'gate.title': 'Visual Automation Builder',
   'gate.desc': 'Upgrade to Organization or higher to use the visual workflow builder.',
   'gate.upgrade': 'Upgrade Plan',
+
+  // Outbound confirmation
+  'builder.requiresConfirmation': 'Ask a person before sending any message or webhook',
+  'builder.requiresConfirmationHint': 'Email and WhatsApp always wait for approval in the Outbox.',
+
+  // Outbox
+  'tab.outbox': 'Outbox',
+  'outbox.description': 'Messages your workflows want to send. Nothing leaves until someone approves it.',
+  'outbox.empty': 'Nothing is waiting for approval.',
+  'outbox.approve': 'Approve and send',
+  'outbox.discard': 'Discard',
+  'outbox.status.draft': 'Waiting for approval',
+  'outbox.status.approved': 'Approved, sending shortly',
+  'outbox.status.sent': 'Sent',
+  'outbox.status.failed': 'Not sent',
+  'outbox.status.discarded': 'Discarded',
+  'outbox.channel.email': 'Email',
+  'outbox.channel.whatsapp': 'WhatsApp',
+  'outbox.channel.slack': 'Slack',
+  'outbox.channel.webhook': 'Webhook',
+  'outbox.from': 'From {workflow}',
+  'outbox.error': 'This could not be updated. Please try again.',
+  'outbox.emailUnavailable': 'Email sending is not connected yet, so this can only be discarded. Copy the text and send it yourself if needed.',
 };

@@ -7,7 +7,7 @@
 import { serviceDb } from '@/lib/supabaseServer';
 import { doesTriggerMatch, type TriggerEvent } from './triggers';
 import { evaluateConditions } from './conditions';
-import { executeAction, type ActionResult } from './actions';
+import { executeAction, isSmeTrigger, type ActionResult } from './actions';
 import type { CrmWorkflow } from '@/types/crm';
 
 export interface WorkflowExecutionResult {
@@ -62,6 +62,7 @@ export async function evaluateWorkflow(
     }
 
     // 4. Execute actions sequentially (order matters)
+    const requiresConfirmation = workflow.requiresConfirmation || isSmeTrigger(triggerEvent.type);
     const sortedActions = [...workflow.actions].sort((a, b) => a.order - b.order);
     const results: ActionResult[] = [];
 
@@ -75,6 +76,7 @@ export async function evaluateWorkflow(
           entityData,
           workflowId: workflow.id,
           userId: workflow.createdBy ?? undefined,
+          requiresConfirmation,
         });
         results.push(waitResult);
         // Wait actions pause remaining actions for the scheduler to resume
@@ -88,6 +90,7 @@ export async function evaluateWorkflow(
         entityData,
         workflowId: workflow.id,
         userId: workflow.createdBy ?? undefined,
+        requiresConfirmation,
       });
       results.push(result);
 
@@ -237,6 +240,7 @@ function mapRowToWorkflow(row: Record<string, unknown>): CrmWorkflow {
     actions: (row.actions as CrmWorkflow['actions']) ?? [],
     isActive: row.is_active as boolean,
     runCount: (row.run_count as number) ?? 0,
+    requiresConfirmation: (row.requires_confirmation as boolean) ?? false,
     lastRunAt: (row.last_run_at as string) ?? null,
     installedFrom: (row.installed_from as string) ?? null,
     createdBy: (row.created_by as string) ?? null,

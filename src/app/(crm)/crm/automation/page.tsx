@@ -6,10 +6,11 @@ import { useAutomation } from '@/store/automationStore';
 import { TemplateGallery } from '@/components/crm/automation/TemplateGallery';
 import { WorkflowBuilder } from '@/components/crm/automation/WorkflowBuilder';
 import { WorkflowLog } from '@/components/crm/automation/WorkflowLog';
+import { OutboxPanel } from '@/components/crm/automation/OutboxPanel';
 import { Zap, Plus, ToggleLeft, ToggleRight, Pencil, Trash2 } from 'lucide-react';
 import type { CrmWorkflow } from '@/types/crm';
 
-type Tab = 'workflows' | 'templates' | 'log';
+type Tab = 'workflows' | 'templates' | 'log' | 'outbox';
 
 export default function AutomationPage() {
   const intl = useIntl();
@@ -84,7 +85,7 @@ export default function AutomationPage() {
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '0', borderBottom: '1px solid var(--ds-border)' }}>
-        {(['workflows', 'templates', 'log'] as Tab[]).map(tabId => (
+        {(['workflows', 'templates', 'log', 'outbox'] as Tab[]).map(tabId => (
           <button
             key={tabId}
             onClick={() => setTab(tabId)}
@@ -115,6 +116,7 @@ export default function AutomationPage() {
 
       {tab === 'templates' && <TemplateGallery />}
       {tab === 'log' && <WorkflowLog />}
+      {tab === 'outbox' && <OutboxPanel />}
     </div>
   );
 }

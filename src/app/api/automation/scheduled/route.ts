@@ -8,6 +8,7 @@
 import { NextResponse } from 'next/server';
 import { requireCronSecret } from '@/lib/serverAuth';
 import { runScheduledAutomation } from '@/automation/scheduler';
+import { processApprovedDrafts } from '@/automation/outbox';
 
 export async function GET(request: Request) {
   const unauthorized = requireCronSecret(request);
@@ -15,11 +16,13 @@ export async function GET(request: Request) {
 
   try {
     const result = await runScheduledAutomation();
+    const outbox = await processApprovedDrafts();
 
     return NextResponse.json({
       ok: true,
       processed: result.processed,
       errors: result.errors,
+      outbox,
       timestamp: new Date().toISOString(),
     });
   } catch (err) {

@@ -4,6 +4,7 @@
  */
 
 import { serviceDb } from '@/lib/supabaseServer';
+import { postSlackMessage, postWebhook, webhookTargetError } from './outboundSenders';
 import type { ActionType } from '@/types/crm';
 
 export interface ActionContext {
@@ -13,6 +14,13 @@ export interface ActionContext {
   entityData: Record<string, unknown>;
   workflowId: string;
   userId?: string;
+  /** Outbound actions become drafts that a person must approve (rule R17). */
+  requiresConfirmation: boolean;
+}
+
+// Anything triggered by SME financial data always waits for a person.
+export function isSmeTrigger(triggerType: string): boolean {
+  return triggerType.startsWith('sme_') || triggerType.startsWith('sme.');
 }
 
 export interface ActionResult {
@@ -260,99 +268,82 @@ async function updateField(
   return { success: true, actionType: 'update_field', details: { field, value } };
 }
 
+async function createOutboundDraft(
+  ctx: ActionContext,
+  actionType: ActionType,
+  channel: 'email' | 'whatsapp' | 'slack' | 'webhook',
+  recipient: string,
+  payload: Record<string, unknown>,
+): Promise<ActionResult> {
+  const { data, error } = await serviceDb()
+    .from('crm_outbound_drafts')
+    .insert({
+      org_id: ctx.orgId,
+      workflow_id: ctx.workflowId,
+      channel,
+      recipient,
+      payload,
+      entity_type: ctx.entityType,
+      entity_id: ctx.entityId,
+    })
+    .select('id')
+    .single();
+  if (error || !data) return { success: false, actionType, error: error?.message ?? 'Could not create draft' };
+  return { success: true, actionType, details: { draftId: data.id, status: 'draft' } };
+}
+
+function contactIdFor(ctx: ActionContext): string | null {
+  if (ctx.entityType === 'contact') return ctx.entityId;
+  const fromData = ctx.entityData.contactId ?? ctx.entityData.contact_id;
+  return typeof fromData === 'string' ? fromData : null;
+}
+
+// There is no automatic email or WhatsApp sender, so these always wait for a person.
 async function sendEmail(
   config: Record<string, unknown>,
   ctx: ActionContext
 ): Promise<ActionResult> {
-  // Email sending is delegated to existing integration adapters (Gmail/Outlook)
-  // This action logs the intent; actual sending handled by integration layer
-  const { error } = await serviceDb().from('crm_communications').insert({
-    org_id: ctx.orgId,
-    contact_id: ctx.entityType === 'contact' ? ctx.entityId : (ctx.entityData.contactId ?? null),
-    type: 'email',
-    direction: 'outbound',
+  const contactId = contactIdFor(ctx);
+  if (!contactId) return { success: false, actionType: 'send_email', error: 'No contact to email' };
+  return createOutboundDraft(ctx, 'send_email', 'email', contactId, {
     subject: resolveTemplate(config.subject as string, ctx.entityData),
     body: resolveTemplate(config.body as string, ctx.entityData),
-    status: 'queued',
-    source: 'automation',
-    metadata: { workflowId: ctx.workflowId, templateId: config.templateId },
+    templateId: config.templateId ?? null,
   });
-
-  if (error) return { success: false, actionType: 'send_email', error: error.message };
-  return { success: true, actionType: 'send_email' };
 }
 
 async function sendWhatsApp(
   config: Record<string, unknown>,
   ctx: ActionContext
 ): Promise<ActionResult> {
-  // WhatsApp sending queued for WhatsApp Business adapter to pick up
-  const { error } = await serviceDb().from('crm_communications').insert({
-    org_id: ctx.orgId,
-    contact_id: ctx.entityType === 'contact' ? ctx.entityId : (ctx.entityData.contactId ?? null),
-    type: 'whatsapp',
-    direction: 'outbound',
-    body: resolveTemplate(config.templateName as string, ctx.entityData),
-    status: 'queued',
-    source: 'automation',
-    metadata: {
-      workflowId: ctx.workflowId,
-      waTemplateName: config.templateName,
-      waTemplateParams: config.templateParams,
-    },
+  const contactId = contactIdFor(ctx);
+  if (!contactId) return { success: false, actionType: 'send_whatsapp', error: 'No contact to message' };
+  const params = Array.isArray(config.templateParams)
+    ? (config.templateParams as unknown[]).map(p => resolveTemplate(String(p), ctx.entityData))
+    : [];
+  return createOutboundDraft(ctx, 'send_whatsapp', 'whatsapp', contactId, {
+    templateName: config.templateName ?? '',
+    language: config.language ?? 'ar',
+    params,
   });
-
-  if (error) return { success: false, actionType: 'send_whatsapp', error: error.message };
-  return { success: true, actionType: 'send_whatsapp' };
 }
 
 async function sendSlack(
   config: Record<string, unknown>,
   ctx: ActionContext
 ): Promise<ActionResult> {
-  // Slack posting delegated to Slack adapter; this creates the intent record
   const message = resolveTemplate(config.message as string, ctx.entityData);
   const channelId = config.channelId as string;
-
   if (!channelId) {
     return { success: false, actionType: 'send_slack', error: 'No channelId configured' };
   }
-
-  // Check for Slack connection in this org
-  const { data: conn } = await serviceDb()
-    .from('service_connections')
-    .select('id, access_token')
-    .eq('org_id', ctx.orgId)
-    .eq('provider', 'slack')
-    .eq('status', 'active')
-    .limit(1)
-    .single();
-
-  if (!conn) {
-    return { success: false, actionType: 'send_slack', error: 'No active Slack connection' };
+  if (ctx.requiresConfirmation) {
+    return createOutboundDraft(ctx, 'send_slack', 'slack', channelId, { message });
   }
-
-  // Post directly via Slack API
-  try {
-    const res = await fetch('https://slack.com/api/chat.postMessage', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${conn.access_token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ channel: channelId, text: message }),
-    });
-
-    const result = await res.json();
-    if (!result.ok) {
-      return { success: false, actionType: 'send_slack', error: result.error };
-    }
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Slack API error';
-    return { success: false, actionType: 'send_slack', error: msg };
-  }
-
-  return { success: true, actionType: 'send_slack', details: { channelId } };
+  const sent = await postSlackMessage(ctx.orgId, channelId, message);
+  return sent.ok
+    ? { success: true, actionType: 'send_slack', details: sent.details }
+    : { success: false, actionType: 'send_slack', error: sent.error };
 }
 
 async function assignTo(
@@ -432,52 +423,24 @@ async function callWebhook(
 ): Promise<ActionResult> {
   const url = config.url as string;
   if (!url) return { success: false, actionType: 'webhook', error: 'No URL configured' };
-
-  // SSRF guard: block private/internal IPs
-  try {
-    const parsed = new URL(url);
-    const hostname = parsed.hostname.toLowerCase();
-    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0' ||
-        hostname.startsWith('10.') || hostname.startsWith('192.168.') ||
-        hostname.startsWith('169.254.') || hostname.startsWith('172.') ||
-        hostname === '[::1]' || hostname.endsWith('.internal')) {
-      return { success: false, actionType: 'webhook', error: 'URL targets a private network — blocked' };
-    }
-  } catch {
-    return { success: false, actionType: 'webhook', error: 'Invalid URL' };
-  }
+  const blocked = webhookTargetError(url);
+  if (blocked) return { success: false, actionType: 'webhook', error: blocked };
 
   // Strip sensitive fields from outbound payload
   const safeData: Record<string, unknown> = {};
   for (const [key, val] of Object.entries(ctx.entityData)) {
     if (WEBHOOK_SAFE_FIELDS.has(key)) safeData[key] = val;
   }
+  const body = { event: ctx.entityType, entityId: ctx.entityId, data: safeData, timestamp: new Date().toISOString() };
+  const headers = (config.headers as Record<string, string>) ?? {};
 
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(config.headers as Record<string, string> ?? {}),
-      },
-      body: JSON.stringify({
-        event: ctx.entityType,
-        entityId: ctx.entityId,
-        data: safeData,
-        timestamp: new Date().toISOString(),
-      }),
-      signal: AbortSignal.timeout(10000),
-    });
-
-    if (!res.ok) {
-      return { success: false, actionType: 'webhook', error: `HTTP ${res.status}` };
-    }
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Webhook error';
-    return { success: false, actionType: 'webhook', error: msg };
+  if (ctx.requiresConfirmation) {
+    return createOutboundDraft(ctx, 'webhook', 'webhook', url, { headers, body });
   }
-
-  return { success: true, actionType: 'webhook', details: { url } };
+  const sent = await postWebhook(url, headers, body);
+  return sent.ok
+    ? { success: true, actionType: 'webhook', details: sent.details }
+    : { success: false, actionType: 'webhook', error: sent.error };
 }
 
 // ── Helpers ──────────────────────────────────────────────────
