@@ -10,7 +10,7 @@
  */
 
 import { mulberry32 } from './stats';
-import { clampAnchorDay } from '@/lib/cycles';
+import { clampAnchorDay } from './cycles';
 import type { EngineTransaction } from './engineTypes';
 
 export type FixtureTransaction = EngineTransaction & { amount: number };

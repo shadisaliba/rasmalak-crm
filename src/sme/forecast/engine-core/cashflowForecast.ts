@@ -12,7 +12,7 @@
  * Output is a RANGE (P25/P50/P75), never a point.
  */
 
-import { getCycleRange } from '@/lib/cycles';
+import { getCycleRange } from './cycles';
 import { quantile } from './stats';
 import { dateToDayNumber, isoAddDays, isoAddMonthsClamped, isoToDayNumber } from './dates';
 import { isGoalFunding, type CycleRange, type EngineTransaction } from './engineTypes';

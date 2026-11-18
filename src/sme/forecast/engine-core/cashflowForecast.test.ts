@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getCycleRange } from '@/lib/cycles';
+import { getCycleRange } from './cycles';
 import { computeCashflowForecast } from './cashflowForecast';
 import { detectRecurringSeries } from './recurringSeries';
 import { monthlyBill, salaryEveryMonth, dailySpend, makeTx, type FixtureTransaction } from './fixtures';

@@ -6,7 +6,7 @@
  * store type happens in src/lib/predictive/inputs.ts.
  */
 
-import type { CycleRange } from '@/lib/cycles';
+import type { CycleRange } from './cycles';
 
 export type { CycleRange };
 

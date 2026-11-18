@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { computeCategoryBaselines, detectCategoryDeviations } from './categoryBaselines';
-import { getCycleRange } from '@/lib/cycles';
+import { getCycleRange } from './cycles';
 import { makeTx, type FixtureTransaction } from './fixtures';
 
 const NOW = new Date(2026, 5, 15); // June 15, 2026
