@@ -1,6 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
+import { useShallow } from 'zustand/react/shallow';
 import type { Session, User } from '@supabase/supabase-js';
 
 /* ============================================
@@ -44,11 +45,12 @@ export const useAuthStore = create<AuthState>((set) => ({
 /* ===== SELECTORS ===== */
 // Use these for optimized re-renders
 
-export const useAuth = () => useAuthStore((state) => ({
+// Zustand 5 compares selector results by reference; a fresh object each render loops forever.
+export const useAuth = () => useAuthStore(useShallow((state) => ({
   session: state.session,
   user: state.user,
   initialized: state.initialized,
-}));
+})));
 
 export const useUser = () => useAuthStore((state) => state.user);
 export const useSession = () => useAuthStore((state) => state.session);

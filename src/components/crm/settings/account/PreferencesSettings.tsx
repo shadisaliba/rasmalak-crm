@@ -8,8 +8,9 @@ import { ACCENT_COLOR_OPTIONS } from '@/lib/constants';
 import type { Language } from '@/lib/translations';
 import { cardStyle, headingStyle, mutedStyle } from './styles';
 
-// The design system excludes purple, violet and indigo.
-const ALLOWED_ACCENTS = ACCENT_COLOR_OPTIONS.filter(o => o.family !== 'purple' && o.label !== 'Indigo');
+// The design system excludes purple, violet and indigo; fuchsia reads as purple too.
+const EXCLUDED_ACCENTS = new Set(['Indigo', 'Fuchsia']);
+const ALLOWED_ACCENTS = ACCENT_COLOR_OPTIONS.filter(o => o.family !== 'purple' && !EXCLUDED_ACCENTS.has(o.label));
 
 function ChoiceButton({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: ReactNode }) {
   return (

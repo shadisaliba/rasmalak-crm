@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { OrgGuard } from '@/components/crm/OrgGuard';
 import { CrmProvider } from '@/store/crmStore';
+import { BillingProvider } from '@/store/billingStore';
 import { CrmShell } from '@/components/crm/layout/CrmShell';
 import { ORG_OPTIONAL_ROUTES } from '@/lib/routes';
 
@@ -17,11 +18,13 @@ export default function CrmPagesLayout({ children }: { children: React.ReactNode
 
   return (
     <OrgGuard>
-      <CrmProvider>
-        <CrmShell>
-          {children}
-        </CrmShell>
-      </CrmProvider>
+      <BillingProvider>
+        <CrmProvider>
+          <CrmShell>
+            {children}
+          </CrmShell>
+        </CrmProvider>
+      </BillingProvider>
     </OrgGuard>
   );
 }

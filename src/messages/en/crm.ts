@@ -10,7 +10,7 @@ export default {
   'nav.documents': 'Documents',
   'nav.import': 'Import Data',
   'nav.settings': 'Settings',
-  'nav.back': 'Back to Rasmalak',
+  'nav.signOut': 'Sign out',
   'nav.notifications': 'Notifications',
 
   // General

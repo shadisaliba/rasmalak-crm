@@ -79,7 +79,8 @@ export function WhatsAppProvider({ children }: { children: ReactNode }) {
   const [conversations, setConversations] = useState<WhatsAppConversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const user = useAuthStore((state) => state.user);
+  // Keyed on the id: Supabase hands out a new user object on every token refresh.
+  const userId = useAuthStore((state) => state.user?.id ?? null);
   const initialized = useAuthStore((state) => state.initialized);
   const { currentOrg } = useOrg();
 
@@ -87,7 +88,7 @@ export function WhatsAppProvider({ children }: { children: ReactNode }) {
   // so no screen renders rows that belong to another organization.
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (!initialized || !user || !currentOrg) {
+    if (!initialized || !userId || !currentOrg) {
       setAccounts([]);
       setIsLoading(false);
       return;
@@ -111,7 +112,7 @@ export function WhatsAppProvider({ children }: { children: ReactNode }) {
 
     load();
     return () => { cancelled = true; };
-  }, [initialized, user, currentOrg]);
+  }, [initialized, userId, currentOrg]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const fetchAccounts = useCallback(async () => {

@@ -114,7 +114,8 @@ export function CrmProvider({ children }: { children: ReactNode }) {
     tasks: true, pipelines: true, notifications: true,
   });
 
-  const user = useAuthStore((state) => state.user);
+  // Keyed on the id: Supabase hands out a new user object on every token refresh.
+  const userId = useAuthStore((state) => state.user?.id ?? null);
   const initialized = useAuthStore((state) => state.initialized);
   const { currentOrg } = useOrg();
 
@@ -146,7 +147,7 @@ export function CrmProvider({ children }: { children: ReactNode }) {
   // so no screen renders rows that belong to another organization.
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (!initialized || !user || !currentOrg) {
+    if (!initialized || !userId || !currentOrg) {
       setContacts([]); setCompanies([]); setDeals([]);
       setTasks([]); setPipelines([]); setDealStages([]);
       setNotifications([]); setCommunications([]);
@@ -211,7 +212,7 @@ export function CrmProvider({ children }: { children: ReactNode }) {
     const loadNotifications = async () => {
       try {
         const { data } = await supabase
-          .from('crm_notifications').select('*').eq('user_id', user.id)
+          .from('crm_notifications').select('*').eq('user_id', userId)
           .eq('org_id', orgId).order('created_at', { ascending: false }).limit(50);
         if (data) setNotifications(data.map(r => mapFromDb<CrmNotification>(r)));
       } catch (err) { console.warn('[CrmStore] Error loading notifications:', err); }
@@ -244,7 +245,7 @@ export function CrmProvider({ children }: { children: ReactNode }) {
       loadNotifications();
       loadCustomFields();
     });
-  }, [initialized, user, currentOrg]);
+  }, [initialized, userId, currentOrg]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   // ─── CONTACT CRUD ────────────────────────────────────────

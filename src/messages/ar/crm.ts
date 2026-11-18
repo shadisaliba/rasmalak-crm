@@ -10,7 +10,7 @@ export default {
   'nav.documents': 'المستندات',
   'nav.import': 'استيراد البيانات',
   'nav.settings': 'الإعدادات',
-  'nav.back': 'العودة إلى رسمالك',
+  'nav.signOut': 'تسجيل الخروج',
   'nav.notifications': 'الإشعارات',
 
   // General

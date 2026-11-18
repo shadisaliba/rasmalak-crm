@@ -73,7 +73,7 @@ async function fetchDashboard(orgId: string, currency: string): Promise<Dashboar
     // Recent activity
     const { data: comms } = await supabase
       .from('crm_communications')
-      .select('id, type, body, created_at, crm_contacts(name)')
+      .select('id, type, body, created_at, crm_contacts(first_name, last_name)')
       .eq('org_id', orgId)
       .order('created_at', { ascending: false })
       .limit(10);
@@ -82,7 +82,10 @@ async function fetchDashboard(orgId: string, currency: string): Promise<Dashboar
       id: c.id,
       type: c.type,
       // PostgREST types a to-one embed as an array; at runtime it is a single object.
-      contactName: (c.crm_contacts as unknown as { name?: string } | null)?.name ?? '',
+      contactName: (() => {
+        const contact = c.crm_contacts as unknown as { first_name: string; last_name: string | null } | null;
+        return contact ? [contact.first_name, contact.last_name].filter(Boolean).join(' ') : '';
+      })(),
       body: (c.body ?? '').slice(0, 100),
       createdAt: c.created_at,
     }));

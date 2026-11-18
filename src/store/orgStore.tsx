@@ -72,7 +72,8 @@ export function OrgProvider({ children }: { children: ReactNode }) {
   const [userPermissions, setUserPermissions] = useState<CrmPermissions>(DEFAULT_PERMISSIONS);
   const [isLoading, setIsLoading] = useState(true);
 
-  const user = useAuthStore((state) => state.user);
+  // Keyed on the id: Supabase hands out a new user object on every token refresh.
+  const userId = useAuthStore((state) => state.user?.id ?? null);
   const initialized = useAuthStore((state) => state.initialized);
 
   // Resolve permissions from role name by looking up org_roles
@@ -87,7 +88,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     const loadUserOrg = async () => {
       if (!initialized) return;
 
-      if (!user) {
+      if (!userId) {
         setCurrentOrg(null);
         setOrgMembers([]);
         setOrgRoles([]);
@@ -104,7 +105,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
         const { data: memberRows, error: memberError } = await supabase
           .from('org_members')
           .select('*, organizations(*)')
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .eq('is_active', true);
 
         if (memberError) {
@@ -162,7 +163,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     };
 
     loadUserOrg();
-  }, [user, initialized, resolvePermissions]);
+  }, [userId, initialized, resolvePermissions]);
 
   // Create a new organization
   const createOrg = useCallback(async (data: CreateOrgInput): Promise<Organization | null> => {

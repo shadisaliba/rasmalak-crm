@@ -90,7 +90,7 @@ export default {
   current_password: 'كلمة المرور الحالية',
   new_password: 'كلمة المرور الجديدة',
   confirm_password: 'تأكيد كلمة المرور',
-  password_requirements: 'لازم تكون 8 أحرف على الأقل وفيها حرف كبير وصغير ورقم',
+  password_requirements: 'يجب أن تتكون كلمة المرور من ٨ أحرف على الأقل وتحتوي على حرف كبير وحرف صغير ورقم',
   password_mismatch: 'كلمتا المرور غير متطابقتين',
   password_updated: 'تم تحديث كلمة المرور',
   password_update_failed: 'فشل تحديث كلمة المرور',

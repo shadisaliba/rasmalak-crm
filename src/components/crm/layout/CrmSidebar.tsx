@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
+import { useLogout } from '@/store/useStore';
 import { useIntl } from 'react-intl';
 import {
   Kanban,
@@ -10,7 +11,7 @@ import {
   BarChart3,
   Upload,
   Settings,
-  ArrowLeft,
+  LogOut,
   X,
   Zap,
   LayoutDashboard,
@@ -41,6 +42,7 @@ const SECONDARY_ITEMS = [
 export function CrmSidebar({ isOpen, onClose }: CrmSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const logout = useLogout();
   const intl = useIntl();
 
   const t = (key: string, def: string) =>
@@ -202,9 +204,8 @@ export function CrmSidebar({ isOpen, onClose }: CrmSidebarProps) {
           {/* Divider */}
           <div style={{ height: '1px', background: 'var(--ds-border)', margin: '0.5rem 0.75rem' }} />
 
-          {/* Back to Rasmalak */}
           <button
-            onClick={() => router.push('/')}
+            onClick={async () => { await logout(); router.replace('/login'); }}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -225,8 +226,8 @@ export function CrmSidebar({ isOpen, onClose }: CrmSidebarProps) {
               transition: 'background 150ms ease',
             }}
           >
-            <ArrowLeft size={16} />
-            {t('crm.nav.back', 'Back to Rasmalak')}
+            <LogOut size={16} className="rtl:-scale-x-100" aria-hidden />
+            {t('crm.nav.signOut', 'Sign out')}
           </button>
         </nav>
       </aside>

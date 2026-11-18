@@ -39,7 +39,8 @@ export function BillingProvider({ children }: { children: ReactNode }) {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const user = useAuthStore((state) => state.user);
+  // Keyed on the id: Supabase hands out a new user object on every token refresh.
+  const userId = useAuthStore((state) => state.user?.id ?? null);
   const initialized = useAuthStore((state) => state.initialized);
   const { currentOrg } = useOrg();
 
@@ -48,7 +49,7 @@ export function BillingProvider({ children }: { children: ReactNode }) {
   /* eslint-disable react-hooks/set-state-in-effect */
   // Load subscription data
   useEffect(() => {
-    if (!initialized || !user || !currentOrg) {
+    if (!initialized || !userId || !currentOrg) {
       setSubscription(null);
       setIsLoading(false);
       return;
@@ -61,7 +62,7 @@ export function BillingProvider({ children }: { children: ReactNode }) {
           .from('subscriptions')
           .select('*')
           .eq('org_id', currentOrg.id)
-          .single();
+          .maybeSingle();
 
         if (data) setSubscription(mapFromDb<Subscription>(data));
       } catch (err) {
@@ -71,7 +72,7 @@ export function BillingProvider({ children }: { children: ReactNode }) {
     };
 
     load();
-  }, [initialized, user, currentOrg]);
+  }, [initialized, userId, currentOrg]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const fetchSubscription = useCallback(async () => {
@@ -81,7 +82,7 @@ export function BillingProvider({ children }: { children: ReactNode }) {
         .from('subscriptions')
         .select('*')
         .eq('org_id', currentOrg.id)
-        .single();
+        .maybeSingle();
       if (data) setSubscription(mapFromDb<Subscription>(data));
     } catch (err) { console.warn('[BillingStore] Error:', err); }
   }, [currentOrg]);

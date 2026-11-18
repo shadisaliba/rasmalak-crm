@@ -99,13 +99,14 @@ export function AutomationProvider({ children }: { children: ReactNode }) {
   const [logs, setLogs] = useState<CrmWorkflowLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const user = useAuthStore((state) => state.user);
+  // Keyed on the id: Supabase hands out a new user object on every token refresh.
+  const userId = useAuthStore((state) => state.user?.id ?? null);
   const initialized = useAuthStore((state) => state.initialized);
   const { currentOrg } = useOrg();
 
   // Load workflows on mount — with cleanup to prevent stale org race
   useEffect(() => {
-    if (!initialized || !user || !currentOrg) {
+    if (!initialized || !userId || !currentOrg) {
       setWorkflows([]);
       setIsLoading(false);
       return;
@@ -130,7 +131,7 @@ export function AutomationProvider({ children }: { children: ReactNode }) {
 
     load();
     return () => { cancelled = true; };
-  }, [initialized, user, currentOrg]);
+  }, [initialized, userId, currentOrg]);
 
   const fetchWorkflows = useCallback(async () => {
     if (!currentOrg) return;
@@ -180,7 +181,7 @@ export function AutomationProvider({ children }: { children: ReactNode }) {
   }, [currentOrg]);
 
   const createWorkflow = useCallback(async (data: Partial<CrmWorkflow>): Promise<CrmWorkflow | null> => {
-    if (!currentOrg || !user) return null;
+    if (!currentOrg || !userId) return null;
     try {
       const { data: row, error } = await supabase
         .from('crm_workflows')
@@ -195,7 +196,7 @@ export function AutomationProvider({ children }: { children: ReactNode }) {
           conditions: data.conditions ?? [],
           actions: data.actions ?? [],
           is_active: data.isActive ?? true,
-          created_by: user.id,
+          created_by: userId,
         })
         .select()
         .single();
@@ -208,7 +209,7 @@ export function AutomationProvider({ children }: { children: ReactNode }) {
       console.warn('[AutomationStore] Error creating workflow:', err);
       return null;
     }
-  }, [currentOrg, user]);
+  }, [currentOrg, userId]);
 
   const updateWorkflow = useCallback(async (id: string, data: Partial<CrmWorkflow>): Promise<boolean> => {
     try {
