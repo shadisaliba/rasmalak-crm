@@ -1,14 +1,16 @@
-# CLAUDE.md — Rasmalak
+# CLAUDE.md — Rasmalak CRM
 
-This file is the primary reference for any AI assistant working on the Rasmalak codebase. Read it fully before making any changes.
+This is the primary reference for any AI assistant working on this repository. Read it fully before making changes.
 
 ---
 
 ## What This Project Is
 
-**Rasmalak** (رَسمالَك — "Your Capital") is a bilingual, Arabic-first personal finance PWA for the MENA region. It covers financial literacy education, expense tracking, budgeting, savings goals, AI-powered financial advice, and regional financial tools. Arabic is the default language. RTL is the default layout direction.
+**Rasmalak CRM** (placeholder product name) is a bilingual, Arabic-first CRM for small businesses in the MENA region: contacts, companies, deals and pipeline, tasks, communications, automation, documents and integrations. It is a separate product from the consumer Rasmalak app, with its own repository, Supabase project and Vercel project.
 
-Deployed at: `rasmalak.vercel.app` (production, `main` branch only)
+The **SME Jordan** build adds financial intelligence, playbooks, an AI business assistant, calculators and a compliance navigator for Jordanian businesses. It follows `docs/SME_JORDAN_CURSOR_PLAYBOOK.md`; see the SME section below.
+
+Arabic is the default language and RTL the default direction.
 
 ---
 
@@ -16,19 +18,20 @@ Deployed at: `rasmalak.vercel.app` (production, `main` branch only)
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 16 — App Router, webpack mode |
-| UI | React 19, TypeScript 5 |
-| Styling | Tailwind CSS 4 via `@tailwindcss/postcss` |
-| Backend / Auth / DB | Supabase (Auth + PostgreSQL + RLS) |
-| Client state | Zustand 5 |
+| Framework | Next.js 16 (App Router, webpack mode) |
+| UI | React 19, TypeScript 5 (strict) |
+| Styling | Tailwind CSS 4 via `@tailwindcss/postcss`, plus CSS variables and inline styles using `--ds-*` tokens |
+| Backend / Auth / DB | Supabase (Auth + PostgreSQL + RLS), Supabase CLI migrations |
+| Client state | Zustand 5 (UI preferences, auth) and React context providers (CRM data) |
 | i18n | react-intl 8 |
+| Validation | zod |
+| Money and rates | bigint minor units (`src/sme/money`), decimal.js |
+| Spreadsheets | SheetJS 0.20.3 from the vendor tarball (reading uploads); in-house XLSX writer |
+| PDF | In-house writer with Arabic shaping (`src/sme/reports/writers/pdf`) |
 | Charts | Recharts 3 |
-| PDF | pdfmake 0.3 |
 | Icons | lucide-react |
-| Dates | date-fns 4 |
-| PWA | next-pwa |
-| AI default | Google Gemini `gemini-2.5-flash` via REST |
-| AI alternate | OpenAI `gpt-4o` / `gpt-4o-mini` via REST |
+| AI | Gemini or OpenAI via REST, only through `src/ai/orchestrator.ts` |
+| Tests | Vitest (unit), pgTAP (`supabase test db`), Playwright (e2e) |
 
 ---
 
@@ -37,228 +40,158 @@ Deployed at: `rasmalak.vercel.app` (production, `main` branch only)
 ```
 src/
 ├── app/
-│   ├── (dashboard)/          # All authenticated routes
-│   │   ├── layout.tsx        # AuthGuard + Sidebar + Header shell
-│   │   ├── page.tsx          # Dashboard
-│   │   ├── transactions/
-│   │   ├── budgets/
-│   │   ├── goals/
-│   │   ├── chat/             # Mustasharak AI
-│   │   ├── learn/            # /learn + /learn/courses/[courseId]
-│   │   ├── tools/
-│   │   ├── calculators/      # 5 calculators
-│   │   ├── settings/
-│   │   └── community/        # Placeholder
-│   ├── login/ signup/ forgot-password/ reset-password/ onboarding/
-│   ├── auth/callback/
-│   ├── api/chat/             # AI endpoint
-│   ├── globals.css           # CSS variables, ds-* classes, theme tokens
-│   └── layout.tsx            # Root: lang/dir, IntlProviderWrapper, ThemeProvider
-│
-├── ai/                       # All AI logic lives here
-│   ├── orchestrator.ts       # Single entry point for all LLM calls
-│   ├── orchestrator/         # Intent classifier, prompt composer, types
-│   ├── agents/               # chat, insight, profile, recommendation, policy
-│   ├── providers/            # gemini.ts, openai.ts
-│   ├── validation/           # Schema + tone/risk + numerical validation, audit logger
-│   ├── memory/               # Semantic memory service
-│   ├── deterministic/        # Pure-math finance: signals, health score, projections
-│   ├── context/              # Context selector, token budgeting
-│   └── config.ts             # Provider selection, feature flags, safety settings
-│
-├── components/
-│   ├── courses/              # CourseContent, CourseHero, CourseSidebar, CourseTutorChat
-│   ├── ui/                   # Skeleton, Toast
-│   ├── Header.tsx, Sidebar.tsx, AuthGuard.tsx
-│   ├── QuickAddFAB.tsx, NotificationPanel.tsx
-│   └── ThemeProvider.tsx, IntlProviderWrapper.tsx
-│
-├── data/courses/             # 60+ static JSON course files (10 subjects × 3 levels × 2 locales)
-│   └── index.ts              # getCourse(), getAllCourses(), getCourseNumber(), SUBJECT_ORDER
-│
-├── messages/                 # i18n translation files
-│   ├── en/                   # app, auth, categories, chat, common, dashboard, learn, nav, onboarding, settings, tools, transactions
-│   └── ar/                   # same modules in Arabic
-│
-├── store/
-│   ├── transactionStore.tsx  # Supabase-backed transaction state
-│   ├── budgetStore.tsx, goalsStore.tsx, authStore.ts, notificationStore.ts
-│   └── index.ts              # Persisted store: language, currency, theme, accent, onboarding
-│
-├── calculators/              # Pure logic + PDF report files (see Calculator Pattern below)
-├── lib/                      # supabaseClient.ts, healthScore.ts, constants, utils
-├── types/                    # index.ts (core types), course.ts (course schema)
-└── supabase/migrations/      # SQL migrations 001–005
+│   ├── layout.tsx                # Arabic-first root, CRM metadata
+│   ├── page.tsx                  # 307 → /crm/dashboard
+│   ├── login/ signup/ forgot-password/ reset-password/ auth/callback/
+│   ├── (crm)/crm/                # All CRM pages (AuthGuard + OrgGuard + CRM shell)
+│   │   ├── setup/                # Organization setup (exempt from OrgGuard)
+│   │   ├── invite/[token]/       # Accept an invitation (exempt from OrgGuard)
+│   │   └── settings/security|preferences|team|...
+│   └── api/
+│       ├── crm/v1/               # Public API (API keys; service role + explicit org_id filters)
+│       ├── crm/whatsapp/         # User-facing routes (caller's JWT)
+│       ├── billing/              # Caller's JWT; owner/admin only
+│       ├── cron/, automation/    # Workers: CRON_SECRET + service role
+│       └── webhooks/, tracking/  # Inbound webhooks and email tracking
+├── ai/                           # orchestrator.ts (the only door to providers), agents, providers
+├── automation/                   # Workflow engine, actions, outbox worker
+├── components/                   # crm/* feature components, ui/* primitives
+├── crm/                          # CRM domain modules (search, scoring, documents, verticals…)
+├── integrations/                 # OAuth adapters, sync engine, privacy
+├── lib/                          # supabaseClient (browser), supabaseServer (server), serverAuth,
+│                                 # apiError (R13), routes, utils, constants
+├── messages/{ar,en}/             # i18n by domain, flattened as `<domain>.<key>`
+├── middleware/                   # apiAuth (public API keys), planGate
+├── sme/                          # SME Jordan modules (see below)
+├── store/                        # Zustand + context providers
+└── types/
+supabase/
+├── migrations/                   # Timestamped; 20261118000000_crm_baseline.sql is the baseline
+├── tests/                        # pgTAP
+└── seed.sql                      # Local development only
+tests/e2e/                        # Playwright
+docs/                             # Playbook, blueprint, handoff, port ledger, archive
 ```
 
 ---
 
-## Core Conventions — Read Before Touching Anything
+## Core Conventions
 
 ### 1. Arabic-first, RTL-first
-- Arabic is the **default language**. Every user-facing string must have an Arabic translation.
-- RTL is the default layout direction. Root `<html>` defaults to `lang="ar" dir="rtl"`.
-- Use logical CSS properties: `padding-inline-start` not `padding-left`, `margin-inline-end` not `margin-right`.
-- Arabic-Indic numerals (`٠١٢٣٤٥٦٧٨٩`) must be used in Arabic UI via the `ar-JO-u-nu-arab` locale setting.
-- **Always test UI changes in both LTR and RTL before marking work done.**
+- Every user-facing string exists in both `src/messages/ar/*` and `src/messages/en/*`.
+- Use logical CSS properties (`padding-inline-start`, `inset-inline-end`), never left/right.
+- Arabic UI numbers use `ar-JO-u-nu-arab` (Arabic-Indic digits, Gregorian calendar); English uses `en-JO`. Use `INTL_LOCALE` from `src/sme/money`.
+- Test every UI change in Arabic RTL and English LTR, including at phone width.
 
 ### 2. i18n keys by domain
-- All user-facing strings use `react-intl` with ICU message syntax.
-- Add keys to the appropriate domain file: `src/messages/{en,ar}/<domain>.ts`
-- Course content is **not** in the i18n system — it lives as separate JSON files per course per locale.
+- Keys live in `src/messages/{en,ar}/<domain>.ts` and are flattened as `<domain>.<key>`. Do not repeat the domain inside the key.
+- `node scripts/check-i18n.mjs` (`npm run check:i18n`) fails when a used id is missing in either locale.
 
-### 3. Never call LLM providers directly from components
-- All AI interactions go through `src/ai/orchestrator.ts`. This is non-negotiable.
-- Never import `gemini.ts` or `openai.ts` directly from a component or page.
-- To switch providers, edit `src/ai/config.ts` only.
+### 3. One door to the LLM
+- All LLM calls go through `src/ai/orchestrator.ts`. Nothing outside `src/ai/` imports `src/ai/providers/*`; ESLint enforces this for static and dynamic imports.
+- Change providers in `src/ai/config.ts` only.
 
-### 4. Supabase is the source of truth
-- All user data (transactions, budgets, goals, course progress, auth) lives in Supabase with Row Level Security.
-- Zustand stores are client-side caches, not the source of truth.
-- The persisted Zustand store (`rasmalak-storage` in localStorage) holds UI preferences only: language, currency, theme, accent, onboarding state.
+### 4. Supabase is the source of truth, and tenancy is enforced in the database
+- Every tenant table has `org_id` and RLS. Stores are caches.
+- Browser code uses `src/lib/supabaseClient.ts`.
+- Routes a signed-in user calls use `requireUser()` from `src/lib/serverAuth.ts`, which returns a client acting as that user.
+- The service-role client (`src/lib/supabaseServer.ts`, `server-only`) is allowed only in cron and outbox workers, webhook handlers and the public API after key resolution. Every query through it filters by `org_id` explicitly.
+- Joining an organization happens only through `org_invite` / `org_accept_invitation`. Direct inserts into `org_members` are denied. Nobody grants a role above their own.
 
-### 5. Course content is static JSON
-- Courses are not in the database. They are static JSON files in `src/data/courses/`.
-- Every new course file must be imported and registered in `src/data/courses/index.ts`.
-- Course ID format: `{subject_slug}_{level}_{locale}` e.g. `foundations_of_money_intermediate_ar`
-- `SUBJECT_ORDER` in `index.ts` defines canonical ordering — do not reorder it.
+### 5. Money
+- Money is `bigint` minor units plus an ISO 4217 code (`src/sme/money`). JOD has 3 decimals. Never do money arithmetic with JS `number`.
+- Legacy CRM numeric columns reach the client as numbers. Format them with `useFormatCurrency()` / `formatCurrency()`, which convert through `fromMajorNumber` and `formatMoney`.
 
-### 6. Calculator three-part pattern
-Every calculator requires exactly three files:
-1. `src/calculators/<n>Calculator.ts` — pure logic, typed input/output, no side effects
-2. `src/calculators/<n>Report.ts` — bilingual PDF via pdfmake (EN + AR objects, Amiri font for Arabic)
-3. `src/app/(dashboard)/calculators/<n>/page.tsx` — form, validation, results, download button
+### 6. Outbound messages need a person
+- Automation never messages customers by itself. Email and WhatsApp actions always create drafts. Slack and webhooks create drafts when the workflow requires confirmation or the trigger is SME-originated.
+- Drafts are approved in the Outbox (`/crm/automation`) and delivered by the worker.
 
-### 7. Comments policy
-Comments must explain non-obvious **intent or reasoning** only. Do not narrate what the code does.
+### 7. Errors
+- New routes return `errorResponse(code)` from `src/lib/apiError.ts`: `{ error: { code, message_en, message_ar, details? } }`, codes from playbook Appendix C. No stack traces leave the server.
 
----
+### 8. Migrations
+- `supabase/migrations/YYYYMMDDHHMMSS_<name>.sql`. Never edit a merged migration.
+- Every new tenant table gets RLS in the same migration and an Org B fixture in `supabase/tests/000_baseline.sql`. That test fails until the fixture exists.
 
-## Data Models
-
-```typescript
-// Core types — src/types/index.ts
-Transaction: { id, type: 'income'|'expense', amount, currency, category, description, date, createdAt, updatedAt }
-Category:    { id, name, nameAr, icon, color, type }
-Budget:      { id, categoryId, amount, spent, period: 'weekly'|'monthly'|'yearly', startDate, endDate }
-User:        { id, email, name, currency, language, createdAt }
-AuthUser:    { id, email, name, phone? }
-
-// Course types — src/types/course.ts
-CourseData:  { courseId, locale, title, description, level, estimatedTime, lessons[] }
-Lesson:      { lessonId, title, order, sections[] }
-Section:     { id, title, blocks[] }
-Block:       'p' | 'ul' | 'key_insight' | 'example' | 'comparison' | 'action_prompt' | 'checkpoint'
-```
-
-### Supabase Tables
-- `transactions`, `budgets`, `savings_goals` — user financial data, all RLS-protected
-- `course_progress` — per-user section completion
-- `financial_advice` — logged AI advice (`target_metric` check constraint: `spending/savings`)
-- `ai_audit_log` — full audit trail of AI interactions
-- `user_semantic_state` — AI memory/context persistence per user
-
----
-
-## AI Architecture
-
-The AI pipeline in `src/ai/` is fully provider-agnostic:
-
-```
-User message
-  → orchestrator.ts (single entry point)
-    → intent classifier
-    → agent selection (chat / insight / profile / recommendation / policy)
-    → deterministic finance layer (pure math — no LLM)
-    → context selector + token budgeting
-    → prompt composer
-    → single LLM call (Gemini or OpenAI)
-    → output validation (schema + tone/risk + numerical, 1 retry)
-    → memory update
-    → audit log
-  → response to client
-```
-
-**Safety rules enforced at the validation layer:**
-- Blocked topics: specific stock picks, legal advice, tax evasion
-- Max input length enforced
-- Rate limit: 20 requests/minute per user
-- All advice logged to `financial_advice` and `ai_audit_log`
+### 9. Comments policy
+Comments explain non-obvious intent or reasoning only. Do not narrate what the code does.
 
 ---
 
 ## Design System
 
-CSS variables and `ds-*` utility classes are defined in `src/app/globals.css`. Light/dark themes switch via `data-theme` on the root element.
+Tokens are CSS variables in `src/app/globals.css` (`--ds-*`), with light and dark themes via `data-theme`.
 
-**Canonical design tokens:**
-
-| Token | Value | Usage |
+| Token | Light value | Usage |
 |---|---|---|
-| `--color-bg-page` | `#F5F0EB` | Page background (cream) |
-| `--color-bg-card` | `#FFFFFF` | Standard card surface |
-| `--color-bg-card-dark` | `#0F1914` | Dark glass card surface |
-| `--color-primary` | `#2D6A4F` | Buttons, active states, progress fills |
-| `--color-primary-light` | `#F0F7F4` | Tinted backgrounds, hover states |
-| `--color-accent-gold` | `#D97706` | Achievements and badges only |
+| `--ds-bg-page` | `#F5F0EB` | Page background |
+| `--ds-bg-card` | `#FFFFFF` | Card surface |
+| `--ds-primary` | `#2D6A4F` | Buttons, active states |
+| `--ds-bg-tinted` | `#F0F7F4` | Tinted backgrounds |
+| `--ds-accent-gold` | `#D97706` | Achievements and badges only |
 
-**Purple, violet, and indigo are not part of the design system. Do not introduce them.**
-
----
-
-## Environment Variables
-
-```bash
-NEXT_PUBLIC_SUPABASE_URL=        # Supabase project URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY=   # Supabase anonymous key
-GOOGLE_AI_API_KEY=               # Gemini (default provider)
-OPENAI_API_KEY=                  # OpenAI (alternate provider)
-```
+**Purple, violet and indigo are not part of the design system. Do not introduce them.**
 
 ---
 
 ## Commands
 
 ```bash
-npm run dev      # Development server
-npm run build    # Production build
-npm run start    # Production server
-npm run lint     # ESLint
+npm run dev            # Development server (AuthGuard bypasses its check in development)
+npm run build          # Production build (needs NEXT_PUBLIC_SUPABASE_* set)
+npm run lint           # ESLint
+npx tsc --noEmit       # Type check
+npm run test:unit      # Vitest
+npm run check:i18n     # Message ids exist in both locales
+supabase start         # Local Supabase (Docker); prints URL and keys for .env.local
+supabase db reset      # Re-apply migrations and seed.sql
+supabase test db       # pgTAP
+npm test               # Playwright (BASE_URL, .env.test.local; expects the local seed)
 ```
 
----
-
-## Branch and Deployment Rules
-
-- `main` is the only branch deployed to Vercel. Do not push unreviewed changes to `main`.
-- All feature work goes on a named branch (e.g. `redesign`, `feature/sme-tools`).
-- Open a Pull Request against `main` and get approval before merging.
+Seeded local users (password `Passw0rd!local`): `owner.a@example.test` (Org A owner), `owner.b@example.test` (Org B owner), `no.org@example.test`, `join.me@example.test`.
 
 ---
 
-## Pages and Feature Inventory
+## Branches and Deployment
+
+- `main` deploys to production. Feature work goes on a branch, one playbook prompt per branch (`sme/<prompt-id>-<slug>`), merged by pull request after review.
+- Vercel needs every variable in `.env.example` that the deployed features use. `SUPABASE_SERVICE_ROLE_KEY` and `CRON_SECRET` are required.
+
+---
+
+## Pages
 
 | Route | Description |
 |---|---|
-| `/` | Dashboard — balance, cash flow, budgets, AI insights, health score |
-| `/transactions` | Full CRUD income/expense with filters and search |
-| `/budgets` | Monthly budget + per-category limits |
-| `/goals` | Savings goals tracking |
-| `/chat` | Mustasharak — full conversational AI |
-| `/learn` | Course library — 30 courses across 3 levels |
-| `/learn/courses/[courseId]` | Course viewer with progress tracking and tutor chat |
-| `/tools` | Country-specific financial tools and resources |
-| `/calculators/simple-loan` | Loan calculator + bilingual PDF |
-| `/calculators/credit-card` | Credit card payoff calculator + bilingual PDF |
-| `/calculators/home-affordability` | Home affordability calculator + bilingual PDF |
-| `/calculators/mortgage-payoff` | Mortgage payoff calculator + bilingual PDF |
-| `/calculators/compound-savings` | Compound savings calculator + bilingual PDF |
-| `/settings` | Profile, currency, language, theme, security, notifications |
-| `/onboarding` | 4-step wizard: goals → segment → topics → income |
-| `/community` | Placeholder — not yet built |
+| `/crm/dashboard` | KPIs, recent activity, at-risk deals |
+| `/crm` | Pipeline board |
+| `/crm/contacts`, `/crm/contacts/[id]` | Contacts |
+| `/crm/deals`, `/crm/deals/[id]` | Deals |
+| `/crm/tasks` | Tasks and calendar |
+| `/crm/reports` | Pipeline and rep reports |
+| `/crm/automation` | Workflows, templates, execution log, Outbox |
+| `/crm/documents` | Templates, quotes, proposals |
+| `/crm/import` | Contact import |
+| `/crm/settings/*` | Security (password, TOTP), preferences, team and invitations, pipeline, fields, audit, billing, integrations, health, API keys, verticals, WhatsApp |
+| `/crm/setup` | Create an organization |
+| `/crm/invite/[token]` | Accept an invitation |
 
 ---
 
 ## SME Section
 
-> 🚧 To be added. The SME (Small & Medium Enterprise) feature set is a major planned expansion targeting business owners across the MENA region. This section will document all SME-specific routes, data models, and conventions once the feature scope is finalized. Do not build SME features without consulting this section first.
+The SME Jordan build is specified in **`docs/SME_JORDAN_CURSOR_PLAYBOOK.md`** (blueprint in `docs/blueprint/`). The blueprint decides product behaviour; the playbook decides implementation; this file decides conventions. When they conflict, or all are silent, stop and ask. Never act past a `HUMAN GATE`.
+
+**Non-negotiable rules (playbook §2):**
+- **Product.** Arabic first (R1). Design tokens only, no purple (R2). Every SME screen implements the eight states in `src/sme/ui/DataState.tsx`: loading, empty, partial data, validated, stale, regulatory review needed, permission denied, processing failure (R3). Every material number shows its basis, as-of time and data quality, and links to a drill-down (R4).
+- **Money and ledger.** bigint minor units; round once, half away from zero, recorded in the trace (R5). Posted ledger rows are append-only; corrections are reversals enforced by the database (R6). Invoices never change cash, and own-account transfers are never income or expense (R7). Every mutating endpoint requires `Idempotency-Key`, unique per organization (R8).
+- **Security.** Server-side tenant isolation through `sme_has_perm()` on every SME table, export, search, storage path and assistant tool (R9). SME writes go through `sme_*` RPCs; no insert, update or delete policies for `authenticated` (R10). Service role only in workers and webhooks (R11). Postings, reversals, allocations, imports, grants, rule publications, exports and obligation completions write `sme_audit_events` in the same transaction (R12). Errors follow R13.
+- **AI, rules, content.** One door to the LLM (R14). The AI never computes figures; every number comes from evidence with IDs (R15). Jordanian legal, tax, SSC, licensing and e-invoicing content comes only from published, reviewed, effective-dated rule versions. **Assistants must not write Jordanian legal content, rates, thresholds, fees or deadlines**; create `draft` placeholders for reviewers (R16). No external action without confirmation (R17). Uploaded document text is untrusted (R18). Calculators and engines are pure, versioned and tested (R19).
+- **Engineering.** zod at every API boundary, no `any` (R20). Timestamped migrations with pgTAP, including an RLS test for a second organization (R21). SME code lives in `src/sme/<module>/{domain,server,api,ui}` and modules talk through exported services, not each other's tables (R22).
+
+**Architecture (playbook §3):** browser → `/api/sme/v1/*` route handler (zod, `requireUser`, correlation id) → `sme_*` RPC with the user's JWT (permission check, rows, audit and outbox in one transaction). Reads go through RLS. The outbox worker `/api/cron/sme-outbox` (service role, `CRON_SECRET`) runs idempotent handlers. SME navigation (Finance, Business) shows only when the organization's country is `JO` and the plan includes `sme_suite`.
+
+**Already in place:** `src/sme/money` (W0-08), the forecast engine core and report writers ported from the consumer app (W0-06, ledger in `docs/PORTED_FROM_CONSUMER.md`), the error contract (`src/lib/apiError.ts`), `requireUser` and `requireOrgPermission` (`src/lib/serverAuth.ts`), and outbound drafts (W0-10).
+
+**Per-PR checklist (playbook §2.6):** lint and `tsc` pass; `npm run test:unit` passes and new pure logic has tests; `supabase db reset && supabase test db` passes and every new table has a second-organization RLS test; Playwright passes for affected flows; `npm run check:i18n` passes; Arabic RTL and English LTR screenshots attached; blueprint IDs listed and Appendix F updated; ports recorded in `docs/PORTED_FROM_CONSUMER.md`.

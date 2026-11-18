@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Rasmalak CRM
 
-## Getting Started
+Arabic-first CRM for small businesses in the MENA region, with the SME Jordan financial
+intelligence build in progress. Conventions and architecture: [`CLAUDE.md`](CLAUDE.md).
+SME build plan: [`docs/SME_JORDAN_CURSOR_PLAYBOOK.md`](docs/SME_JORDAN_CURSOR_PLAYBOOK.md).
 
-First, run the development server:
+## Local development
+
+Requires Node 20+, Docker and the Supabase CLI.
 
 ```bash
+npm ci
+supabase start                 # prints the local API URL, anon key and service role key
+cp .env.example .env.local     # fill in NEXT_PUBLIC_SUPABASE_*, SUPABASE_SERVICE_ROLE_KEY, CRON_SECRET
+supabase db reset              # applies migrations and supabase/seed.sql
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Sign in as `owner.a@example.test` with password `Passw0rd!local` (local seed only).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Checks
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run lint && npx tsc --noEmit
+npm run test:unit
+npm run check:i18n
+supabase test db
+npm run build && npx next start -p 3100 &
+BASE_URL=http://localhost:3100 npm test   # Playwright; needs .env.test.local (see .env.example)
+```
