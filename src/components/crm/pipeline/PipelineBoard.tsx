@@ -1,5 +1,6 @@
 'use client';
 
+import { useFormatCurrency } from '@/hooks/useFormatCurrency';
 import { useState, useMemo, useCallback } from 'react';
 import { useIntl } from 'react-intl';
 import {
@@ -24,6 +25,7 @@ import { DealCard } from './DealCard';
 import type { CrmDeal, CrmDealStage } from '@/types/crm';
 
 export function PipelineBoard() {
+  const formatAmount = useFormatCurrency();
   const intl = useIntl();
   const {
     deals, dealStages, pipelines, contacts,
@@ -141,15 +143,6 @@ export function PipelineBoard() {
     setWonLostReason('');
   };
 
-  const formatCurrency = (value: number) => {
-    try {
-      return new Intl.NumberFormat(intl.locale, {
-        style: 'currency',
-        currency: orgCurrency,
-        maximumFractionDigits: 0,
-      }).format(value);
-    } catch { return String(value); }
-  };
 
   // Loading
   if (isLoading.pipelines || isLoading.deals) {
@@ -223,11 +216,11 @@ export function PipelineBoard() {
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
         <div style={{ background: 'var(--ds-bg-card)', border: '0.5px solid var(--ds-border)', borderRadius: '12px', padding: '12px 18px', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
           <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--ds-text-muted)' }}>{t('crm.pipeline.totalValue', 'Total Value')}</div>
-          <div style={{ fontSize: '18px', fontWeight: 600, color: 'var(--ds-text-heading)' }}>{formatCurrency(totalValue)}</div>
+          <div style={{ fontSize: '18px', fontWeight: 600, color: 'var(--ds-text-heading)' }}>{formatAmount(totalValue, orgCurrency, { wholeUnits: true })}</div>
         </div>
         <div style={{ background: 'var(--ds-bg-card)', border: '0.5px solid var(--ds-border)', borderRadius: '12px', padding: '12px 18px', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
           <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--ds-text-muted)' }}>{t('crm.pipeline.weightedValue', 'Weighted Value')}</div>
-          <div style={{ fontSize: '18px', fontWeight: 600, color: 'var(--ds-accent-primary)' }}>{formatCurrency(weightedValue)}</div>
+          <div style={{ fontSize: '18px', fontWeight: 600, color: 'var(--ds-accent-primary)' }}>{formatAmount(weightedValue, orgCurrency, { wholeUnits: true })}</div>
         </div>
         <div style={{ background: 'var(--ds-bg-card)', border: '0.5px solid var(--ds-border)', borderRadius: '12px', padding: '12px 18px', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
           <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--ds-text-muted)' }}>{t('crm.pipeline.dealCount', 'Deal Count')}</div>

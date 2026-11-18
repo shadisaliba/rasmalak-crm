@@ -1,5 +1,6 @@
 'use client';
 
+import { useFormatCurrency } from '@/hooks/useFormatCurrency';
 import { useState } from 'react';
 import { useIntl } from 'react-intl';
 import { Plus, X, FileText } from 'lucide-react';
@@ -17,6 +18,7 @@ interface QuoteBuilderProps {
 }
 
 export function QuoteBuilder({ currency = 'USD', onGenerate }: QuoteBuilderProps) {
+  const formatAmount = useFormatCurrency();
   const intl = useIntl();
   const isAr = intl.locale.startsWith('ar');
   const t = (key: string, def: string) => intl.formatMessage({ id: key, defaultMessage: def });
@@ -44,11 +46,6 @@ export function QuoteBuilder({ currency = 'USD', onGenerate }: QuoteBuilderProps
   const tax = items.reduce((s, item) => s + item.quantity * item.unitPrice * (item.taxRate / 100), 0);
   const total = subtotal + tax;
 
-  const formatCurrency = (value: number) => {
-    try {
-      return new Intl.NumberFormat(intl.locale, { style: 'currency', currency, maximumFractionDigits: 2 }).format(value);
-    } catch { return `${value} ${currency}`; }
-  };
 
   const inputStyle = {
     padding: '8px 10px', fontSize: '13px', borderRadius: '6px',
@@ -96,15 +93,15 @@ export function QuoteBuilder({ currency = 'USD', onGenerate }: QuoteBuilderProps
       <div style={{ borderTop: '0.5px solid var(--ds-border)', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', width: '220px', fontSize: '13px' }}>
           <span style={{ color: 'var(--ds-text-muted)' }}>{t('documents.quote.subtotal', 'Subtotal')}</span>
-          <span style={{ color: 'var(--ds-text-body)' }}>{formatCurrency(subtotal)}</span>
+          <span style={{ color: 'var(--ds-text-body)' }}>{formatAmount(subtotal, currency)}</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', width: '220px', fontSize: '13px' }}>
           <span style={{ color: 'var(--ds-text-muted)' }}>{t('documents.quote.taxTotal', 'Tax')}</span>
-          <span style={{ color: 'var(--ds-text-body)' }}>{formatCurrency(tax)}</span>
+          <span style={{ color: 'var(--ds-text-body)' }}>{formatAmount(tax, currency)}</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', width: '220px', fontSize: '15px', fontWeight: 600, paddingTop: '4px', borderTop: '1px solid var(--ds-border)' }}>
           <span style={{ color: 'var(--ds-text-heading)' }}>{t('documents.quote.total', 'Total')}</span>
-          <span style={{ color: 'var(--ds-accent-primary)' }}>{formatCurrency(total)}</span>
+          <span style={{ color: 'var(--ds-accent-primary)' }}>{formatAmount(total, currency)}</span>
         </div>
       </div>
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { useFormatCurrency } from '@/hooks/useFormatCurrency';
 import { useState, useEffect } from 'react';
 import { useIntl } from 'react-intl';
 import { supabase } from '@/lib/supabaseClient';
@@ -119,6 +120,7 @@ async function fetchDashboard(orgId: string, currency: string): Promise<Dashboar
 }
 
 export default function CrmDashboardPage() {
+  const formatAmount = useFormatCurrency();
   const intl = useIntl();
   const isAr = intl.locale.startsWith('ar');
   const t = (key: string, def: string) => intl.formatMessage({ id: key, defaultMessage: def });
@@ -141,15 +143,6 @@ export default function CrmDashboardPage() {
     return () => { ignore = true; };
   }, [currentOrg]);
 
-  const formatCurrency = (value: number) => {
-    try {
-      return new Intl.NumberFormat(intl.locale, {
-        style: 'currency',
-        currency: data?.currency ?? 'USD',
-        maximumFractionDigits: 0,
-      }).format(value);
-    } catch { return `${value}`; }
-  };
 
   if (isLoading || !data) {
     return (
@@ -176,8 +169,8 @@ export default function CrmDashboardPage() {
 
       {/* KPI cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
-        <KpiCard icon={<TrendingUp size={18} />} label={isAr ? 'قيمة خط المبيعات' : 'Pipeline Value'} value={formatCurrency(data.pipelineValue)} />
-        <KpiCard icon={<Activity size={18} />} label={isAr ? 'التوقعات المرجّحة' : 'Weighted Forecast'} value={formatCurrency(data.weightedForecast)} />
+        <KpiCard icon={<TrendingUp size={18} />} label={isAr ? 'قيمة خط المبيعات' : 'Pipeline Value'} value={formatAmount(data.pipelineValue, data.currency, { wholeUnits: true })} />
+        <KpiCard icon={<Activity size={18} />} label={isAr ? 'التوقعات المرجّحة' : 'Weighted Forecast'} value={formatAmount(data.weightedForecast, data.currency, { wholeUnits: true })} />
         <KpiCard icon={<Zap size={18} />} label={isAr ? 'الصفقات المفتوحة' : 'Open Deals'} value={String(data.dealCount)} />
         <KpiCard
           icon={<CheckSquare size={18} />}
@@ -207,7 +200,7 @@ export default function CrmDashboardPage() {
                 <div key={d.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
                   <span style={{ color: 'var(--ds-text-body)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>{d.title}</span>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <span style={{ color: 'var(--ds-text-muted)', fontSize: '12px' }}>{formatCurrency(d.value)}</span>
+                    <span style={{ color: 'var(--ds-text-muted)', fontSize: '12px' }}>{formatAmount(d.value, data.currency, { wholeUnits: true })}</span>
                     <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 6px', borderRadius: '999px', background: 'rgba(220,38,38,0.1)', color: '#DC2626' }}>{d.score}</span>
                   </div>
                 </div>

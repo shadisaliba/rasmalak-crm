@@ -1,5 +1,6 @@
 'use client';
 
+import { useFormatCurrency } from '@/hooks/useFormatCurrency';
 import { useIntl } from 'react-intl';
 import { useRouter } from 'next/navigation';
 import { useSortable } from '@dnd-kit/sortable';
@@ -14,6 +15,7 @@ interface DealCardProps {
 }
 
 export function DealCard({ deal, contactName }: DealCardProps) {
+  const formatAmount = useFormatCurrency();
   const intl = useIntl();
   const router = useRouter();
 
@@ -39,16 +41,6 @@ export function DealCard({ deal, contactName }: DealCardProps) {
     touchAction: 'none',
   };
 
-  const formatCurrency = (value: number | null, currency: string) => {
-    if (value == null) return '—';
-    try {
-      return new Intl.NumberFormat(intl.locale, {
-        style: 'currency',
-        currency,
-        maximumFractionDigits: 0,
-      }).format(value);
-    } catch { return `${value} ${currency}`; }
-  };
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '';
@@ -81,7 +73,7 @@ export function DealCard({ deal, contactName }: DealCardProps) {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ds-accent-primary)' }}>
-              {formatCurrency(deal.value, deal.currency)}
+              {deal.value == null ? '—' : formatAmount(deal.value, deal.currency, { wholeUnits: true })}
             </span>
 
             {/* Probability pill */}

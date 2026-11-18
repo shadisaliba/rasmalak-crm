@@ -1,5 +1,6 @@
 'use client';
 
+import { useFormatCurrency } from '@/hooks/useFormatCurrency';
 import { useIntl } from 'react-intl';
 import type { RepMetrics } from '@/crm/analytics/repPerformance';
 
@@ -9,14 +10,11 @@ interface RepLeaderboardProps {
 }
 
 export function RepLeaderboard({ data, currency = 'SAR' }: RepLeaderboardProps) {
+  const formatAmount = useFormatCurrency();
   const intl = useIntl();
   const t = (key: string, def: string) => intl.formatMessage({ id: key, defaultMessage: def });
 
   const sorted = [...data].sort((a, b) => b.revenue - a.revenue);
-  const formatCurrency = (v: number) => {
-    try { return new Intl.NumberFormat(intl.locale, { style: 'currency', currency, maximumFractionDigits: 0 }).format(v); }
-    catch { return String(v); }
-  };
 
   return (
     <div style={{ background: 'var(--ds-bg-card)', border: '0.5px solid var(--ds-border)', borderRadius: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', overflow: 'hidden' }}>
@@ -40,7 +38,7 @@ export function RepLeaderboard({ data, currency = 'SAR' }: RepLeaderboardProps) 
             <tr key={rep.userId} style={{ borderBottom: '1px solid var(--ds-border)' }}>
               <td style={tdStyle}>{idx + 1}</td>
               <td style={{ ...tdStyle, fontWeight: 500, color: 'var(--ds-text-heading)' }}>{rep.displayName}</td>
-              <td style={{ ...tdStyle, color: 'var(--ds-accent-primary)', fontWeight: 500 }}>{formatCurrency(rep.revenue)}</td>
+              <td style={{ ...tdStyle, color: 'var(--ds-accent-primary)', fontWeight: 500 }}>{formatAmount(rep.revenue, currency, { wholeUnits: true })}</td>
               <td style={tdStyle}>{rep.dealsWon}</td>
               <td style={tdStyle}>{rep.dealsOpen}</td>
             </tr>

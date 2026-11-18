@@ -1,5 +1,6 @@
 'use client';
 
+import { useFormatCurrency } from '@/hooks/useFormatCurrency';
 import { useIntl } from 'react-intl';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -13,19 +14,11 @@ interface PipelineColumnProps {
 }
 
 export function PipelineColumn({ stage, deals, contacts }: PipelineColumnProps) {
+  const formatAmount = useFormatCurrency();
   const intl = useIntl();
   const { setNodeRef, isOver } = useDroppable({ id: stage.id });
 
   const totalValue = deals.reduce((sum, d) => sum + (d.value || 0), 0);
-  const formatCurrency = (value: number) => {
-    try {
-      return new Intl.NumberFormat(intl.locale, {
-        style: 'currency',
-        currency: deals[0]?.currency || 'SAR',
-        maximumFractionDigits: 0,
-      }).format(value);
-    } catch { return String(value); }
-  };
 
   const getContactName = (contactId: string | null) => {
     if (!contactId) return undefined;
@@ -69,7 +62,7 @@ export function PipelineColumn({ stage, deals, contacts }: PipelineColumnProps) 
         )}
         {totalValue > 0 && (
           <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ds-accent-primary)' }}>
-            {formatCurrency(totalValue)}
+            {formatAmount(totalValue, deals[0]?.currency, { wholeUnits: true })}
           </div>
         )}
       </div>
