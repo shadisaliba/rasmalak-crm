@@ -41,7 +41,7 @@ export async function POST(request: Request) {
   ]);
   if (!account || !contact) return errorResponse('NOT_FOUND');
 
-  const sent = await sendTextMessage({ orgId: body.orgId, accountId: body.accountId, to: body.to, text: body.text });
+  const sent = await sendTextMessage({ orgId: body.orgId, accountId: body.accountId, to: body.to, text: body.text }, auth.client);
   if (!sent) return errorResponse('INTERNAL', { reason: 'send_failed' });
 
   const { error: logError } = await auth.client.from('crm_communications').insert({

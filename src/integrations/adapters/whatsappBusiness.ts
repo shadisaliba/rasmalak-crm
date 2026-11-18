@@ -5,6 +5,7 @@
  * Handles 24h conversation window tracking.
  */
 
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { serviceDb } from '@/lib/supabaseServer';
 import { encrypt, decrypt } from '@/integrations/core/encryption';
 
@@ -32,9 +33,10 @@ interface SendTextParams {
 /**
  * Send a template message (allowed anytime, no 24h restriction).
  */
-export async function sendTemplateMessage(params: SendTemplateParams): Promise<{ messageId: string } | null> {
+// `db` is the caller's client in a user request (rule R11) and the service client in workers.
+export async function sendTemplateMessage(params: SendTemplateParams, db: SupabaseClient = serviceDb()): Promise<{ messageId: string } | null> {
   try {
-    const account = await getAccount(params.orgId, params.accountId);
+    const account = await getAccount(db, params.orgId, params.accountId);
     if (!account) return null;
 
     const token = decrypt(account.access_token);
@@ -79,16 +81,16 @@ export async function sendTemplateMessage(params: SendTemplateParams): Promise<{
 /**
  * Send a free-form text message (only within 24h window).
  */
-export async function sendTextMessage(params: SendTextParams): Promise<{ messageId: string } | null> {
+export async function sendTextMessage(params: SendTextParams, db: SupabaseClient = serviceDb()): Promise<{ messageId: string } | null> {
   try {
     // Check 24h window
-    const windowOpen = await isConversationWindowOpen(params.orgId, params.accountId, params.to);
+    const windowOpen = await isConversationWindowOpen(db, params.orgId, params.accountId, params.to);
     if (!windowOpen) {
       console.warn('[WhatsApp] 24h window expired — use template message instead');
       return null;
     }
 
-    const account = await getAccount(params.orgId, params.accountId);
+    const account = await getAccount(db, params.orgId, params.accountId);
     if (!account) return null;
 
     const token = decrypt(account.access_token);
@@ -135,9 +137,9 @@ export function substituteTemplateVariables(
 
 // ── Internal helpers ────────────────��────────────────────────
 
-async function getAccount(orgId: string, accountId: string) {
+async function getAccount(db: SupabaseClient, orgId: string, accountId: string) {
   try {
-    const { data } = await serviceDb()
+    const { data } = await db
       .from('whatsapp_accounts')
       .select('*')
       .eq('id', accountId)
@@ -148,9 +150,9 @@ async function getAccount(orgId: string, accountId: string) {
   } catch { return null; }
 }
 
-async function isConversationWindowOpen(orgId: string, accountId: string, phone: string): Promise<boolean> {
+async function isConversationWindowOpen(db: SupabaseClient, orgId: string, accountId: string, phone: string): Promise<boolean> {
   try {
-    const { data } = await serviceDb()
+    const { data } = await db
       .from('whatsapp_conversations')
       .select('window_expires')
       .eq('org_id', orgId)
