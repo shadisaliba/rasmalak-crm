@@ -10,26 +10,7 @@
 import { NextResponse } from 'next/server';
 import { requireCronSecret } from '@/lib/serverAuth';
 import { serviceDb } from '@/lib/supabaseServer';
-import {
-  reportGeneratorAgent,
-  buildManagerReportContext,
-  buildRepBriefContext,
-} from '@/ai/agents/reportGeneratorAgent';
-import { AI_CONFIG } from '@/ai/config';
-
-async function callLLM(systemPrompt: string, userMessage: string): Promise<string> {
-  const messages = [
-    { role: 'system' as const, content: systemPrompt },
-    { role: 'user' as const, content: userMessage },
-  ];
-  const options = { max_tokens: 1000 };
-  const result = AI_CONFIG.provider === 'gemini'
-    ? await (await import('@/ai/providers/gemini')).sendChatCompletion(messages, options)
-    : await (await import('@/ai/providers/openai')).sendChatCompletion(messages, options);
-  // Throwing keeps a provider error message from being stored as a score or report.
-  if (!result.success) throw new Error(result.error);
-  return result.content;
-}
+import { orchestrator } from '@/ai/orchestrator';
 
 export async function GET(request: Request) {
   const unauthorized = requireCronSecret(request);
@@ -61,14 +42,6 @@ export async function GET(request: Request) {
       const language = ((orgData?.settings as Record<string, unknown>)?.language as 'ar' | 'en') ?? 'ar';
       const currency = orgData?.currency ?? 'USD';
 
-      const systemPrompt = reportGeneratorAgent.systemPromptBuilder({
-        language,
-        contextSlices: [],
-        memoryFields: {},
-        deterministic: null,
-        userMessage: '',
-        conversationHistory: [],
-      });
 
       // Weekly manager report (Sundays only, Enterprise plans)
       if (isSunday && (org.plan === 'enterprise' || org.plan === 'organization')) {
@@ -101,7 +74,10 @@ export async function GET(request: Request) {
             .sort((a, b) => (b.value ?? 0) - (a.value ?? 0))
             .slice(0, 5);
 
-          const context = buildManagerReportContext({
+          const generated = await orchestrator.completeForServerTask({
+            task: 'report_generation',
+            orgId: org.org_id,
+            payload: { language, report: { kind: 'manager', data: {
             orgName: orgData?.name ?? 'Organization',
             totalOpenDeals: openDeals?.length ?? 0,
             totalPipelineValue: totalValue,
@@ -123,9 +99,11 @@ export async function GET(request: Request) {
               score: d.ai_score ?? 50, probability: d.probability ?? 50,
             })),
             language,
+            } } },
           });
-
-          const report = await callLLM(systemPrompt, context);
+          // A failed run leaves no notification rather than an error message posing as a report.
+          if (!generated.ok) throw new Error(generated.reason);
+          const report = generated.output.text;
 
           // Send to org admins/owners
           const { data: admins } = await serviceDb()
@@ -188,7 +166,10 @@ export async function GET(request: Request) {
           // Skip if rep has no deals or tasks
           if ((!repDeals || repDeals.length === 0) && (!todayTasks || todayTasks.length === 0)) continue;
 
-          const context = buildRepBriefContext({
+          const generated = await orchestrator.completeForServerTask({
+            task: 'report_generation',
+            orgId: org.org_id,
+            payload: { language, report: { kind: 'rep_brief', data: {
             repName: rep.display_name ?? 'Team Member',
             openDeals: (repDeals ?? []).map(d => ({
               title: d.title, value: d.value ?? 0,
@@ -201,9 +182,13 @@ export async function GET(request: Request) {
               title: o.title, dueDate: o.due_date ?? '',
             })),
             language,
+            } } },
           });
-
-          const brief = await callLLM(systemPrompt, context);
+          if (!generated.ok) {
+            errors++;
+            continue;
+          }
+          const brief = generated.output.text;
 
           await serviceDb().from('crm_notifications').insert({
             org_id: org.org_id,

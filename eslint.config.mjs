@@ -19,6 +19,20 @@ const eslintConfig = defineConfig([
     "tests/report/**",
     "test-results/**",
   ]),
+  // R14: every LLM call goes through src/ai/orchestrator.ts.
+  {
+    files: ["**/*.{ts,tsx,js,mjs}"],
+    ignores: ["src/ai/**"],
+    rules: {
+      "no-restricted-imports": ["error", {
+        patterns: [{ group: ["@/ai/providers/*", "**/ai/providers/*"], message: "Call LLMs through src/ai/orchestrator.ts (playbook R14)." }],
+      }],
+      "no-restricted-syntax": ["error", {
+        selector: "ImportExpression[source.value=/ai\\/providers\\//]",
+        message: "Call LLMs through src/ai/orchestrator.ts (playbook R14).",
+      }],
+    },
+  },
 ]);
 
 export default eslintConfig;

@@ -10,6 +10,9 @@ export default defineConfig({
     exclude: ['tests/**', 'node_modules/**'],
   },
   resolve: {
-    alias: { '@': path.resolve(__dirname, 'src') },
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+      'server-only': path.resolve(__dirname, 'src/test/server-only.ts'),
+    },
   },
 });

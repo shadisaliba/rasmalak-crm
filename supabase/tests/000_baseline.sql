@@ -117,6 +117,8 @@ begin
   insert into whatsapp_conversations (org_id, contact_phone) values (b, '+962700000001');
   insert into org_invitations (org_id, email, role, token_hash, invited_by)
     values (b, 'invitee.b@example.test', 'viewer', 'hash-of-b-token', ub);
+  insert into ai_task_runs (org_id, task, provider, model, status, latency_ms, input_digest)
+    values (b, 'deal_scoring', 'gemini', 'test-model', 'ok', 10, 'digest-b');
 end $$;
 
 select is_empty(

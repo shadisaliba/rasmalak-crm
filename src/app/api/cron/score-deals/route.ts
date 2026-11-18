@@ -9,22 +9,7 @@
 import { NextResponse } from 'next/server';
 import { requireCronSecret } from '@/lib/serverAuth';
 import { serviceDb } from '@/lib/supabaseServer';
-import { dealScoringAgent, buildDealScoringContext } from '@/ai/agents/dealScoringAgent';
-import { AI_CONFIG } from '@/ai/config';
-
-async function callLLM(systemPrompt: string, userMessage: string): Promise<string> {
-  const messages = [
-    { role: 'system' as const, content: systemPrompt },
-    { role: 'user' as const, content: userMessage },
-  ];
-  const options = { max_tokens: 500 };
-  const result = AI_CONFIG.provider === 'gemini'
-    ? await (await import('@/ai/providers/gemini')).sendChatCompletion(messages, options)
-    : await (await import('@/ai/providers/openai')).sendChatCompletion(messages, options);
-  // Throwing keeps a provider error message from being stored as a score or report.
-  if (!result.success) throw new Error(result.error);
-  return result.content;
-}
+import { orchestrator } from '@/ai/orchestrator';
 
 export async function GET(request: Request) {
   const unauthorized = requireCronSecret(request);
@@ -41,7 +26,7 @@ export async function GET(request: Request) {
       .select(`
         id, org_id, title, value, currency, probability, stage_id, assigned_to,
         ai_score, created_at, updated_at,
-        crm_contacts ( name, title, company )
+        crm_contacts ( first_name, last_name, job_title, crm_companies ( name ) )
       `)
       .is('closed_at', null)
       .limit(200);
@@ -71,14 +56,6 @@ export async function GET(request: Request) {
       orgStats.set(orgId, { avgComms, avgDays: 14 }); // Default avg stage days
     }
 
-    const systemPrompt = dealScoringAgent.systemPromptBuilder({
-      language: 'en',
-      contextSlices: [],
-      memoryFields: {},
-      deterministic: null,
-      userMessage: '',
-      conversationHistory: [],
-    });
 
     for (const deal of deals) {
       try {
@@ -111,7 +88,10 @@ export async function GET(request: Request) {
           .eq('status', 'pending')
           .lt('due_date', new Date().toISOString());
 
-        const contextMessage = buildDealScoringContext({
+        const scoring = await orchestrator.completeForServerTask({
+          task: 'deal_scoring',
+          orgId: deal.org_id,
+          payload: { deal: {
           title: deal.title,
           value: deal.value,
           currency: deal.currency,
@@ -123,23 +103,18 @@ export async function GET(request: Request) {
           daysSinceLastContact: daysInStage,
           openTasks: openTasks ?? 0,
           overdueTasks: overdueTasks ?? 0,
-          contactName: contact?.name ?? null,
-          contactTitle: contact?.title ?? null,
-          contactCompany: contact?.company ?? null,
+          contactName: contact ? [contact.first_name, contact.last_name].filter(Boolean).join(' ') : null,
+          contactTitle: contact?.job_title ?? null,
+          contactCompany: (Array.isArray(contact?.crm_companies) ? contact?.crm_companies[0]?.name : (contact?.crm_companies as { name?: string } | null | undefined)?.name) ?? null,
           historicalWinRate: 35,
           probability: deal.probability ?? 50,
+          } },
         });
-
-        const response = await callLLM(systemPrompt, contextMessage);
-
-        // Parse JSON from response
-        const jsonMatch = response.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
+        if (!scoring.ok) {
           errors++;
           continue;
         }
-
-        const result = JSON.parse(jsonMatch[0]);
+        const result = scoring.output;
         const previousScore = deal.ai_score;
 
         // Update deal
