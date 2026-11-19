@@ -131,6 +131,13 @@ begin
   insert into user_consents (user_id, org_id, purpose, document_version) values (ub, b, 'ai_processing', 'test');
   insert into sme_actions (org_id, rule_code, rule_version, dedupe_key, severity, title_key, body_key)
     values (b, 'profile.missing_fact', '1', 'b-action', 'info', 't', 'b');
+  insert into sme_accounts (id, org_id, kind, name, currency, created_by)
+    values ('b1000000-0000-4000-b000-0000000000a1', b, 'bank', 'B bank', 'JOD', ub);
+  insert into sme_categories (org_id, code, name_en, name_ar, kind) values (b, 'b_custom', 'B custom', 'ب', 'expense');
+  insert into sme_transactions (id, org_id, account_id, value_date, amount_minor, currency, base_amount_minor, source_kind, fingerprint, idempotency_key, created_by)
+    values ('b1000000-0000-4000-b000-0000000000f1', b, 'b1000000-0000-4000-b000-0000000000a1', current_date, 1000, 'JOD', 1000, 'manual', 'fp-b', 'idem-b', ub);
+  insert into sme_transaction_classifications (org_id, transaction_id, classified_by)
+    values (b, 'b1000000-0000-4000-b000-0000000000f1', ub);
 end $$;
 
 select is_empty(
