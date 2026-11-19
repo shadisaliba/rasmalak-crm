@@ -34,22 +34,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: { code: 'INVALID_PLAN', message: 'Invalid plan or billing cycle' } }, { status: 400 });
     }
 
-    // Get or create Stripe customer
-    const { data: sub } = await supabase.from('subscriptions').select('stripe_customer_id').eq('org_id', orgId).single();
-    let customerId = sub?.stripe_customer_id;
-
+    // Reuse the organization's Stripe customer. Billing rows are written only by the Stripe
+    // webhook, which links the customer to the organization through its metadata.
+    const { data: sub } = await supabase.from('subscriptions').select('stripe_customer_id').eq('org_id', orgId).maybeSingle();
+    let customerId = sub?.stripe_customer_id as string | undefined;
     if (!customerId) {
-      const { data: org } = await supabase.from('organizations').select('name').eq('id', orgId).single();
+      const existing = await getStripe().customers.search({ query: `metadata['org_id']:'${orgId}'`, limit: 1 });
+      customerId = existing.data[0]?.id;
+    }
+    if (!customerId) {
+      const { data: org } = await supabase.from('organizations').select('name').eq('id', orgId).maybeSingle();
       const customer = await getStripe().customers.create({ metadata: { org_id: orgId }, name: org?.name || undefined });
       customerId = customer.id;
-
-      // Upsert subscription record with customer ID
-      await supabase.from('subscriptions').upsert({
-        org_id: orgId, plan, status: 'trialing', billing_cycle: billingCycle,
-        stripe_customer_id: customerId, seats_included: plan === 'enterprise' ? 25 : plan === 'organization' ? 10 : 3,
-        seats_max: plan === 'enterprise' ? 150 : plan === 'organization' ? 35 : 10,
-        trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-      }, { onConflict: 'org_id' });
     }
 
     const session = await getStripe().checkout.sessions.create({

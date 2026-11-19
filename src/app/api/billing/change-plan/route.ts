@@ -38,34 +38,22 @@ export async function POST(request: Request) {
 
     const sub = mapFromDb<Subscription>(subRow);
 
-    if (sub.stripeSubscriptionId) {
-      const stripeSub = await getStripe().subscriptions.retrieve(sub.stripeSubscriptionId);
-      const mainItem = stripeSub.items.data[0];
-
-      if (mainItem) {
-        await getStripe().subscriptions.update(sub.stripeSubscriptionId, {
-          items: [{ id: mainItem.id, price: newPriceId }],
-          proration_behavior: 'create_prorations',
-        });
-      }
+    // Changing plan without a Stripe subscription would hand out a paid plan for free.
+    if (!sub.stripeSubscriptionId) {
+      return NextResponse.json({ error: { code: 'NO_STRIPE_SUB', message: 'Start a subscription through checkout first' } }, { status: 400 });
     }
+    const stripeSub = await getStripe().subscriptions.retrieve(sub.stripeSubscriptionId);
+    const mainItem = stripeSub.items.data[0];
+    if (!mainItem) {
+      return NextResponse.json({ error: { code: 'NO_STRIPE_SUB', message: 'Subscription has no plan item' } }, { status: 400 });
+    }
+    await getStripe().subscriptions.update(sub.stripeSubscriptionId, {
+      items: [{ id: mainItem.id, price: newPriceId }],
+      proration_behavior: 'create_prorations',
+    });
 
-    // Update seat limits based on new plan
-    const seatLimits: Record<string, { included: number; max: number }> = {
-      entrepreneur: { included: 3, max: 10 },
-      organization: { included: 10, max: 35 },
-      enterprise: { included: 25, max: 150 },
-    };
-    const limits = seatLimits[plan] || seatLimits.entrepreneur;
-
-    await supabase.from('subscriptions').update({
-      plan,
-      seats_included: limits.included,
-      seats_max: limits.max,
-      updated_at: new Date().toISOString(),
-    }).eq('org_id', orgId);
-
-    return NextResponse.json({ data: { plan } });
+    // The customer.subscription.updated webhook records the new plan and seat limits.
+    return NextResponse.json({ data: { plan, pending: true } });
   } catch (err) {
     console.warn('[Billing] Change plan error:', err);
     return NextResponse.json({ error: { code: 'CHANGE_FAILED', message: 'Failed to change plan' } }, { status: 500 });

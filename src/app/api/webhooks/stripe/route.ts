@@ -118,8 +118,12 @@ async function handleStripeEvent(event: Stripe.Event) {
 }
 
 async function upsertSubscription(sub: Stripe.Subscription) {
-  const orgId = await getOrgIdFromCustomer(sub.customer as string);
-  if (!orgId) return;
+  // Checkout puts org_id in the subscription metadata; the customer metadata is the fallback.
+  const orgId = (sub.metadata?.org_id as string | undefined) || await getOrgIdFromCustomer(sub.customer as string);
+  if (!orgId) {
+    console.error('[Stripe Webhook] Cannot resolve org for subscription', sub.id);
+    return;
+  }
 
   // Determine plan from price ID
   const priceId = sub.items.data[0]?.price?.id || '';
@@ -133,10 +137,15 @@ async function upsertSubscription(sub: Stripe.Subscription) {
     custom: { included: 50, max: 999 },
   };
   const limits = seatLimits[plan] || seatLimits.entrepreneur;
+  const addonPriceId = process.env.STRIPE_PRICE_ADDON_SEAT;
+  const seatsPurchased = addonPriceId
+    ? sub.items.data.filter(i => i.price?.id === addonPriceId).reduce((n, i) => n + (i.quantity ?? 0), 0)
+    : 0;
 
   await serviceDb().from('subscriptions').upsert({
     org_id: orgId,
     plan,
+    seats_purchased: seatsPurchased,
     status: sub.status === 'trialing' ? 'trialing' : sub.status === 'active' ? 'active' : sub.status === 'past_due' ? 'past_due' : 'canceled',
     billing_cycle: sub.items.data[0]?.price?.recurring?.interval === 'year' ? 'annual' : 'monthly',
     billing_currency: sub.currency.toUpperCase(),
@@ -177,6 +186,14 @@ async function getOrgIdFromCustomer(customerId: string): Promise<string | null> 
     .from('subscriptions')
     .select('org_id')
     .eq('stripe_customer_id', customerId)
-    .single();
-  return data?.org_id || null;
+    .maybeSingle();
+  if (data?.org_id) return data.org_id;
+  // First event for a new customer: the row does not exist yet, so read the metadata checkout set.
+  try {
+    const customer = await getStripe().customers.retrieve(customerId);
+    if ('deleted' in customer && customer.deleted) return null;
+    return (customer.metadata?.org_id as string | undefined) ?? null;
+  } catch {
+    return null;
+  }
 }

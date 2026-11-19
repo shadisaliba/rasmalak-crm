@@ -49,13 +49,8 @@ export async function POST(request: Request) {
       await getStripe().subscriptionItems.create({ subscription: sub.stripeSubscriptionId, price: addonPriceId, quantity: 1, proration_behavior: 'create_prorations' });
     }
 
-    // Update local DB only after Stripe succeeds
-    await supabase.from('subscriptions').update({
-      seats_purchased: sub.seatsPurchased + 1,
-      updated_at: new Date().toISOString(),
-    }).eq('org_id', orgId);
-
-    return NextResponse.json({ data: { seatsPurchased: sub.seatsPurchased + 1 } });
+    // The resulting customer.subscription.updated webhook records the new seat count.
+    return NextResponse.json({ data: { seatsPurchased: sub.seatsPurchased + 1, pending: true } });
   } catch (err) {
     console.warn('[Billing] Add seat error:', err);
     return NextResponse.json({ error: { code: 'ADD_SEAT_FAILED', message: 'Failed to add seat' } }, { status: 500 });
