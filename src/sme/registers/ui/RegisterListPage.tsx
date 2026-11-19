@@ -12,6 +12,7 @@ import { RegisterNote } from '@/sme/receivables/ui/RegisterNote';
 import { REGISTERS, STATUS_TONE, type RegisterKind, type RegisterStatus } from './config';
 import { RegisterForm } from './RegisterForm';
 import { PayablesOverview } from './PayablesOverview';
+import { AgeingTable } from './AgeingTable';
 
 export interface RegisterRow {
   invoice_id?: string; bill_id?: string; number?: string; supplier_reference?: string | null;
@@ -45,6 +46,7 @@ export function RegisterListPage({ kind }: { kind: RegisterKind }) {
   const [load, setLoad] = useState<{ status: 'loading' } | { status: 'failed'; error: SmeApiError } | { status: 'ready'; items: RegisterRow[] }>({ status: 'loading' });
   const [reloadKey, setReloadKey] = useState(0);
   const [creating, setCreating] = useState(false);
+  const [view, setView] = useState<'list' | 'ageing'>('list');
 
   useEffect(() => {
     if (!currentOrg) return;
@@ -72,6 +74,16 @@ export function RegisterListPage({ kind }: { kind: RegisterKind }) {
         {kind === 'invoice' && <RegisterNote />}
         {kind === 'bill' && <PayablesOverview refreshKey={reloadKey} />}
         {creating && currentOrg && <RegisterForm kind={kind} orgId={currentOrg.id} onDone={() => { setCreating(false); setReloadKey(k => k + 1); }} onCancel={() => setCreating(false)} />}
+        <div role="tablist" style={{ display: 'flex', gap: '6px' }}>
+          {(['list', 'ageing'] as const).map(v => (
+            <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => setView(v)}
+              style={{ padding: '7px 12px', fontSize: '13px', borderRadius: '8px', border: '1px solid var(--ds-border)', cursor: 'pointer',
+                       background: view === v ? 'var(--ds-primary)' : 'transparent', color: view === v ? '#FFFFFF' : 'var(--ds-text-body)' }}>
+              {L.t(`sme.ageing.tab.${v}`)}
+            </button>
+          ))}
+        </div>
+        {view === 'ageing' ? <AgeingTable kind={kind} /> : (<>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           <select value={status} onChange={e => setStatus(e.target.value as RegisterStatus | '')} aria-label={L.t(`${cfg.msg}.filter`)} style={{ ...input, maxWidth: '240px' }}>
             {FILTERS[kind].map(f => <option key={f} value={f}>{L.t(f ? `${cfg.statusMsg}.${f}` : `${cfg.msg}.filter.all`)}</option>)}
@@ -104,6 +116,7 @@ export function RegisterListPage({ kind }: { kind: RegisterKind }) {
             ))}
           </ul>
         )}
+        </>)}
       </SmeGate>
     </div>
   );

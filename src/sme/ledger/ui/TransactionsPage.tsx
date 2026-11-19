@@ -12,6 +12,7 @@ import { CHANNELS } from '../api/schemas';
 import { todayInAmman } from '../domain/dates';
 import type { AccountSummary, TransactionRow } from '../types';
 import { FxFields, type FxValue } from './FxFields';
+import { ChannelBreakdown } from './ChannelBreakdown';
 import {
   CATEGORY_KIND_ORDER, Chip, FX_SOURCE_LABEL_KEYS, Field, FormError, allowedCategories, card, formGrid, input, muted,
   parseAmount, primaryButton, secondaryButton, useIdempotencyKey, useLedgerReferenceData, useLedgerText,
@@ -129,6 +130,7 @@ export function TransactionsPage() {
           </div>
         </form>
 
+        {currentOrg && <ChannelBreakdown orgId={currentOrg.id} from={applied.from} to={applied.to} refreshKey={reloadKey} />}
         {load.status === 'loading' ? (
           <DataState state="loading" />
         ) : load.status === 'failed' ? (
