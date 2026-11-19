@@ -21,6 +21,7 @@ import {
   Landmark,
   ArrowLeftRight,
   Building2,
+  ReceiptText,
 } from 'lucide-react';
 
 interface CrmSidebarProps {
@@ -44,6 +45,7 @@ const NAV_ITEMS = [
 const MONEY_ITEMS = [
   { id: 'money-accounts', path: '/crm/money/accounts', icon: Landmark, labelKey: 'sme.nav.accounts', labelDefault: 'Accounts' },
   { id: 'money-transactions', path: '/crm/money/transactions', icon: ArrowLeftRight, labelKey: 'sme.nav.transactions', labelDefault: 'Transactions' },
+  { id: 'money-receivables', path: '/crm/money/receivables', icon: ReceiptText, labelKey: 'sme.nav.receivables', labelDefault: 'Invoice records' },
 ] as const;
 
 const SECONDARY_ITEMS = [
@@ -61,7 +63,9 @@ export function CrmSidebar({ isOpen, onClose }: CrmSidebarProps) {
     intl.formatMessage({ id: key, defaultMessage: def });
   const smeEnabled = useSmeEnabled();
   const canReadLedger = useOrgPermission('sme.ledger.read');
-  const showMoney = smeEnabled && canReadLedger;
+  const canReadReceivables = useOrgPermission('sme.receivables.read');
+  const showMoney = smeEnabled && (canReadLedger || canReadReceivables);
+  const moneyItems = MONEY_ITEMS.filter(i => (i.id === 'money-receivables' ? canReadReceivables : canReadLedger));
 
   const isActive = (path: string) => {
     if (path === '/crm') return pathname === '/crm';
@@ -182,7 +186,7 @@ export function CrmSidebar({ isOpen, onClose }: CrmSidebarProps) {
               <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--ds-text-muted)', paddingInlineStart: '0.75rem', paddingBlock: '0.25rem' }}>
                 {t('sme.nav.money', 'Money')}
               </span>
-              {MONEY_ITEMS.map(item => {
+              {moneyItems.map(item => {
                 const Icon = item.icon;
                 const active = isActive(item.path);
                 return (

@@ -145,6 +145,12 @@ begin
     values (b, 'b1000000-0000-4000-b000-0000000000b1', 1, '{}', 'valid');
   insert into sme_party_identifiers (org_id, company_id, kind, value, last4, created_by)
     values (b, (select id from crm_companies where org_id = b limit 1), 'tax_number', 'B0001234', '1234', ub);
+  insert into sme_invoices (id, org_id, number, customer_company_id, issue_date, due_date, currency, subtotal_minor, total_minor, idempotency_key, created_by)
+    values ('b1000000-0000-4000-b000-0000000000c1', b, 'B-1', (select id from crm_companies where org_id = b limit 1), current_date, current_date, 'JOD', 1000, 1000, 'b-inv', ub);
+  insert into sme_invoice_lines (org_id, invoice_id, position, description, quantity, unit_price_minor, line_subtotal_minor, line_tax_minor)
+    values (b, 'b1000000-0000-4000-b000-0000000000c1', 1, 'B line', 1, 1000, 1000, 0);
+  insert into sme_invoice_allocations (org_id, invoice_id, transaction_id, amount_minor, idempotency_key, created_by)
+    values (b, 'b1000000-0000-4000-b000-0000000000c1', 'b1000000-0000-4000-b000-0000000000f1', 500, 'b-alloc', ub);
 end $$;
 
 select is_empty(

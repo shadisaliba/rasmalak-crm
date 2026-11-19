@@ -9,6 +9,7 @@ import { Chip, Field, FormError, card, formGrid, input, muted, primaryButton, se
 
 const KINDS = ['tax_number', 'national_establishment_number', 'commercial_registration', 'national_id'] as const;
 interface Identifier { id: string; kind: (typeof KINDS)[number]; last4: string }
+interface ReceivablesSummary { open_count: number; overdue_count: number; outstanding: Array<{ currency: string; minor: string }>; paid_count: number; median_days_to_pay: number | null }
 
 interface Props {
   party: { companyId: string } | { contactId: string };
@@ -26,6 +27,8 @@ export function PartyFinancePanel({ party, roles, canEditRoles, onRolesChange }:
   const L = useLedgerText();
   const { currentOrg } = useOrg();
   const canIdentify = useOrgPermission('sme.parties.identifiers');
+  const canReadReceivables = useOrgPermission('sme.receivables.read');
+  const [summary, setSummary] = useState<ReceivablesSummary | null>(null);
   const [items, setItems] = useState<Identifier[]>([]);
   const [revealed, setRevealed] = useState<Record<string, string>>({});
   const [kind, setKind] = useState<Identifier['kind']>('tax_number');
@@ -43,6 +46,15 @@ export function PartyFinancePanel({ party, roles, canEditRoles, onRolesChange }:
     });
     return () => { ignore = true; };
   }, [canIdentify, column, partyId, reloadKey]);
+
+  useEffect(() => {
+    if (!currentOrg || !canReadReceivables) return;
+    let ignore = false;
+    supabase.rpc('sme_party_receivables_summary', {
+      p_org: currentOrg.id, p_company: column === 'company_id' ? partyId : null, p_contact: column === 'contact_id' ? partyId : null,
+    }).then(({ data }) => { if (!ignore && data) setSummary(data as ReceivablesSummary); });
+    return () => { ignore = true; };
+  }, [currentOrg, canReadReceivables, column, partyId]);
 
   const toggleRole = (role: PartyRole, on: boolean) =>
     onRolesChange(on ? [...new Set([...roles, role])] : roles.filter(r => r !== role));
@@ -115,12 +127,20 @@ export function PartyFinancePanel({ party, roles, canEditRoles, onRolesChange }:
         </section>
       )}
 
-      <section style={{ ...card, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      <section style={{ ...card, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '6px' }} data-testid="party-records">
         <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: 'var(--ds-text-heading)' }}>{L.t('sme.party.records')}</h3>
         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
           {roles.map(r => <Chip key={r}>{L.t(`sme.party.role.${r}`)}</Chip>)}
         </div>
-        <p style={muted}>{L.t('sme.party.recordsEmpty')}</p>
+        {summary && (summary.open_count > 0 || summary.paid_count > 0) ? (
+          <>
+            <p style={{ margin: 0, fontSize: '14px', color: 'var(--ds-text-body)' }}>
+              {L.t('sme.party.receivablesSummary', { open: summary.open_count, overdue: summary.overdue_count })}
+              {summary.outstanding.map(o => ` · ${L.amount(o.minor, o.currency)}`).join('')}
+            </p>
+            {summary.median_days_to_pay !== null && <p style={muted}>{L.t('sme.party.medianDaysToPay', { days: summary.median_days_to_pay, count: summary.paid_count })}</p>}
+          </>
+        ) : <p style={muted}>{L.t('sme.party.recordsEmpty')}</p>}
       </section>
     </div>
   );
