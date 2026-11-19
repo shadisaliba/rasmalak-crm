@@ -8,6 +8,7 @@ import { useIntl } from 'react-intl';
 import { Button, Input } from '@/components/ui';
 import { ThemeLanguageSwitcher } from '@/components';
 import { HOME_ROUTE, ORG_SETUP_ROUTE, nextPathFromLocation } from '@/lib/routes';
+import { setConsent } from '@/sme/profile/client';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -57,6 +58,8 @@ export default function SignupPage() {
     setIsLoading(false);
 
     if (result.success) {
+      // The terms checkbox above is required, so record both account-level consents now.
+      await Promise.all([setConsent(null, 'terms', true), setConsent(null, 'privacy_notice', true)]);
       router.push(nextPathFromLocation() ?? ORG_SETUP_ROUTE);
     } else {
       setError(result.error || intl.formatMessage({ id: 'auth.signup_error', defaultMessage: 'Signup failed' }));

@@ -60,8 +60,8 @@ select is_empty(
      from pg_class c join pg_namespace n on n.oid = c.relnamespace
      where n.nspname = 'public' and c.relkind in ('r', 'p')
        and c.relname not in (select table_name from tests.rows_per_table('00000000-0000-4000-b000-00000000000b'))
-       and c.relname not in ('crm_vertical_templates', 'crm_workflow_templates') $$,
-  'every table except the global template catalogues is covered by the tenancy check'
+       and c.relname not in ('crm_vertical_templates', 'crm_workflow_templates', 'sme_lookup_values', 'sme_currencies') $$,
+  'every table except the global catalogues is covered by the tenancy check'
 );
 
 -- ── 2. Fixtures: one Org B row in every tenant-scoped table ──────────────────
@@ -126,6 +126,11 @@ begin
   insert into sme_audit_events (org_id, action, subject_type, correlation_id)
     values (b, 'test.event', 'test', gen_random_uuid());
   insert into sme_outbox (org_id, event_type, payload, dedupe_key) values (b, 'Test', '{}', 'b-1');
+  insert into sme_business_profiles (org_id, legal_name) values (b, 'B Services');
+  insert into sme_profile_facts (org_id, fact_key, value, status, source) values (b, 'employees.count', '3', 'known', 'owner');
+  insert into user_consents (user_id, org_id, purpose, document_version) values (ub, b, 'ai_processing', 'test');
+  insert into sme_actions (org_id, rule_code, rule_version, dedupe_key, severity, title_key, body_key)
+    values (b, 'profile.missing_fact', '1', 'b-action', 'info', 't', 'b');
 end $$;
 
 select is_empty(

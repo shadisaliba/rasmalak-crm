@@ -1,6 +1,7 @@
 'use client';
 
 import { useFormatCurrency } from '@/hooks/useFormatCurrency';
+import { SmeSetupBanner } from '@/sme/profile/ui/SmeSetupBanner';
 import { useState, useEffect } from 'react';
 import { useIntl } from 'react-intl';
 import { supabase } from '@/lib/supabaseClient';
@@ -159,6 +160,7 @@ export default function CrmDashboardPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <SmeSetupBanner />
       {/* Header */}
       <div>
         <h1 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--ds-text-heading)', fontFeatureSettings: '"kern" 1', display: 'flex', alignItems: 'center', gap: '8px' }}>
