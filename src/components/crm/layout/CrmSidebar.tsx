@@ -1,305 +1,167 @@
 'use client';
 
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useLogout } from '@/store/useStore';
 import { useIntl } from 'react-intl';
-import { useOrgPermission } from '@/store/orgStore';
-import { useSmeEnabled } from '@/sme/ui/useSmeEnabled';
+import type { LucideIcon } from 'lucide-react';
 import {
-  Kanban,
-  Users,
-  Handshake,
-  CheckSquare,
-  BarChart3,
-  Upload,
-  Settings,
-  LogOut,
-  X,
-  Zap,
-  LayoutDashboard,
-  FileText,
-  Landmark,
-  ArrowLeftRight,
-  Building2,
-  ReceiptText,
-  FileMinus,
+  Home, LayoutDashboard, Kanban, Users, Building2, Handshake, CheckSquare, BarChart3, Zap, FileText,
+  Upload, Settings, LogOut, X, Landmark, ArrowLeftRight, ReceiptText, FileMinus, BriefcaseBusiness, KeyRound, TrendingUp,
 } from 'lucide-react';
+import { useLogout } from '@/store/useStore';
+import { useAuthStore } from '@/store/authStore';
+import { useOrg } from '@/store/orgStore';
+import type { CrmPermissions } from '@/types/crm';
+import { useSmeEnabled } from '@/sme/ui/useSmeEnabled';
 
 interface CrmSidebarProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const NAV_ITEMS = [
-  { id: 'dashboard', path: '/crm/dashboard', icon: LayoutDashboard, labelKey: 'crm.nav.dashboard', labelDefault: 'Dashboard' },
-  { id: 'pipeline', path: '/crm', icon: Kanban, labelKey: 'crm.nav.pipeline', labelDefault: 'Pipeline' },
-  { id: 'contacts', path: '/crm/contacts', icon: Users, labelKey: 'crm.nav.contacts', labelDefault: 'Contacts' },
-  { id: 'companies', path: '/crm/companies', icon: Building2, labelKey: 'crm.nav.companies', labelDefault: 'Companies' },
-  { id: 'deals', path: '/crm/deals', icon: Handshake, labelKey: 'crm.nav.deals', labelDefault: 'Deals' },
-  { id: 'tasks', path: '/crm/tasks', icon: CheckSquare, labelKey: 'crm.nav.tasks', labelDefault: 'Tasks' },
-  { id: 'reports', path: '/crm/reports', icon: BarChart3, labelKey: 'crm.nav.reports', labelDefault: 'Reports' },
+interface NavItem {
+  id: string;
+  path: string;
+  icon: LucideIcon;
+  labelKey: string;
+  labelDefault: string;
+  permission?: keyof CrmPermissions;
+  /** Exact match only (the pipeline lives at /crm, a prefix of every page). */
+  exact?: boolean;
+}
+interface NavGroup { id: string; labelKey?: string; labelDefault?: string; items: NavItem[] }
+
+const SALES_ITEMS: NavItem[] = [
+  { id: 'pipeline', path: '/crm', icon: Kanban, labelKey: 'crm.nav.pipeline', labelDefault: 'Pipeline', exact: true, permission: 'deals.read' },
+  { id: 'contacts', path: '/crm/contacts', icon: Users, labelKey: 'crm.nav.contacts', labelDefault: 'Contacts', permission: 'contacts.read' },
+  { id: 'companies', path: '/crm/companies', icon: Building2, labelKey: 'crm.nav.companies', labelDefault: 'Companies', permission: 'companies.read' },
+  { id: 'deals', path: '/crm/deals', icon: Handshake, labelKey: 'crm.nav.deals', labelDefault: 'Deals', permission: 'deals.read' },
+  { id: 'tasks', path: '/crm/tasks', icon: CheckSquare, labelKey: 'crm.nav.tasks', labelDefault: 'Tasks', permission: 'tasks.read' },
+  { id: 'reports', path: '/crm/reports', icon: BarChart3, labelKey: 'crm.nav.reports', labelDefault: 'Reports', permission: 'reports.view' },
   { id: 'automation', path: '/crm/automation', icon: Zap, labelKey: 'crm.nav.automation', labelDefault: 'Automation' },
   { id: 'documents', path: '/crm/documents', icon: FileText, labelKey: 'crm.nav.documents', labelDefault: 'Documents' },
-] as const;
+  { id: 'import', path: '/crm/import', icon: Upload, labelKey: 'crm.nav.import', labelDefault: 'Import Data', permission: 'import.execute' },
+];
 
-// SME Jordan finance screens; shown only when the organization has SME enabled.
-const MONEY_ITEMS = [
-  { id: 'money-accounts', path: '/crm/money/accounts', icon: Landmark, labelKey: 'sme.nav.accounts', labelDefault: 'Accounts' },
-  { id: 'money-transactions', path: '/crm/money/transactions', icon: ArrowLeftRight, labelKey: 'sme.nav.transactions', labelDefault: 'Transactions' },
-  { id: 'money-receivables', path: '/crm/money/receivables', icon: ReceiptText, labelKey: 'sme.nav.receivables', labelDefault: 'Invoice records' },
-  { id: 'money-payables', path: '/crm/money/payables', icon: FileMinus, labelKey: 'sme.nav.payables', labelDefault: 'Bills' },
-] as const;
+// Blueprint navigation (§2): Home, Money, then the CRM as Sales, then Business settings.
+const SME_GROUPS: NavGroup[] = [
+  { id: 'home', items: [{ id: 'home', path: '/crm/dashboard', icon: Home, labelKey: 'sme.nav.home', labelDefault: 'Home' }] },
+  {
+    id: 'money', labelKey: 'sme.nav.money', labelDefault: 'Money', items: [
+      { id: 'accounts', path: '/crm/money/accounts', icon: Landmark, labelKey: 'sme.nav.accounts', labelDefault: 'Accounts', permission: 'sme.ledger.read' },
+      { id: 'transactions', path: '/crm/money/transactions', icon: ArrowLeftRight, labelKey: 'sme.nav.transactions', labelDefault: 'Transactions', permission: 'sme.ledger.read' },
+      { id: 'receivables', path: '/crm/money/receivables', icon: ReceiptText, labelKey: 'sme.nav.receivables', labelDefault: 'Invoice records', permission: 'sme.receivables.read' },
+      { id: 'payables', path: '/crm/money/payables', icon: FileMinus, labelKey: 'sme.nav.payables', labelDefault: 'Bills', permission: 'sme.payables.read' },
+    ],
+  },
+  {
+    id: 'sales', labelKey: 'sme.nav.sales', labelDefault: 'Sales', items: [
+      { id: 'sales-overview', path: '/crm/sales', icon: TrendingUp, labelKey: 'sme.nav.salesOverview', labelDefault: 'Sales overview' },
+      ...SALES_ITEMS,
+    ],
+  },
+  {
+    id: 'business', labelKey: 'sme.nav.business', labelDefault: 'Business', items: [
+      { id: 'profile', path: '/crm/settings/business/profile', icon: BriefcaseBusiness, labelKey: 'sme.nav.businessProfile', labelDefault: 'Business profile', permission: 'sme.profile.read' },
+      { id: 'access', path: '/crm/settings/business/access', icon: KeyRound, labelKey: 'sme.nav.access', labelDefault: 'Team and access', permission: 'sme.access.manage' },
+      { id: 'settings', path: '/crm/settings', icon: Settings, labelKey: 'crm.nav.settings', labelDefault: 'Settings', exact: true },
+    ],
+  },
+];
 
-const SECONDARY_ITEMS = [
-  { id: 'import', path: '/crm/import', icon: Upload, labelKey: 'crm.nav.import', labelDefault: 'Import Data' },
-  { id: 'settings', path: '/crm/settings', icon: Settings, labelKey: 'crm.nav.settings', labelDefault: 'Settings' },
-] as const;
+const CRM_GROUPS: NavGroup[] = [
+  { id: 'main', items: [{ id: 'dashboard', path: '/crm/dashboard', icon: LayoutDashboard, labelKey: 'crm.nav.dashboard', labelDefault: 'Dashboard' }, ...SALES_ITEMS] },
+  { id: 'settings', items: [{ id: 'settings', path: '/crm/settings', icon: Settings, labelKey: 'crm.nav.settings', labelDefault: 'Settings' }] },
+];
 
 export function CrmSidebar({ isOpen, onClose }: CrmSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const logout = useLogout();
   const intl = useIntl();
+  const { currentOrg, userPermissions } = useOrg();
+  const email = useAuthStore(s => s.user?.email ?? '');
+  const sme = useSmeEnabled();
+  const t = (key: string, def: string) => intl.formatMessage({ id: key, defaultMessage: def });
 
-  const t = (key: string, def: string) =>
-    intl.formatMessage({ id: key, defaultMessage: def });
-  const smeEnabled = useSmeEnabled();
-  const canReadLedger = useOrgPermission('sme.ledger.read');
-  const canReadReceivables = useOrgPermission('sme.receivables.read');
-  const canReadPayables = useOrgPermission('sme.payables.read');
-  const showMoney = smeEnabled && (canReadLedger || canReadReceivables || canReadPayables);
-  const moneyItems = MONEY_ITEMS.filter(i => (i.id === 'money-receivables' ? canReadReceivables : i.id === 'money-payables' ? canReadPayables : canReadLedger));
-
-  const isActive = (path: string) => {
-    if (path === '/crm') return pathname === '/crm';
-    return pathname.startsWith(path);
-  };
-
-  const navigate = (path: string) => {
-    router.push(path);
-    onClose();
-  };
+  const groups = (sme ? SME_GROUPS : CRM_GROUPS)
+    .map(g => ({ ...g, items: g.items.filter(i => !i.permission || userPermissions[i.permission]) }))
+    .filter(g => g.items.length > 0);
+  const isActive = (item: NavItem) => (item.exact ? pathname === item.path : pathname === item.path || pathname.startsWith(`${item.path}/`));
+  const orgName = currentOrg ? (intl.locale.startsWith('ar') ? currentOrg.nameAr || currentOrg.name : currentOrg.name) : '';
 
   return (
     <>
-      {/* Mobile backdrop */}
       {isOpen && (
-        <div
-          onClick={onClose}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 60,
-          }}
-        />
+        <div onClick={onClose} className="crm-sidebar-backdrop"
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 60 }} aria-hidden />
       )}
 
-      {/* Sidebar */}
-      <aside
-        style={{
-          width: '15rem',
-          minHeight: '100vh',
-          background: 'var(--ds-bg-card)',
-          borderInlineEnd: '0.5px solid var(--ds-border)',
-          display: 'flex',
-          flexDirection: 'column',
-          padding: '1.25rem 0.75rem',
-          position: 'fixed',
-          insetBlockStart: 0,
-          insetInlineStart: isOpen ? 0 : '-15rem',
-          zIndex: 70,
-          transition: 'inset-inline-start 200ms ease',
-          overflowY: 'auto',
-        }}
-        className="crm-sidebar"
-      >
-        {/* Mobile close button */}
-        <div
-          style={{
-            display: 'none',
-            justifyContent: 'flex-end',
-            marginBottom: '0.5rem',
-          }}
-          className="crm-sidebar-close"
-        >
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '0.25rem',
-              color: 'var(--ds-text-muted)',
-            }}
-            aria-label="Close sidebar"
-          >
+      <aside className="crm-sidebar" style={{
+        width: '16rem', minHeight: '100vh', background: 'var(--ds-bg-card)', borderInlineEnd: '1px solid var(--ds-border)',
+        display: 'flex', flexDirection: 'column', position: 'fixed', insetBlockStart: 0, insetInlineStart: isOpen ? 0 : '-16rem',
+        zIndex: 70, transition: 'inset-inline-start 200ms ease', overflowY: 'auto',
+      }}>
+        {/* Brand */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 1rem', height: '60px', borderBlockEnd: '1px solid var(--ds-border)', flexShrink: 0 }}>
+          <span aria-hidden style={{ width: '32px', height: '32px', borderRadius: '9px', background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '17px', fontWeight: 700 }}>ر</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ds-text-heading)', lineHeight: 1.2 }}>{t('crm.brand.name', 'Rasmalak')}</div>
+            <div style={{ fontSize: '11px', color: 'var(--ds-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{orgName}</div>
+          </div>
+          <button onClick={onClose} className="crm-sidebar-close" aria-label={t('crm.nav.closeMenu', 'Close menu')}
+            style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: 'var(--ds-text-muted)' }}>
             <X size={20} />
           </button>
         </div>
 
-        {/* Brand / CRM label */}
-        <div style={{ paddingInlineStart: '0.75rem', marginBottom: '1.5rem' }}>
-          <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ds-text-heading)' }}>
-            Rasmalak CRM
-          </div>
-          <div style={{ fontSize: '11px', fontWeight: 400, color: 'var(--ds-text-muted)' }}>
-            إدارة العملاء
-          </div>
-        </div>
-
-        {/* Primary nav */}
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
-          {NAV_ITEMS.map(item => {
-            const Icon = item.icon;
-            const active = isActive(item.path);
-            return (
-              <button
-                key={item.id}
-                onClick={() => navigate(item.path)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  paddingInlineStart: '0.75rem',
-                  paddingInlineEnd: '0.75rem',
-                  paddingBlock: '0.5rem',
-                  borderRadius: '8px',
-                  border: 'none',
-                  background: active ? 'var(--ds-bg-tinted)' : 'transparent',
-                  color: active ? 'var(--ds-accent-primary)' : 'var(--ds-text-body)',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: active ? 500 : 400,
-                  textAlign: 'start',
-                  width: '100%',
-                  minHeight: '2.75rem',
-                  transition: 'background 150ms ease',
-                }}
-              >
-                <Icon size={18} />
-                {t(item.labelKey, item.labelDefault)}
-              </button>
-            );
-          })}
-
-          {showMoney && (
-            <>
-              <div style={{ height: '1px', background: 'var(--ds-border)', margin: '0.5rem 0.75rem' }} />
-              <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--ds-text-muted)', paddingInlineStart: '0.75rem', paddingBlock: '0.25rem' }}>
-                {t('sme.nav.money', 'Money')}
-              </span>
-              {moneyItems.map(item => {
+        <nav aria-label={t('crm.nav.main', 'Main')} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '18px', padding: '14px 10px' }}>
+          {groups.map(group => (
+            <div key={group.id} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              {group.labelKey && (
+                <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--ds-text-muted)', padding: '0 10px 6px', letterSpacing: '0.02em' }}>
+                  {t(group.labelKey, group.labelDefault ?? '')}
+                </div>
+              )}
+              {group.items.map(item => {
                 const Icon = item.icon;
-                const active = isActive(item.path);
+                const active = isActive(item);
                 return (
-                  <button
-                    key={item.id}
-                    onClick={() => navigate(item.path)}
+                  <Link key={item.id} href={item.path} onClick={onClose} aria-current={active ? 'page' : undefined} className="crm-nav-item"
                     style={{
-                      display: 'flex', alignItems: 'center', gap: '0.75rem',
-                      paddingInlineStart: '0.75rem', paddingInlineEnd: '0.75rem', paddingBlock: '0.5rem',
-                      borderRadius: '8px', border: 'none',
-                      background: active ? 'var(--ds-bg-tinted)' : 'transparent',
-                      color: active ? 'var(--ds-accent-primary)' : 'var(--ds-text-body)',
-                      cursor: 'pointer', fontSize: '14px', fontWeight: active ? 500 : 400,
-                      textAlign: 'start', width: '100%', minHeight: '2.75rem', transition: 'background 150ms ease',
-                    }}
-                  >
-                    <Icon size={18} />
-                    {t(item.labelKey, item.labelDefault)}
-                  </button>
+                      position: 'relative', display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', minHeight: '38px',
+                      borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: active ? 600 : 400,
+                      color: active ? 'var(--ds-text-heading)' : 'var(--ds-text-body)', background: active ? 'var(--ds-bg-tinted)' : 'transparent',
+                    }}>
+                    {active && <span aria-hidden style={{ position: 'absolute', insetInlineStart: 0, insetBlock: '8px', width: '3px', borderRadius: '3px', background: 'var(--ds-accent-primary)' }} />}
+                    <Icon size={18} style={{ color: active ? 'var(--ds-accent-primary)' : 'var(--ds-text-muted)', flexShrink: 0 }} />
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t(item.labelKey, item.labelDefault)}</span>
+                  </Link>
                 );
               })}
-            </>
-          )}
+            </div>
+          ))}
+        </nav>
 
-          {/* Divider */}
-          <div style={{ height: '1px', background: 'var(--ds-border)', margin: '0.5rem 0.75rem' }} />
-
-          {/* Secondary nav */}
-          {SECONDARY_ITEMS.map(item => {
-            const Icon = item.icon;
-            const active = isActive(item.path);
-            return (
-              <button
-                key={item.id}
-                onClick={() => navigate(item.path)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  paddingInlineStart: '0.75rem',
-                  paddingInlineEnd: '0.75rem',
-                  paddingBlock: '0.5rem',
-                  borderRadius: '8px',
-                  border: 'none',
-                  background: active ? 'var(--ds-bg-tinted)' : 'transparent',
-                  color: active ? 'var(--ds-accent-primary)' : 'var(--ds-text-body)',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: active ? 500 : 400,
-                  textAlign: 'start',
-                  width: '100%',
-                  minHeight: '2.75rem',
-                  transition: 'background 150ms ease',
-                }}
-              >
-                <Icon size={18} />
-                {t(item.labelKey, item.labelDefault)}
-              </button>
-            );
-          })}
-
-          {/* Spacer */}
-          <div style={{ flex: 1 }} />
-
-          {/* Divider */}
-          <div style={{ height: '1px', background: 'var(--ds-border)', margin: '0.5rem 0.75rem' }} />
-
-          <button
-            onClick={async () => { await logout(); router.replace('/login'); }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              paddingInlineStart: '0.75rem',
-              paddingInlineEnd: '0.75rem',
-              paddingBlock: '0.5rem',
-              borderRadius: '8px',
-              border: 'none',
-              background: 'transparent',
-              color: 'var(--ds-text-muted)',
-              cursor: 'pointer',
-              fontSize: '13px',
-              fontWeight: 400,
-              textAlign: 'start',
-              width: '100%',
-              minHeight: '2.75rem',
-              transition: 'background 150ms ease',
-            }}
-          >
+        <div style={{ borderBlockStart: '1px solid var(--ds-border)', padding: '10px', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+          <span title={email} style={{ flex: 1, minWidth: 0, fontSize: '12px', color: 'var(--ds-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingInlineStart: '6px' }} dir="ltr">{email}</span>
+          <button onClick={async () => { await logout(); router.replace('/login'); }} className="crm-nav-item"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 10px', borderRadius: '8px', border: 'none', background: 'transparent', color: 'var(--ds-text-body)', cursor: 'pointer', fontSize: '13px' }}>
             <LogOut size={16} className="rtl:-scale-x-100" aria-hidden />
             {t('crm.nav.signOut', 'Sign out')}
           </button>
-        </nav>
+        </div>
       </aside>
 
-      {/* CSS for responsive behavior */}
       <style>{`
+        .crm-nav-item:hover { background: var(--ds-bg-tinted) !important; }
+        .crm-nav-item:focus-visible { outline: 2px solid var(--ds-accent-primary); outline-offset: -2px; }
         @media (min-width: 768px) {
-          .crm-sidebar {
-            position: relative !important;
-            inset-inline-start: 0 !important;
-          }
-          .crm-sidebar-close {
-            display: none !important;
-          }
+          .crm-sidebar { position: sticky !important; inset-inline-start: 0 !important; height: 100vh; min-height: 0 !important; }
+          .crm-sidebar-backdrop { display: none; }
         }
         @media (max-width: 767px) {
-          .crm-sidebar-close {
-            display: flex !important;
-          }
+          .crm-sidebar-close { display: inline-flex !important; }
         }
       `}</style>
     </>

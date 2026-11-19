@@ -7,6 +7,7 @@ import { useCrm } from '@/store/crmStore';
 import { useOrgPermission } from '@/store/orgStore';
 import { useSmeEnabled } from '@/sme/ui/useSmeEnabled';
 import { DataState } from '@/sme/ui/DataState';
+import { PageHeader } from '@/sme/ui/PageHeader';
 import { PartyFinancePanel } from '@/sme/parties/ui/PartyFinancePanel';
 import { Field, card, formGrid, input, primaryButton, secondaryButton } from '@/sme/ledger/ui/shared';
 
@@ -35,11 +36,8 @@ export function CompanyDetail({ companyId }: { companyId: string }) {
   const editing = draft ?? { name: company.name, nameAr: company.nameAr ?? '', phone: company.phone ?? '', email: company.email ?? '', city: company.city ?? '' };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '1000px' }}>
-      <div>
-        <Link href="/crm/companies" style={{ fontSize: '13px', color: 'var(--ds-primary)' }}>{t('crm.company.back')}</Link>
-        <h1 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--ds-text-heading)', margin: '6px 0 0' }}>{isAr ? company.nameAr || company.name : company.name}</h1>
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <PageHeader back={{ href: '/crm/companies', label: t('crm.company.back') }} title={isAr ? company.nameAr || company.name : company.name} />
       <div role="tablist" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
         {tabs.map(x => (
           <button key={x.key} role="tab" type="button" aria-selected={tab === x.key} onClick={() => setTab(x.key)}

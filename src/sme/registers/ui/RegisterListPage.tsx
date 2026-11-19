@@ -13,6 +13,7 @@ import { REGISTERS, STATUS_TONE, type RegisterKind, type RegisterStatus } from '
 import { RegisterForm } from './RegisterForm';
 import { PayablesOverview } from './PayablesOverview';
 import { AgeingTable } from './AgeingTable';
+import { PageHeader } from '@/sme/ui/PageHeader';
 
 export interface RegisterRow {
   invoice_id?: string; bill_id?: string; number?: string; supplier_reference?: string | null;
@@ -62,14 +63,9 @@ export function RegisterListPage({ kind }: { kind: RegisterKind }) {
     : 0n;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '1100px' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-        <div>
-          <h1 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--ds-text-heading)', margin: '0 0 4px' }}>{L.t(`${cfg.msg}.title`)}</h1>
-          <p style={{ fontSize: '13px', color: 'var(--ds-text-muted)', margin: 0 }}>{L.t(`${cfg.msg}.description`)}</p>
-        </div>
-        {canWrite && <button type="button" style={primaryButton} onClick={() => setCreating(!creating)}>{L.t(`${cfg.msg}.new`)}</button>}
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <PageHeader title={L.t(`${cfg.msg}.title`)} description={L.t(`${cfg.msg}.description`)}
+        actions={canWrite ? <button type="button" style={primaryButton} onClick={() => setCreating(!creating)}>{L.t(`${cfg.msg}.new`)}</button> : undefined} />
       <SmeGate permission={cfg.readPerm}>
         {kind === 'invoice' && <RegisterNote />}
         {kind === 'bill' && <PayablesOverview refreshKey={reloadKey} />}

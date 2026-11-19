@@ -9,6 +9,7 @@ import { normalizeForSearch } from '@/crm/search/normalizer';
 import type { PartyRole } from '@/types/crm';
 import { useSmeEnabled } from '@/sme/ui/useSmeEnabled';
 import { DataState } from '@/sme/ui/DataState';
+import { PageHeader } from '@/sme/ui/PageHeader';
 import { PartyRoleFilter, matchesPartyFilter, type PartyFilter } from '@/sme/parties/ui/PartyRoleFilter';
 import { Chip, Field, FormError, card, formGrid, input, primaryButton, secondaryButton } from '@/sme/ledger/ui/shared';
 
@@ -46,14 +47,9 @@ export function CompanyList() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '1000px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '12px', flexWrap: 'wrap' }}>
-        <div>
-          <h1 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--ds-text-heading)', margin: '0 0 4px' }}>{t('crm.nav.companies')}</h1>
-          <p style={{ fontSize: '13px', color: 'var(--ds-text-muted)', margin: 0 }}>{t(sme ? 'crm.company.listHelpSme' : 'crm.company.listHelp')}</p>
-        </div>
-        {canWrite && <button type="button" style={primaryButton} onClick={() => setAdding(!adding)}>{t('crm.company.add')}</button>}
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <PageHeader title={t('crm.nav.companies')} description={t(sme ? 'crm.company.listHelpSme' : 'crm.company.listHelp')}
+        actions={canWrite ? <button type="button" style={primaryButton} onClick={() => setAdding(!adding)}>{t('crm.company.add')}</button> : undefined} />
 
       {adding && (
         <form onSubmit={save} style={{ ...card, display: 'flex', flexDirection: 'column', gap: '12px' }} aria-labelledby="add-company-title">

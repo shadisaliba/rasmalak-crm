@@ -385,4 +385,7 @@ export default {
   'header.switchToArabic': 'Switch to Arabic',
   'header.lightMode': 'Switch to light mode',
   'header.darkMode': 'Switch to dark mode',
+  'brand.name': 'Rasmalak',
+  'nav.closeMenu': 'Close menu',
+  'nav.main': 'Main',
 };

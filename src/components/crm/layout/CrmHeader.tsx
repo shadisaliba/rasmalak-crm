@@ -94,10 +94,10 @@ export function CrmHeader({ onMenuToggle }: CrmHeaderProps) {
         <Menu size={20} />
       </button>
 
-      {/* Org name, or a switcher for users in several organizations */}
-      <OrgSwitcher />
-
-      <div style={{ flex: 1 }} />
+      {/* Org name, or a switcher for users in several organizations; shrinks first on small screens. */}
+      <div style={{ flex: '1 1 auto', minWidth: 0, display: 'flex' }}>
+        <OrgSwitcher />
+      </div>
 
       <button type="button" className="crm-header-btn" onClick={() => setLanguage(isAr ? 'en' : 'ar')}
         aria-label={t(isAr ? 'crm.header.switchToEnglish' : 'crm.header.switchToArabic', isAr ? 'Switch to English' : 'التبديل إلى العربية')}

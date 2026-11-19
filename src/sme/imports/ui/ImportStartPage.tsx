@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useOrg } from '@/store/orgStore';
 import { smeApi, errorText, type SmeApiError } from '@/sme/api/client';
 import { DataState } from '@/sme/ui/DataState';
+import { PageHeader } from '@/sme/ui/PageHeader';
 import { SmeGate } from '@/sme/profile/ui/SmeGate';
 import { isCurrencyCode } from '@/sme/money';
 import { todayInAmman } from '@/sme/ledger/domain/dates';
@@ -177,12 +178,8 @@ export function ImportStartPage() {
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '1000px' }}>
-      <div>
-        <Link href="/crm/money/transactions" style={{ fontSize: '13px', color: 'var(--ds-primary)' }}>{L.t('sme.import.back')}</Link>
-        <h1 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--ds-text-heading)', margin: '6px 0 4px' }}>{L.t('sme.import.title')}</h1>
-        <p style={{ fontSize: '13px', color: 'var(--ds-text-muted)', margin: 0 }}>{L.t('sme.import.description')}</p>
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <PageHeader back={{ href: '/crm/money/transactions', label: L.t('sme.import.back') }} title={L.t('sme.import.title')} description={L.t('sme.import.description')} />
       <SmeGate permission="sme.imports.execute">
         {accounts === null ? <DataState state="loading" /> : accounts.length === 0 ? (
           <DataState state="empty" message={L.t('sme.import.noAccounts')} action={<Link href="/crm/money/accounts" style={{ color: 'var(--ds-primary)', fontSize: '13px' }}>{L.t('sme.money.accounts.add')}</Link>} />

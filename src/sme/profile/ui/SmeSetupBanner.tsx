@@ -26,7 +26,7 @@ export function SmeSetupBanner() {
 
   if (!show || !enabled || !canManage) return null;
   return (
-    <div role="status" style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', padding: '12px 16px', borderRadius: '12px', background: 'var(--ds-bg-tinted)', border: '1px solid var(--ds-border-tinted)', marginBottom: '1rem' }}>
+    <div role="status" style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', padding: '12px 16px', borderRadius: '12px', background: 'var(--ds-bg-tinted)', border: '1px solid var(--ds-border-tinted)' }}>
       <span style={{ flex: 1, fontSize: '14px', color: 'var(--ds-text-body)' }}>{intl.formatMessage({ id: 'sme.onboarding.banner' })}</span>
       <Link href="/crm/onboarding" style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ds-primary)' }}>{intl.formatMessage({ id: 'sme.onboarding.bannerCta' })}</Link>
     </div>

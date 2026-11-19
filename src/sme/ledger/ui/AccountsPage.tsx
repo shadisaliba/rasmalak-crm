@@ -13,6 +13,7 @@ import type { AccountSummary } from '../types';
 import { FxFields, type FxValue } from './FxFields';
 import { DataCompletenessBanner } from '@/sme/kpi/ui/DataCompletenessBanner';
 import { ExploreDemoButton } from '@/sme/demo/ui/ExploreDemoButton';
+import { PageHeader } from '@/sme/ui/PageHeader';
 import { Chip, Field, FormError, card, formGrid, input, muted, parseAmount, primaryButton, secondaryButton, useIdempotencyKey, useLedgerText } from './shared';
 
 type Load = { status: 'loading' } | { status: 'failed'; error: SmeApiError } | { status: 'ready'; items: AccountSummary[] };
@@ -40,22 +41,20 @@ export function AccountsPage() {
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '1000px' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-        <div>
-          <h1 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--ds-text-heading)', margin: '0 0 4px' }}>{L.t('sme.money.accounts.title')}</h1>
-          <p style={{ fontSize: '13px', color: 'var(--ds-text-muted)', margin: 0 }}>{L.t('sme.money.accounts.description')}</p>
-        </div>
-        {load.status === 'ready' && load.items.length > 0 && (
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <PageHeader
+        title={L.t('sme.money.accounts.title')}
+        description={L.t('sme.money.accounts.description')}
+        actions={load.status === 'ready' && load.items.length > 0 ? (
+          <>
             <ExploreDemoButton />
-            {addButton}
             {canPost && load.items.filter(a => a.status === 'active').length > 1 && (
               <button type="button" style={secondaryButton} onClick={() => setPanel(panel === 'transfer' ? 'none' : 'transfer')}>{L.t('sme.money.transfer.open')}</button>
             )}
-          </div>
-        )}
-      </div>
+            {addButton}
+          </>
+        ) : undefined}
+      />
 
       <SmeGate permission="sme.ledger.read">
         {currentOrg && panel === 'account' && <AddAccountForm orgId={currentOrg.id} onDone={() => { setPanel('none'); reload(); }} onCancel={() => setPanel('none')} />}

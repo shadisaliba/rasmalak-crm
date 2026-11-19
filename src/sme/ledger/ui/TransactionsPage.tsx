@@ -13,6 +13,7 @@ import { todayInAmman } from '../domain/dates';
 import type { AccountSummary, TransactionRow } from '../types';
 import { FxFields, type FxValue } from './FxFields';
 import { ChannelBreakdown } from './ChannelBreakdown';
+import { PageHeader } from '@/sme/ui/PageHeader';
 import {
   CATEGORY_KIND_ORDER, Chip, FX_SOURCE_LABEL_KEYS, Field, FormError, allowedCategories, card, formGrid, input, muted,
   parseAmount, primaryButton, secondaryButton, useIdempotencyKey, useLedgerReferenceData, useLedgerText,
@@ -78,13 +79,9 @@ export function TransactionsPage() {
   const uncategorised = load.status === 'ready' ? load.items.filter(t => !t.classification.category_id && !t.is_reversal).length : 0;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '1100px' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-        <div>
-          <h1 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--ds-text-heading)', margin: '0 0 4px' }}>{L.t('sme.money.tx.title')}</h1>
-          <p style={{ fontSize: '13px', color: 'var(--ds-text-muted)', margin: 0 }}>{L.t('sme.money.tx.description')}</p>
-        </div>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <PageHeader title={L.t('sme.money.tx.title')} description={L.t('sme.money.tx.description')} actions={
+        <>
           {canImport && accounts.some(a => a.status === 'active') && (
             <Link href={`/crm/money/transactions/import${applied.account ? `?account=${applied.account}` : ''}`} style={{ ...secondaryButton, textDecoration: 'none' }}>
               {L.t('sme.money.tx.import')}
@@ -93,8 +90,8 @@ export function TransactionsPage() {
           {canPost && accounts.some(a => a.status === 'active') && (
             <button type="button" style={primaryButton} onClick={() => setAdding(!adding)}>{L.t('sme.money.tx.add')}</button>
           )}
-        </div>
-      </div>
+        </>
+      } />
 
       <SmeGate permission="sme.ledger.read">
         {currentOrg && adding && (

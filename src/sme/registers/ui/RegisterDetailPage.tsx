@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useOrg, useOrgPermission } from '@/store/orgStore';
 import { smeApi, errorText, type SmeApiError } from '@/sme/api/client';
@@ -10,6 +9,7 @@ import { SmeGate } from '@/sme/profile/ui/SmeGate';
 import { Chip, Field, FormError, card, input, muted, parseAmount, primaryButton, secondaryButton, useIdempotencyKey, useLedgerText } from '@/sme/ledger/ui/shared';
 import { isCurrencyCode, money, toMajorString } from '@/sme/money';
 import { RegisterNote } from '@/sme/receivables/ui/RegisterNote';
+import { PageHeader } from '@/sme/ui/PageHeader';
 import { REGISTERS, STATUS_TONE, type RegisterConfig, type RegisterKind, type RegisterStatus } from './config';
 import { usePartyName } from './RegisterListPage';
 import { CHANNELS } from '@/sme/ledger/api/schemas';
@@ -69,15 +69,13 @@ export function RegisterDetailPage({ kind }: { kind: RegisterKind }) {
   const cur = invoice.currency;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '1000px' }}>
-      <div>
-        <Link href={cfg.route} style={{ fontSize: '13px', color: 'var(--ds-primary)' }}>{L.t(`${cfg.msg}.back`)}</Link>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', marginTop: '6px' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--ds-text-heading)', margin: 0 }}>{L.t(`${cfg.msg}.recordTitle`, { number: (invoice[cfg.refField] as string | null | undefined) || '—' })}</h1>
-          <Chip tone={STATUS_TONE[status]}>{L.t(`${cfg.statusMsg}.${status}`)}</Chip>
-        </div>
-        <p style={{ ...muted, fontSize: '13px', marginTop: '4px' }}>{partyName(invoice[`${cfg.party}_company_id`] ?? null, invoice[`${cfg.party}_contact_id`] ?? null)}</p>
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <PageHeader
+        back={{ href: cfg.route, label: L.t(`${cfg.msg}.back`) }}
+        title={L.t(`${cfg.msg}.recordTitle`, { number: (invoice[cfg.refField] as string | null | undefined) || '—' })}
+        badge={<Chip tone={STATUS_TONE[status]}>{L.t(`${cfg.statusMsg}.${status}`)}</Chip>}
+        description={partyName(invoice[`${cfg.party}_company_id`] ?? null, invoice[`${cfg.party}_contact_id`] ?? null)}
+      />
       <SmeGate permission={cfg.readPerm}>
         {kind === 'invoice' && <RegisterNote />}
         <section style={{ ...card, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }} aria-label={L.t(`${cfg.msg}.summary`)}>

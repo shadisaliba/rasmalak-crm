@@ -385,4 +385,7 @@ export default {
   'header.switchToArabic': 'التبديل إلى العربية',
   'header.lightMode': 'التبديل إلى الوضع الفاتح',
   'header.darkMode': 'التبديل إلى الوضع الداكن',
+  'brand.name': 'راسمالك',
+  'nav.closeMenu': 'إغلاق القائمة',
+  'nav.main': 'الرئيسية',
 };

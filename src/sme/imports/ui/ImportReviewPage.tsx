@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useOrg, useOrgPermission } from '@/store/orgStore';
 import { smeApi, errorText, type SmeApiError } from '@/sme/api/client';
 import { DataState } from '@/sme/ui/DataState';
+import { PageHeader } from '@/sme/ui/PageHeader';
 import { SmeGate } from '@/sme/profile/ui/SmeGate';
 import { CHANNELS } from '@/sme/ledger/api/schemas';
 import {
@@ -123,12 +124,9 @@ export function ImportReviewPage() {
   const canCommit = !!detail && detail.summary.pending === 0 && accepted > 0 && canPost && !busy;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '1100px' }}>
-      <div>
-        <Link href="/crm/money/transactions" style={{ fontSize: '13px', color: 'var(--ds-primary)' }}>{L.t('sme.import.back')}</Link>
-        <h1 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--ds-text-heading)', margin: '6px 0 4px' }}>{L.t('sme.import.review.title')}</h1>
-        {b && <p style={{ fontSize: '13px', color: 'var(--ds-text-muted)', margin: 0, overflowWrap: 'anywhere' }}>{L.t('sme.import.review.subtitle', { file: b.file_name, account: accountName })}</p>}
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <PageHeader back={{ href: '/crm/money/transactions', label: L.t('sme.import.back') }} title={L.t('sme.import.review.title')}
+        description={b ? L.t('sme.import.review.subtitle', { file: b.file_name, account: accountName }) : undefined} />
       <SmeGate permission="sme.imports.execute">
         {loadError ? (
           <DataState state="failed" message={errorText(loadError, L.intl.locale)} onRetry={reload} />

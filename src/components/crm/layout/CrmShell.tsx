@@ -46,8 +46,11 @@ export function CrmShell({ children }: { children: React.ReactNode }) {
             overflowY: 'auto',
           }}
         >
-          <DemoBanner />
-          {children}
+          {/* One centred content column so every page lines up the same way. */}
+          <div style={{ maxWidth: '1200px', marginInline: 'auto', width: '100%' }}>
+            <DemoBanner />
+            {children}
+          </div>
         </main>
       </div>
 
