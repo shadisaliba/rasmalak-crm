@@ -53,6 +53,10 @@ export default {
   'role.sales_rep.desc': 'إنشاء وإدارة الصفقات وجهات الاتصال',
   'role.viewer': 'مشاهد',
   'role.viewer.desc': 'صلاحية قراءة فقط للبيانات والتقارير',
+  'role.bookkeeper': 'محاسب',
+  'role.bookkeeper.desc': 'يسجّل الحركات والفواتير؛ دون الوصول إلى مسار المبيعات',
+  'role.adviser': 'مستشار',
+  'role.adviser.desc': 'يطّلع على المالية والتقارير في الأقسام التي تختارها',
 
   // Team
   'team.invite': 'دعوة عضو',

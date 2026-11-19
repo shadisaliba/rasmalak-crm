@@ -46,6 +46,29 @@ const DEFAULT_PERMISSIONS: CrmPermissions = {
   'import.execute': false,
   'audit.view': false,
   'fields.manage': false,
+  'sme.profile.read': false,
+  'sme.profile.manage': false,
+  'sme.ledger.read': false,
+  'sme.ledger.post': false,
+  'sme.ledger.reverse': false,
+  'sme.imports.execute': false,
+  'sme.parties.read': false,
+  'sme.parties.identifiers': false,
+  'sme.receivables.read': false,
+  'sme.receivables.write': false,
+  'sme.payables.read': false,
+  'sme.payables.write': false,
+  'sme.forecast.read': false,
+  'sme.forecast.scenario': false,
+  'sme.reports.export': false,
+  'sme.calc.run': false,
+  'sme.calc.save': false,
+  'sme.assistant.use': false,
+  'sme.learn.use': false,
+  'sme.compliance.read': false,
+  'sme.compliance.confirm': false,
+  'sme.audit.read': false,
+  'sme.access.manage': false,
 };
 
 interface OrgContextType {
@@ -59,7 +82,7 @@ interface OrgContextType {
   createOrg: (data: CreateOrgInput) => Promise<Organization | null>;
   updateOrg: (data: Partial<Organization>) => Promise<void>;
   invitations: OrgInvitation[];
-  inviteMember: (email: string, role: string) => Promise<{ ok: true; token: string } | ({ ok: false } & RpcFailure)>;
+  inviteMember: (email: string, role: string, modules?: string[] | null) => Promise<{ ok: true; token: string } | ({ ok: false } & RpcFailure)>;
   revokeInvitation: (invitationId: string) => Promise<boolean>;
   refreshInvitations: () => Promise<void>;
   acceptInvitation: (token: string) => Promise<{ ok: true; orgId: string } | ({ ok: false } & RpcFailure)>;
@@ -83,11 +106,11 @@ export function OrgProvider({ children }: { children: ReactNode }) {
   const userId = useAuthStore((state) => state.user?.id ?? null);
   const initialized = useAuthStore((state) => state.initialized);
 
-  // Resolve permissions from role name by looking up org_roles
-  const resolvePermissions = useCallback((roleName: string, roles: OrgRole[]): CrmPermissions => {
-    const roleEntry = roles.find(r => r.name === roleName);
-    if (!roleEntry) return DEFAULT_PERMISSIONS;
-    return { ...DEFAULT_PERMISSIONS, ...roleEntry.permissions } as CrmPermissions;
+  // The database is the source of truth: member overrides and SME module scopes included.
+  const resolvePermissions = useCallback(async (orgId: string): Promise<CrmPermissions> => {
+    const { data, error } = await supabase.rpc('sme_my_permissions', { p_org: orgId });
+    if (error || !data) return DEFAULT_PERMISSIONS;
+    return { ...DEFAULT_PERMISSIONS, ...(data as Partial<CrmPermissions>) };
   }, []);
 
   // Load user's org on auth ready
@@ -159,8 +182,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
         } else if (roles) {
           const mappedRoles = roles.map(r => mapRow<OrgRole>(r));
           setOrgRoles(mappedRoles);
-          // Resolve current user's permissions
-          setUserPermissions(resolvePermissions(firstMembership.role, mappedRoles));
+          setUserPermissions(await resolvePermissions(org.id));
         }
       } catch (err) {
         console.warn('[OrgStore] Unexpected error loading org:', err);
@@ -222,7 +244,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
         const mappedRoles = roles.map(r => mapRow<OrgRole>(r));
         setOrgRoles(mappedRoles);
         setUserRole('owner');
-        setUserPermissions(resolvePermissions('owner', mappedRoles));
+        setUserPermissions(await resolvePermissions(org.id));
       }
 
       return org;
@@ -284,9 +306,9 @@ export function OrgProvider({ children }: { children: ReactNode }) {
   }, [currentOrg]);
 
   // Returns the one-time token; only its hash is stored, so this is the only chance to share the link.
-  const inviteMember = useCallback(async (email: string, role: string) => {
+  const inviteMember = useCallback(async (email: string, role: string, modules: string[] | null = null) => {
     if (!currentOrg) return { ok: false as const, code: 'ACCESS_DENIED', details: {} };
-    const { data, error } = await supabase.rpc('org_invite', { p_org: currentOrg.id, p_email: email, p_role: role });
+    const { data, error } = await supabase.rpc('org_invite', { p_org: currentOrg.id, p_email: email, p_role: role, p_modules: modules });
     if (error || typeof data !== 'string') return { ok: false as const, ...parseRpcError(error) };
     await refreshInvitations();
     return { ok: true as const, token: data };

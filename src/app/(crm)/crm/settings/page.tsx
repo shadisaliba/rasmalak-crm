@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useIntl } from 'react-intl';
-import { Kanban, Users, FileText, Shield, CreditCard, Link2, Activity, Lock, SlidersHorizontal } from 'lucide-react';
+import { Kanban, Users, FileText, Shield, CreditCard, Link2, Activity, Lock, SlidersHorizontal, KeyRound } from 'lucide-react';
 
 export default function CrmSettingsPage() {
   const intl = useIntl();
@@ -14,6 +14,7 @@ export default function CrmSettingsPage() {
     { path: '/crm/settings/security', icon: Lock, title: t('settings.security', 'Security'), titleAr: 'الأمان' },
     { path: '/crm/settings/preferences', icon: SlidersHorizontal, title: t('settings.preferences', 'Preferences'), titleAr: 'التفضيلات' },
     { path: '/crm/settings/pipeline', icon: Kanban, title: t('org.settings.pipeline', 'Pipeline Configuration'), titleAr: 'إعداد مسار المبيعات' },
+    { path: '/crm/settings/business/access', icon: KeyRound, title: t('sme.access.title', 'Roles and access'), titleAr: 'الأدوار والصلاحيات' },
     { path: '/crm/settings/team', icon: Users, title: t('org.settings.team', 'Team Management'), titleAr: 'إدارة الفريق' },
     { path: '/crm/settings/fields', icon: FileText, title: t('org.settings.fields', 'Custom Fields'), titleAr: 'الحقول المخصصة' },
     { path: '/crm/settings/audit', icon: Shield, title: t('org.settings.audit', 'Audit Log'), titleAr: 'سجل المراجعة' },

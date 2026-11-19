@@ -13,6 +13,7 @@ import api from './api';
 import documents from './documents';
 import verticals from './verticals';
 import errors from './errors';
+import sme from './sme';
 
 // Flatten all domain messages into a single object with prefixed keys
 function flatten(obj: Record<string, string>, prefix: string): Record<string, string> {
@@ -39,6 +40,7 @@ const messages: Record<string, string> = {
   ...flatten(documents, 'documents'),
   ...flatten(verticals, 'verticals'),
   ...flatten(errors, 'errors'),
+  ...flatten(sme, 'sme'),
 };
 
 export default messages;

@@ -53,6 +53,10 @@ export default {
   'role.sales_rep.desc': 'Create and manage own deals and contacts',
   'role.viewer': 'Viewer',
   'role.viewer.desc': 'Read-only access to data and reports',
+  'role.bookkeeper': 'Bookkeeper',
+  'role.bookkeeper.desc': 'Records transactions, invoices and bills; no CRM pipeline access',
+  'role.adviser': 'Adviser',
+  'role.adviser.desc': 'Reads finances and reports in the modules you choose',
 
   // Team
   'team.invite': 'Invite Member',

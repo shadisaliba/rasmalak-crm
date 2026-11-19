@@ -6,16 +6,13 @@ import { useIntl } from 'react-intl';
 import { Kanban, Users, MessageCircle, BarChart3, Upload, Bot } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { CURRENCIES } from '@/lib/constants';
+import { ORG_COUNTRIES } from '@/lib/countries';
 
 const INDUSTRIES = [
   'technology', 'real_estate', 'healthcare', 'retail', 'construction',
   'education', 'professional_services', 'manufacturing', 'hospitality', 'other',
 ] as const;
 
-const COUNTRIES = [
-  'jordan', 'uae', 'ksa', 'egypt', 'iraq',
-  'kuwait', 'qatar', 'bahrain', 'oman', 'other',
-] as const;
 
 const FEATURES = [
   { icon: Kanban, keyEn: 'Pipeline Management', keyAr: 'إدارة مسار المبيعات' },
@@ -162,7 +159,7 @@ export default function CrmSignupPage() {
               <input type="text" value={form.orgName} onChange={e => setField('orgName', e.target.value)} placeholder={isAr ? 'اسم المنظمة *' : 'Organization Name *'} required style={inputStyle} />
               <select value={form.country} onChange={e => setField('country', e.target.value)} style={inputStyle}>
                 <option value="">{isAr ? 'الدولة' : 'Country'}</option>
-                {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+                {ORG_COUNTRIES.map(c => <option key={c.code} value={c.code}>{intl.formatMessage({ id: `org.country.${c.labelKey}`, defaultMessage: c.labelKey })}</option>)}
               </select>
               <select value={form.industry} onChange={e => setField('industry', e.target.value)} style={inputStyle}>
                 <option value="">{isAr ? 'القطاع' : 'Industry'}</option>

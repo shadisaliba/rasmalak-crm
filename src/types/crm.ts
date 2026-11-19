@@ -36,6 +36,12 @@ export interface OrgMember {
   invitedAt: string | null;
   joinedAt: string;
   isActive: boolean;
+  /** null: every module the role allows. */
+  allowedModules: SmeModule[] | null;
+  approvedBy: string | null;
+  grantedAt: string;
+  revokedAt: string | null;
+  revokedBy: string | null;
 }
 
 export interface OrgInvitation {
@@ -58,7 +64,7 @@ export interface OrgRole {
   createdAt: string;
 }
 
-export type OrgRoleName = 'owner' | 'admin' | 'manager' | 'sales_rep' | 'viewer';
+export type OrgRoleName = 'owner' | 'admin' | 'manager' | 'bookkeeper' | 'sales_rep' | 'adviser' | 'viewer';
 
 export interface CrmPermissions {
   'contacts.read': boolean;
@@ -82,7 +88,60 @@ export interface CrmPermissions {
   'import.execute': boolean;
   'audit.view': boolean;
   'fields.manage': boolean;
+  // SME permissions (sme.<module>.<action>); module scopes narrow them per member.
+  'sme.profile.read': boolean;
+  'sme.profile.manage': boolean;
+  'sme.ledger.read': boolean;
+  'sme.ledger.post': boolean;
+  'sme.ledger.reverse': boolean;
+  'sme.imports.execute': boolean;
+  'sme.parties.read': boolean;
+  'sme.parties.identifiers': boolean;
+  'sme.receivables.read': boolean;
+  'sme.receivables.write': boolean;
+  'sme.payables.read': boolean;
+  'sme.payables.write': boolean;
+  'sme.forecast.read': boolean;
+  'sme.forecast.scenario': boolean;
+  'sme.reports.export': boolean;
+  'sme.calc.run': boolean;
+  'sme.calc.save': boolean;
+  'sme.assistant.use': boolean;
+  'sme.learn.use': boolean;
+  'sme.compliance.read': boolean;
+  'sme.compliance.confirm': boolean;
+  'sme.audit.read': boolean;
+  'sme.access.manage': boolean;
 }
+
+export const SME_PERMISSION_KEYS = [
+  'sme.profile.read',
+  'sme.profile.manage',
+  'sme.ledger.read',
+  'sme.ledger.post',
+  'sme.ledger.reverse',
+  'sme.imports.execute',
+  'sme.parties.read',
+  'sme.parties.identifiers',
+  'sme.receivables.read',
+  'sme.receivables.write',
+  'sme.payables.read',
+  'sme.payables.write',
+  'sme.forecast.read',
+  'sme.forecast.scenario',
+  'sme.reports.export',
+  'sme.calc.run',
+  'sme.calc.save',
+  'sme.assistant.use',
+  'sme.learn.use',
+  'sme.compliance.read',
+  'sme.compliance.confirm',
+  'sme.audit.read',
+  'sme.access.manage',
+] as const satisfies readonly (keyof CrmPermissions)[];
+
+export const SME_MODULES = ['access', 'assistant', 'audit', 'calc', 'compliance', 'forecast', 'imports', 'learn', 'ledger', 'parties', 'payables', 'profile', 'receivables', 'reports'] as const;
+export type SmeModule = (typeof SME_MODULES)[number];
 
 // ============================================================
 // CRM CONTACTS & COMPANIES
@@ -904,7 +963,7 @@ export type GatedFeature =
   | 'visual_automation' | 'whatsapp_business' | 'advanced_reports'
   | 'custom_roles' | 'email_tracking' | 'audit_trail'
   | 'api_access' | 'ai_deal_scoring' | 'lead_scoring'
-  | 'document_templates' | 'vertical_templates';
+  | 'document_templates' | 'vertical_templates' | 'sme_suite';
 
 export const PLAN_FEATURE_MAP: Record<GatedFeature, PlanTier[]> = {
   multiple_pipelines: ['organization', 'enterprise', 'custom'],
@@ -921,6 +980,8 @@ export const PLAN_FEATURE_MAP: Record<GatedFeature, PlanTier[]> = {
   lead_scoring: ['enterprise', 'custom'],
   document_templates: ['organization', 'enterprise', 'custom'],
   vertical_templates: ['enterprise', 'custom'],
+  // Placeholder tiers until pricing is decided (playbook §1.3); sme_enabled() in SQL mirrors this.
+  sme_suite: ['organization', 'enterprise', 'custom'],
 };
 
 export const PLAN_SEAT_LIMITS: Record<PlanTier, number> = {

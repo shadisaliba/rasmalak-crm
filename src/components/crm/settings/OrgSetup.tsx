@@ -7,16 +7,13 @@ import { useOrg } from '@/store/orgStore';
 import { CURRENCIES } from '@/lib/constants';
 import type { CreateOrgInput } from '@/types/crm';
 import { HOME_ROUTE } from '@/lib/routes';
+import { ORG_COUNTRIES } from '@/lib/countries';
 
 const INDUSTRIES = [
   'technology', 'real_estate', 'healthcare', 'retail', 'construction',
   'education', 'professional_services', 'manufacturing', 'hospitality', 'other',
 ] as const;
 
-const COUNTRIES = [
-  'jordan', 'uae', 'ksa', 'egypt', 'iraq',
-  'kuwait', 'qatar', 'bahrain', 'oman', 'other',
-] as const;
 
 export function OrgSetup() {
   const intl = useIntl();
@@ -213,9 +210,9 @@ export function OrgSetup() {
               style={inputStyle}
             >
               <option value="">{t('org.setup.countryPlaceholder', 'Select country')}</option>
-              {COUNTRIES.map(c => (
-                <option key={c} value={c}>
-                  {t(`org.country.${c}`, c)}
+              {ORG_COUNTRIES.map(c => (
+                <option key={c.code} value={c.code}>
+                  {t(`org.country.${c.labelKey}`, c.labelKey)}
                 </option>
               ))}
             </select>
