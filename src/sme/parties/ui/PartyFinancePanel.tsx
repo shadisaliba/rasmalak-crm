@@ -28,7 +28,9 @@ export function PartyFinancePanel({ party, roles, canEditRoles, onRolesChange }:
   const { currentOrg } = useOrg();
   const canIdentify = useOrgPermission('sme.parties.identifiers');
   const canReadReceivables = useOrgPermission('sme.receivables.read');
+  const canReadPayables = useOrgPermission('sme.payables.read');
   const [summary, setSummary] = useState<ReceivablesSummary | null>(null);
+  const [billSummary, setBillSummary] = useState<ReceivablesSummary | null>(null);
   const [items, setItems] = useState<Identifier[]>([]);
   const [revealed, setRevealed] = useState<Record<string, string>>({});
   const [kind, setKind] = useState<Identifier['kind']>('tax_number');
@@ -55,6 +57,15 @@ export function PartyFinancePanel({ party, roles, canEditRoles, onRolesChange }:
     }).then(({ data }) => { if (!ignore && data) setSummary(data as ReceivablesSummary); });
     return () => { ignore = true; };
   }, [currentOrg, canReadReceivables, column, partyId]);
+
+  useEffect(() => {
+    if (!currentOrg || !canReadPayables) return;
+    let ignore = false;
+    supabase.rpc('sme_party_payables_summary', {
+      p_org: currentOrg.id, p_company: column === 'company_id' ? partyId : null, p_contact: column === 'contact_id' ? partyId : null,
+    }).then(({ data }) => { if (!ignore && data) setBillSummary(data as ReceivablesSummary); });
+    return () => { ignore = true; };
+  }, [currentOrg, canReadPayables, column, partyId]);
 
   const toggleRole = (role: PartyRole, on: boolean) =>
     onRolesChange(on ? [...new Set([...roles, role])] : roles.filter(r => r !== role));
@@ -140,7 +151,17 @@ export function PartyFinancePanel({ party, roles, canEditRoles, onRolesChange }:
             </p>
             {summary.median_days_to_pay !== null && <p style={muted}>{L.t('sme.party.medianDaysToPay', { days: summary.median_days_to_pay, count: summary.paid_count })}</p>}
           </>
-        ) : <p style={muted}>{L.t('sme.party.recordsEmpty')}</p>}
+        ) : null}
+        {billSummary && (billSummary.open_count > 0 || billSummary.paid_count > 0) && (
+          <>
+            <p style={{ margin: 0, fontSize: '14px', color: 'var(--ds-text-body)' }} data-testid="party-bills">
+              {L.t('sme.party.payablesSummary', { open: billSummary.open_count, overdue: billSummary.overdue_count })}
+              {billSummary.outstanding.map(o => ` · ${L.amount(o.minor, o.currency)}`).join('')}
+            </p>
+            {billSummary.median_days_to_pay !== null && <p style={muted}>{L.t('sme.party.medianDaysWePay', { days: billSummary.median_days_to_pay, count: billSummary.paid_count })}</p>}
+          </>
+        )}
+        {!(summary && (summary.open_count > 0 || summary.paid_count > 0)) && !(billSummary && (billSummary.open_count > 0 || billSummary.paid_count > 0)) && <p style={muted}>{L.t('sme.party.recordsEmpty')}</p>}
       </section>
     </div>
   );

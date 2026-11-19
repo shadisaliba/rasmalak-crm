@@ -151,6 +151,12 @@ begin
     values (b, 'b1000000-0000-4000-b000-0000000000c1', 1, 'B line', 1, 1000, 1000, 0);
   insert into sme_invoice_allocations (org_id, invoice_id, transaction_id, amount_minor, idempotency_key, created_by)
     values (b, 'b1000000-0000-4000-b000-0000000000c1', 'b1000000-0000-4000-b000-0000000000f1', 500, 'b-alloc', ub);
+  insert into sme_bills (id, org_id, supplier_company_id, issue_date, due_date, currency, subtotal_minor, total_minor, idempotency_key, created_by)
+    values ('b1000000-0000-4000-b000-0000000000d1', b, (select id from crm_companies where org_id = b limit 1), current_date, current_date, 'JOD', 1000, 1000, 'b-bill', ub);
+  insert into sme_bill_lines (org_id, bill_id, position, description, quantity, unit_price_minor, line_subtotal_minor, line_tax_minor)
+    values (b, 'b1000000-0000-4000-b000-0000000000d1', 1, 'B bill line', 1, 1000, 1000, 0);
+  insert into sme_bill_allocations (org_id, bill_id, transaction_id, amount_minor, idempotency_key, created_by)
+    values (b, 'b1000000-0000-4000-b000-0000000000d1', 'b1000000-0000-4000-b000-0000000000f1', 100, 'b-bill-alloc', ub);
 end $$;
 
 select is_empty(

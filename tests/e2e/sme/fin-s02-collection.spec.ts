@@ -42,7 +42,7 @@ test('FIN-S02: record, collect partially, and refuse over-allocation', async ({ 
   await page.getByRole('button', { name: 'Save as issued' }).click();
   await page.waitForURL(/\/crm\/money\/receivables\/[0-9a-f-]{36}$/, { timeout: 15_000 });
   const invoiceId = page.url().split('/').pop()!;
-  await expect(page.getByTestId('invoice-outstanding')).toHaveText('JOD 800.000');
+  await expect(page.getByTestId('register-outstanding-amount')).toHaveText('JOD 800.000');
   expect(await balance(accountId)).toBe(1000000);
 
   const receipt = await (await api('transactions', { account_id: accountId, value_date: '2026-11-10', amount_minor: '300000', description: `Payment ${run}` }, 'r1')).json();
@@ -50,7 +50,7 @@ test('FIN-S02: record, collect partially, and refuse over-allocation', async ({ 
   await page.getByRole('radio', { name: new RegExp(`Payment ${run}`) }).check();
   await expect(page.getByLabel('Amount in JOD')).toHaveValue('300.000');
   await page.getByRole('button', { name: 'Match', exact: true }).click();
-  await expect(page.getByTestId('invoice-outstanding')).toHaveText('JOD 500.000');
+  await expect(page.getByTestId('register-outstanding-amount')).toHaveText('JOD 500.000');
   await expect(page.getByText('Partly paid')).toBeVisible();
   expect(await balance(accountId)).toBe(1300000);
 

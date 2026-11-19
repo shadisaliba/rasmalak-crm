@@ -18,5 +18,5 @@ export const GET = smeRoute<unknown, { id: string }>(async ({ request, db, param
     ? await db.from('sme_transactions').select('id, value_date, description, account_id').eq('org_id', org).in('id', txIds)
     : { data: [], error: null };
   if (error) throw fromDbError(error);
-  return { body: { invoice: invoice.data, balance: balance.data, lines: lines.data ?? [], allocations: allocations.data ?? [], transactions: txs ?? [] } };
+  return { body: { record: invoice.data, balance: balance.data, lines: lines.data ?? [], allocations: allocations.data ?? [], transactions: txs ?? [] } };
 });

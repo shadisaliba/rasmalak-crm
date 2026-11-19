@@ -22,6 +22,7 @@ import {
   ArrowLeftRight,
   Building2,
   ReceiptText,
+  FileMinus,
 } from 'lucide-react';
 
 interface CrmSidebarProps {
@@ -46,6 +47,7 @@ const MONEY_ITEMS = [
   { id: 'money-accounts', path: '/crm/money/accounts', icon: Landmark, labelKey: 'sme.nav.accounts', labelDefault: 'Accounts' },
   { id: 'money-transactions', path: '/crm/money/transactions', icon: ArrowLeftRight, labelKey: 'sme.nav.transactions', labelDefault: 'Transactions' },
   { id: 'money-receivables', path: '/crm/money/receivables', icon: ReceiptText, labelKey: 'sme.nav.receivables', labelDefault: 'Invoice records' },
+  { id: 'money-payables', path: '/crm/money/payables', icon: FileMinus, labelKey: 'sme.nav.payables', labelDefault: 'Bills' },
 ] as const;
 
 const SECONDARY_ITEMS = [
@@ -64,8 +66,9 @@ export function CrmSidebar({ isOpen, onClose }: CrmSidebarProps) {
   const smeEnabled = useSmeEnabled();
   const canReadLedger = useOrgPermission('sme.ledger.read');
   const canReadReceivables = useOrgPermission('sme.receivables.read');
-  const showMoney = smeEnabled && (canReadLedger || canReadReceivables);
-  const moneyItems = MONEY_ITEMS.filter(i => (i.id === 'money-receivables' ? canReadReceivables : canReadLedger));
+  const canReadPayables = useOrgPermission('sme.payables.read');
+  const showMoney = smeEnabled && (canReadLedger || canReadReceivables || canReadPayables);
+  const moneyItems = MONEY_ITEMS.filter(i => (i.id === 'money-receivables' ? canReadReceivables : i.id === 'money-payables' ? canReadPayables : canReadLedger));
 
   const isActive = (path: string) => {
     if (path === '/crm') return pathname === '/crm';
