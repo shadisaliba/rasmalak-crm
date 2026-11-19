@@ -15,7 +15,7 @@ const fieldStyle: CSSProperties = {
   background: 'var(--ds-bg-input)', color: 'var(--ds-text-body)', width: '100%', maxWidth: '420px',
 };
 const labelStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px', fontWeight: 500, color: 'var(--ds-text-body)' };
-export const primaryButton: CSSProperties = { padding: '9px 16px', fontSize: '13px', fontWeight: 500, borderRadius: '8px', border: 'none', background: 'var(--ds-primary)', color: '#FFFFFF', cursor: 'pointer', alignSelf: 'flex-start' };
+export const primaryButton: CSSProperties = { padding: '9px 16px', fontSize: '13px', fontWeight: 500, borderRadius: '8px', border: 'none', background: 'var(--ds-primary)', color: 'var(--ds-on-primary)', cursor: 'pointer', alignSelf: 'flex-start' };
 const note: CSSProperties = { fontSize: '12px', color: 'var(--ds-text-muted)', margin: 0 };
 
 function useT() {

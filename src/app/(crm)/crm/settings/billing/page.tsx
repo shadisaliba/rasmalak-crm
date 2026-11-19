@@ -36,7 +36,7 @@ export default function BillingPage() {
           <div style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ds-text-heading)' }}>{t('billing.payment.title', 'Payment Method')}</div>
           <div style={{ fontSize: '13px', color: 'var(--ds-text-muted)' }}>{intl.locale.startsWith('ar') ? 'إدارة البطاقات وطرق الدفع' : 'Manage cards and payment methods'}</div>
         </div>
-        <button onClick={handleManagePayment} style={{ background: 'var(--ds-accent-primary)', color: '#FFFFFF', border: 'none', borderRadius: '8px', padding: '9px 18px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
+        <button onClick={handleManagePayment} style={{ background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', border: 'none', borderRadius: '8px', padding: '9px 18px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
           {t('billing.action.managePayment', 'Manage')}
         </button>
       </div>

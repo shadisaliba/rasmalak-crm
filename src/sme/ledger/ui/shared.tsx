@@ -19,7 +19,7 @@ export const input: CSSProperties = {
 export const label: CSSProperties = { display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '13px', fontWeight: 500, color: 'var(--ds-text-body)', minWidth: 0 };
 export const primaryButton: CSSProperties = {
   padding: '8px 14px', fontSize: '13px', fontWeight: 500, borderRadius: '8px', border: 'none',
-  background: 'var(--ds-primary)', color: '#FFFFFF', cursor: 'pointer',
+  background: 'var(--ds-primary)', color: 'var(--ds-on-primary)', cursor: 'pointer',
 };
 export const secondaryButton: CSSProperties = {
   padding: '7px 12px', fontSize: '13px', borderRadius: '8px', border: '1px solid var(--ds-border)',

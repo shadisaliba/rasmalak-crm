@@ -67,7 +67,7 @@ export function PrivacyPreview({ matched, unmatchedCount, onConfirm, onCancel }:
           <button onClick={onCancel} style={{ background: 'transparent', border: '1.5px solid var(--ds-border)', borderRadius: '8px', padding: '10px 20px', fontSize: '13px', cursor: 'pointer', color: 'var(--ds-text-body)' }}>
             {t('integrations.privacy.cancel', 'Cancel')}
           </button>
-          <button onClick={onConfirm} style={{ background: 'var(--ds-accent-primary)', color: '#FFFFFF', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
+          <button onClick={onConfirm} style={{ background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
             {t('integrations.privacy.confirm', 'Confirm & Start Syncing')}
           </button>
         </div>

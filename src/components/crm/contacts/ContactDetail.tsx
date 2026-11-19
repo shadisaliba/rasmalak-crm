@@ -166,7 +166,7 @@ export function ContactDetail({ contactId }: ContactDetailProps) {
               borderRadius: '8px',
               border: 'none',
               background: activeTab === tab.key ? 'var(--ds-accent-primary)' : 'var(--ds-bg-card)',
-              color: activeTab === tab.key ? '#FFFFFF' : 'var(--ds-text-body)',
+              color: activeTab === tab.key ? 'var(--ds-on-primary)' : 'var(--ds-text-body)',
               fontSize: '13px',
               fontWeight: 500,
               cursor: 'pointer',

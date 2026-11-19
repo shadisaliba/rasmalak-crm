@@ -99,7 +99,7 @@ export function OutboxPanel() {
     padding: '6px 12px', fontSize: '12px', fontWeight: 500, borderRadius: '8px', cursor: disabled ? 'not-allowed' : 'pointer',
     opacity: disabled ? 0.6 : 1,
     ...(variant === 'primary'
-      ? { background: 'var(--ds-primary)', color: '#FFFFFF', border: 'none' }
+      ? { background: 'var(--ds-primary)', color: 'var(--ds-on-primary)', border: 'none' }
       : { background: 'transparent', color: 'var(--ds-text-body)', border: '1px solid var(--ds-border)' }),
   });
 

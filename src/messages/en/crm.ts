@@ -380,4 +380,9 @@ export default {
   'company.back': 'Back to companies',
   'company.contactsTab': 'Contacts ({count, number})',
   'company.noContacts': 'No contacts are linked to this company.',
+  'header.menu': 'Menu',
+  'header.switchToEnglish': 'Switch to English',
+  'header.switchToArabic': 'Switch to Arabic',
+  'header.lightMode': 'Switch to light mode',
+  'header.darkMode': 'Switch to dark mode',
 };

@@ -38,17 +38,19 @@ export const viewport: Viewport = {
 };
 
 // Sets lang, dir and theme before React hydrates so the first paint is already correct.
-// Arabic and right-to-left are the defaults when no preference has been saved.
+// Arabic, right-to-left and the dark theme are the defaults when no preference has been saved.
 const initScript = `
 (function() {
   var root = document.documentElement;
   var language = 'ar';
-  var theme = 'light';
+  var theme = 'dark';
   try {
     var stored = localStorage.getItem('rasmalak-storage');
-    var state = stored ? (JSON.parse(stored).state || {}) : {};
+    var parsed = stored ? JSON.parse(stored) : {};
+    var state = parsed.state || {};
     if (state.language === 'en' || state.language === 'ar') language = state.language;
-    if (state.theme === 'dark' || state.theme === 'light') theme = state.theme;
+    // Saved themes count from version 1, when dark became the default (see useStore).
+    if ((parsed.version || 0) >= 1 && (state.theme === 'dark' || state.theme === 'light')) theme = state.theme;
   } catch (e) {}
   root.lang = language;
   root.dir = language === 'ar' ? 'rtl' : 'ltr';

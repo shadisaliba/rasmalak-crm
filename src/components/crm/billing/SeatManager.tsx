@@ -64,7 +64,7 @@ export function SeatManager() {
           disabled={adding}
           style={{
             display: 'flex', alignItems: 'center', gap: '6px',
-            background: 'var(--ds-accent-primary)', color: '#FFFFFF',
+            background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)',
             border: 'none', borderRadius: '8px', padding: '9px 18px',
             fontSize: '13px', fontWeight: 500,
             cursor: adding ? 'not-allowed' : 'pointer',

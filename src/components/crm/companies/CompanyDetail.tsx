@@ -43,7 +43,7 @@ export function CompanyDetail({ companyId }: { companyId: string }) {
       <div role="tablist" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
         {tabs.map(x => (
           <button key={x.key} role="tab" type="button" aria-selected={tab === x.key} onClick={() => setTab(x.key)}
-            style={{ ...secondaryButton, background: tab === x.key ? 'var(--ds-primary)' : 'transparent', color: tab === x.key ? '#FFFFFF' : 'var(--ds-text-body)', borderColor: tab === x.key ? 'var(--ds-primary)' : 'var(--ds-border)' }}>
+            style={{ ...secondaryButton, background: tab === x.key ? 'var(--ds-primary)' : 'transparent', color: tab === x.key ? 'var(--ds-on-primary)' : 'var(--ds-text-body)', borderColor: tab === x.key ? 'var(--ds-primary)' : 'var(--ds-border)' }}>
             {x.label}
           </button>
         ))}

@@ -91,7 +91,7 @@ export function WorkflowBuilder({ workflow, onClose }: WorkflowBuilderProps) {
           disabled={saving}
           style={{
             display: 'flex', alignItems: 'center', gap: '0.5rem',
-            background: 'var(--ds-accent-primary)', color: '#FFFFFF', border: 'none',
+            background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', border: 'none',
             borderRadius: '8px', padding: '9px 18px', fontSize: '13px', fontWeight: 500,
             cursor: saving ? 'wait' : 'pointer', opacity: saving ? 0.7 : 1,
           }}

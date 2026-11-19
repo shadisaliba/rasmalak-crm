@@ -64,7 +64,7 @@ export function EmptyState({
           style={{
             marginTop: '1rem',
             background: 'var(--ds-accent-primary)',
-            color: '#FFFFFF',
+            color: 'var(--ds-on-primary)',
             border: 'none',
             borderRadius: '8px',
             padding: '9px 18px',

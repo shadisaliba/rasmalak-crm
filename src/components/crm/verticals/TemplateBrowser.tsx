@@ -113,7 +113,7 @@ export function TemplateBrowser({ onInstall }: { onInstall: (slug: string) => Pr
                 style={{
                   flex: 1, padding: '8px', fontSize: '12px', fontWeight: 500, borderRadius: '8px',
                   border: 'none', background: 'var(--ds-accent-primary)',
-                  color: '#FFFFFF', cursor: 'pointer',
+                  color: 'var(--ds-on-primary)', cursor: 'pointer',
                 }}
               >
                 {t('verticals.install', 'Install')}

@@ -44,7 +44,7 @@ export function PlanSelector() {
             }}
           >
             {plan.featured && (
-              <div style={{ position: 'absolute', insetBlockStart: '-12px', insetInlineStart: '50%', transform: 'translateX(-50%)', background: 'var(--ds-accent-primary)', color: '#FFFFFF', padding: '2px 14px', borderRadius: '9999px', fontSize: '11px', fontWeight: 600 }}>
+              <div style={{ position: 'absolute', insetBlockStart: '-12px', insetInlineStart: '50%', transform: 'translateX(-50%)', background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', padding: '2px 14px', borderRadius: '9999px', fontSize: '11px', fontWeight: 600 }}>
                 {intl.locale.startsWith('ar') ? 'الأكثر شيوعاً' : 'Most Popular'}
               </div>
             )}
@@ -70,7 +70,7 @@ export function PlanSelector() {
                 borderRadius: '8px',
                 border: isCurrent ? '1.5px solid var(--ds-accent-primary)' : 'none',
                 background: isCurrent ? 'transparent' : 'var(--ds-accent-primary)',
-                color: isCurrent ? 'var(--ds-accent-primary)' : '#FFFFFF',
+                color: isCurrent ? 'var(--ds-accent-primary)' : 'var(--ds-on-primary)',
                 fontSize: '13px',
                 fontWeight: 500,
                 cursor: isCurrent ? 'default' : 'pointer',

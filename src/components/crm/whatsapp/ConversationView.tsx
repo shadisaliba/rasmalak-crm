@@ -164,7 +164,7 @@ export function ConversationView({ contactId, contactPhone, orgId, accountId }: 
               alignSelf: msg.direction === 'outbound' ? 'flex-end' : 'flex-start',
               maxWidth: '75%', padding: '8px 12px', borderRadius: '12px',
               background: msg.direction === 'outbound' ? 'var(--ds-accent-primary)' : 'var(--ds-bg-page)',
-              color: msg.direction === 'outbound' ? '#FFFFFF' : 'var(--ds-text-body)',
+              color: msg.direction === 'outbound' ? 'var(--ds-on-primary)' : 'var(--ds-text-body)',
               fontSize: '13px', lineHeight: 1.5,
             }}
           >
@@ -200,7 +200,7 @@ export function ConversationView({ contactId, contactPhone, orgId, accountId }: 
           onClick={handleSend}
           disabled={!windowOpen || !text.trim() || sending}
           style={{
-            background: 'var(--ds-accent-primary)', color: '#FFFFFF', border: 'none',
+            background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', border: 'none',
             borderRadius: '8px', padding: '8px 12px', cursor: windowOpen ? 'pointer' : 'not-allowed',
             opacity: windowOpen && text.trim() ? 1 : 0.5,
           }}

@@ -183,6 +183,10 @@
   --ds-border: #E5E7EB;
   --ds-border-tinted: #D1FAE5;
   --ds-primary: #2D6A4F;
+  /* Used across the CRM for active items and primary actions; was referenced but never defined. */
+  --ds-accent-primary: #2D6A4F;
+  /* Text and icons on a primary background. */
+  --ds-on-primary: #FFFFFF;
   --ds-primary-hover: #1B4332;
   --ds-primary-glow: #22c55e;
   --ds-accent-gold: #D97706;
@@ -274,6 +278,8 @@
   --ds-border: rgba(255,255,255,0.1);
   --ds-border-tinted: rgba(45,106,79,0.2);
   --ds-primary: #4ADE80;
+  --ds-accent-primary: #4ADE80;
+  --ds-on-primary: #0B1410;
   --ds-primary-hover: #22c55e;
   --ds-primary-glow: #22c55e;
   --ds-accent-gold: #FBBF24;

@@ -168,7 +168,7 @@ export function MigrationWizard() {
           <p style={{ fontSize: '13px', color: 'var(--ds-text-muted)', marginBottom: '1rem' }}>
             {t('crm.import.orBrowse', 'or browse files')}
           </p>
-          <label style={{ display: 'inline-block', background: 'var(--ds-accent-primary)', color: '#FFFFFF', borderRadius: '8px', padding: '9px 18px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
+          <label style={{ display: 'inline-block', background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', borderRadius: '8px', padding: '9px 18px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
             {t('crm.import.uploadFile', 'Upload File')}
             <input type="file" accept=".csv" onChange={e => { const f = e.target.files?.[0]; if (f) handleFileUpload(f); }} style={{ display: 'none' }} />
           </label>
@@ -237,5 +237,5 @@ function Stat({ label, value, color }: { label: string; value: number; color: st
   );
 }
 
-const primaryBtnStyle: React.CSSProperties = { background: 'var(--ds-accent-primary)', color: '#FFFFFF', border: 'none', borderRadius: '8px', padding: '9px 18px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' };
+const primaryBtnStyle: React.CSSProperties = { background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', border: 'none', borderRadius: '8px', padding: '9px 18px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' };
 const secondaryBtnStyle: React.CSSProperties = { background: 'transparent', border: '1.5px solid #86EFAC', borderRadius: '8px', padding: '9px 18px', fontSize: '13px', fontWeight: 500, color: 'var(--ds-accent-primary)', cursor: 'pointer' };

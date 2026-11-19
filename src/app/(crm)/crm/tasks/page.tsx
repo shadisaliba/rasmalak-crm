@@ -27,7 +27,7 @@ export default function TasksPage() {
               padding: '6px 14px', border: 'none', cursor: 'pointer',
               fontSize: '12px', fontWeight: 500,
               background: view === 'list' ? 'var(--ds-accent-primary)' : 'transparent',
-              color: view === 'list' ? '#FFFFFF' : 'var(--ds-text-body)',
+              color: view === 'list' ? 'var(--ds-on-primary)' : 'var(--ds-text-body)',
             }}
           >
             <List size={14} />
@@ -40,7 +40,7 @@ export default function TasksPage() {
               padding: '6px 14px', border: 'none', cursor: 'pointer',
               fontSize: '12px', fontWeight: 500,
               background: view === 'calendar' ? 'var(--ds-accent-primary)' : 'transparent',
-              color: view === 'calendar' ? '#FFFFFF' : 'var(--ds-text-body)',
+              color: view === 'calendar' ? 'var(--ds-on-primary)' : 'var(--ds-text-body)',
             }}
           >
             <Calendar size={14} />

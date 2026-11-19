@@ -380,4 +380,9 @@ export default {
   'company.back': 'العودة إلى الشركات',
   'company.contactsTab': 'جهات الاتصال ({count, number})',
   'company.noContacts': 'لا جهات اتصال مرتبطة بهذه الشركة.',
+  'header.menu': 'القائمة',
+  'header.switchToEnglish': 'التبديل إلى الإنجليزية',
+  'header.switchToArabic': 'التبديل إلى العربية',
+  'header.lightMode': 'التبديل إلى الوضع الفاتح',
+  'header.darkMode': 'التبديل إلى الوضع الداكن',
 };

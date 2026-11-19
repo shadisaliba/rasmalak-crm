@@ -302,7 +302,7 @@ export function PipelineBoard() {
                 onClick={handleWonLostConfirm}
                 style={{
                   background: wonLostModal.isWon ? 'var(--ds-accent-primary)' : 'var(--color-danger, #B54747)',
-                  color: '#FFFFFF',
+                  color: 'var(--ds-on-primary)',
                   border: 'none',
                   borderRadius: '8px',
                   padding: '8px 16px',

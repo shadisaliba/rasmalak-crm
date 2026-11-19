@@ -55,7 +55,7 @@ export function buttonStyle(variant: 'primary' | 'secondary' | 'danger', disable
     opacity: disabled ? 0.6 : 1,
     alignSelf: 'flex-start',
   };
-  if (variant === 'primary') return { ...base, background: 'var(--ds-primary)', color: '#FFFFFF', border: 'none' };
+  if (variant === 'primary') return { ...base, background: 'var(--ds-primary)', color: 'var(--ds-on-primary)', border: 'none' };
   if (variant === 'danger') return { ...base, background: 'var(--ds-error-bg)', color: 'var(--ds-error-text)', border: '1px solid var(--ds-error-border)' };
   return { ...base, background: 'transparent', color: 'var(--ds-text-body)', border: '1px solid var(--ds-border)' };
 }

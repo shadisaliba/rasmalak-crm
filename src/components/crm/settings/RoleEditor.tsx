@@ -137,7 +137,7 @@ export function RoleEditor() {
                 {isAr ? (selectedRole.nameAr || selectedRole.name) : selectedRole.name}
               </h3>
               {!selectedRole.isSystem && (
-                <button onClick={handleSave} style={{ background: 'var(--ds-accent-primary)', color: '#FFFFFF', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
+                <button onClick={handleSave} style={{ background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
                   {t('crm.action.save', 'Save')}
                 </button>
               )}

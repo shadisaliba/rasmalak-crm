@@ -54,7 +54,7 @@ export function TemplateGallery() {
               padding: '6px 14px', fontSize: '12px', fontWeight: category === cat ? 500 : 400,
               borderRadius: '999px', cursor: 'pointer',
               background: category === cat ? 'var(--ds-accent-primary)' : 'var(--ds-bg-card)',
-              color: category === cat ? '#FFFFFF' : 'var(--ds-text-body)',
+              color: category === cat ? 'var(--ds-on-primary)' : 'var(--ds-text-body)',
               border: category === cat ? 'none' : '0.5px solid var(--ds-border)',
             }}
           >
@@ -124,7 +124,7 @@ export function TemplateGallery() {
                     borderRadius: '8px', cursor: isInstalled ? 'default' : 'pointer',
                     border: isInstalled ? '0.5px solid var(--ds-border)' : 'none',
                     background: isInstalled ? 'transparent' : 'var(--ds-accent-primary)',
-                    color: isInstalled ? 'var(--ds-accent-primary)' : '#FFFFFF',
+                    color: isInstalled ? 'var(--ds-accent-primary)' : 'var(--ds-on-primary)',
                     opacity: installing === tpl.slug ? 0.7 : 1,
                   }}
                 >

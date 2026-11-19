@@ -55,7 +55,7 @@ export function UpgradeModal({ reason, featureName, onClose }: UpgradeModalProps
           <button onClick={onClose} style={{ background: 'transparent', border: '1.5px solid var(--ds-border)', borderRadius: '8px', padding: '10px 20px', fontSize: '13px', cursor: 'pointer', color: 'var(--ds-text-body)' }}>
             {t('crm.action.cancel', 'Cancel')}
           </button>
-          <button onClick={handleUpgrade} style={{ background: 'var(--ds-accent-primary)', color: '#FFFFFF', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
+          <button onClick={handleUpgrade} style={{ background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
             {t('billing.action.upgrade', 'Upgrade')} → {t(`billing.plan.${nextTier}`, nextTier)}
           </button>
         </div>

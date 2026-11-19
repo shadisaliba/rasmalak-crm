@@ -181,7 +181,7 @@ export function CommunicationForm({ contactId, dealId, onClose }: CommunicationF
               <button
                 type="submit"
                 disabled={isSubmitting}
-                style={{ background: isSubmitting ? 'var(--ds-text-muted)' : 'var(--ds-accent-primary)', color: '#FFFFFF', border: 'none', borderRadius: '8px', padding: '9px 18px', fontSize: '13px', fontWeight: 500, cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
+                style={{ background: isSubmitting ? 'var(--ds-text-muted)' : 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', border: 'none', borderRadius: '8px', padding: '9px 18px', fontSize: '13px', fontWeight: 500, cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
               >
                 {t('crm.action.save', 'Save')}
               </button>

@@ -60,7 +60,7 @@ export function InstallWizard({ slug, templateName, onComplete }: InstallWizardP
             <button onClick={onComplete} style={{ padding: '9px 18px', fontSize: '13px', borderRadius: '8px', border: '0.5px solid var(--ds-border)', background: 'transparent', color: 'var(--ds-text-body)', cursor: 'pointer' }}>
               {t('verticals.cancel', 'Cancel')}
             </button>
-            <button onClick={handleInstall} style={{ padding: '9px 18px', fontSize: '13px', fontWeight: 500, borderRadius: '8px', border: 'none', background: 'var(--ds-accent-primary)', color: '#FFFFFF', cursor: 'pointer' }}>
+            <button onClick={handleInstall} style={{ padding: '9px 18px', fontSize: '13px', fontWeight: 500, borderRadius: '8px', border: 'none', background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', cursor: 'pointer' }}>
               {t('verticals.confirm', 'Install')}
             </button>
           </div>
@@ -87,7 +87,7 @@ export function InstallWizard({ slug, templateName, onComplete }: InstallWizardP
           </p>
           <button
             onClick={() => router.push('/crm')}
-            style={{ padding: '9px 18px', fontSize: '13px', fontWeight: 500, borderRadius: '8px', border: 'none', background: 'var(--ds-accent-primary)', color: '#FFFFFF', cursor: 'pointer' }}
+            style={{ padding: '9px 18px', fontSize: '13px', fontWeight: 500, borderRadius: '8px', border: 'none', background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', cursor: 'pointer' }}
           >
             {t('verticals.viewPipeline', 'View Pipeline')}
           </button>

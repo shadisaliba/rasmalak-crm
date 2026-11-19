@@ -78,7 +78,7 @@ export function RegisterListPage({ kind }: { kind: RegisterKind }) {
           {(['list', 'ageing'] as const).map(v => (
             <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => setView(v)}
               style={{ padding: '7px 12px', fontSize: '13px', borderRadius: '8px', border: '1px solid var(--ds-border)', cursor: 'pointer',
-                       background: view === v ? 'var(--ds-primary)' : 'transparent', color: view === v ? '#FFFFFF' : 'var(--ds-text-body)' }}>
+                       background: view === v ? 'var(--ds-primary)' : 'transparent', color: view === v ? 'var(--ds-on-primary)' : 'var(--ds-text-body)' }}>
               {L.t(`sme.ageing.tab.${v}`)}
             </button>
           ))}

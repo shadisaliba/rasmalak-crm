@@ -79,7 +79,7 @@ export function WhatsAppImport({ onImport, onCancel }: WhatsAppImportProps) {
               disabled={!rawText.trim()}
               style={{
                 background: rawText.trim() ? 'var(--ds-accent-primary)' : 'var(--ds-text-muted)',
-                color: '#FFFFFF', border: 'none', borderRadius: '8px',
+                color: 'var(--ds-on-primary)', border: 'none', borderRadius: '8px',
                 padding: '8px 16px', fontSize: '13px', cursor: rawText.trim() ? 'pointer' : 'not-allowed',
               }}
             >
@@ -169,7 +169,7 @@ export function WhatsAppImport({ onImport, onCancel }: WhatsAppImportProps) {
               onClick={handleConfirm}
               style={{
                 display: 'flex', alignItems: 'center', gap: '6px',
-                background: 'var(--ds-accent-primary)', color: '#FFFFFF',
+                background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)',
                 border: 'none', borderRadius: '8px', padding: '8px 16px',
                 fontSize: '13px', cursor: 'pointer',
               }}

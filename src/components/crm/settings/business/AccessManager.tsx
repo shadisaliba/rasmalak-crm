@@ -16,7 +16,7 @@ const field = { padding: '8px 12px', fontSize: '13px', border: '1px solid var(--
 const button = (primary: boolean, danger = false) => ({
   padding: '7px 14px', fontSize: '13px', fontWeight: 500, borderRadius: '8px', cursor: 'pointer',
   ...(primary
-    ? { background: danger ? 'var(--ds-error)' : 'var(--ds-primary)', color: '#FFFFFF', border: 'none' }
+    ? { background: danger ? 'var(--ds-error)' : 'var(--ds-primary)', color: 'var(--ds-on-primary)', border: 'none' }
     : { background: 'transparent', color: danger ? 'var(--ds-error-text)' : 'var(--ds-text-body)', border: `1px solid ${danger ? 'var(--ds-error-border)' : 'var(--ds-border)'}` }),
 });
 

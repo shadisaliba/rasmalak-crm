@@ -73,7 +73,7 @@ export default function AcceptInvitationPage() {
               type="button"
               onClick={accept}
               disabled={busy || errorReason === 'used' || errorReason === 'expired' || errorReason === 'invalid'}
-              style={{ padding: '10px 16px', fontSize: '14px', fontWeight: 500, borderRadius: '8px', border: 'none', background: 'var(--ds-primary)', color: '#FFFFFF', cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.6 : 1, alignSelf: 'flex-start' }}
+              style={{ padding: '10px 16px', fontSize: '14px', fontWeight: 500, borderRadius: '8px', border: 'none', background: 'var(--ds-primary)', color: 'var(--ds-on-primary)', cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.6 : 1, alignSelf: 'flex-start' }}
             >
               {busy ? t('org.invite.accepting') : t('org.invite.accept')}
             </button>

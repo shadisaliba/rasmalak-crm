@@ -117,7 +117,7 @@ export default function CrmSignupPage() {
             ? 'إدارة العملاء بالعربية أولاً. مستشار ذكي مدمج. تكامل واتساب. مسار مبيعات مرئي.'
             : 'Arabic-first CRM. Built-in AI advisor. WhatsApp integration. Visual sales pipeline.'}
         </p>
-        <a href="#signup" style={{ display: 'inline-block', background: 'var(--ds-accent-primary)', color: '#FFFFFF', padding: '12px 28px', borderRadius: '8px', fontSize: '15px', fontWeight: 600, textDecoration: 'none' }}>
+        <a href="#signup" style={{ display: 'inline-block', background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', padding: '12px 28px', borderRadius: '8px', fontSize: '15px', fontWeight: 600, textDecoration: 'none' }}>
           {isAr ? 'ابدأ تجربتك المجانية' : 'Start Your Free Trial'}
         </a>
       </div>
@@ -168,7 +168,7 @@ export default function CrmSignupPage() {
 
               <button type="submit" disabled={loading} style={{
                 background: loading ? 'var(--ds-text-muted)' : 'var(--ds-accent-primary)',
-                color: '#FFFFFF', border: 'none', borderRadius: '8px',
+                color: 'var(--ds-on-primary)', border: 'none', borderRadius: '8px',
                 padding: '12px', fontSize: '14px', fontWeight: 600,
                 cursor: loading ? 'not-allowed' : 'pointer', marginTop: '8px',
               }}>

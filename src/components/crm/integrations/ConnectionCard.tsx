@@ -74,7 +74,7 @@ export function ConnectionCard({ serviceName, serviceKey, connection, onConnect,
       {!connection && (
         <button
           onClick={onConnect}
-          style={{ background: 'var(--ds-accent-primary)', color: '#FFFFFF', border: 'none', borderRadius: '8px', padding: '9px 18px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', width: '100%' }}
+          style={{ background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', border: 'none', borderRadius: '8px', padding: '9px 18px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', width: '100%' }}
         >
           {t('integrations.action.connect', 'Connect')}
         </button>

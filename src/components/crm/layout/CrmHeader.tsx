@@ -5,9 +5,18 @@ import { useIntl } from 'react-intl';
 import { useRouter } from 'next/navigation';
 import { useOrg } from '@/store/orgStore';
 import { useCrm } from '@/store/crmStore';
-import { Menu, Search, Bell, Check } from 'lucide-react';
+import type { CSSProperties } from 'react';
+import { Menu, Bell, Languages, Sun, Moon } from 'lucide-react';
+import { useStore } from '@/store/useStore';
+import { useAuthStore } from '@/store/authStore';
 import type { CrmNotification } from '@/types/crm';
 import { OrgSwitcher } from './OrgSwitcher';
+
+const iconButton: CSSProperties = {
+  width: '36px', height: '36px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+  borderRadius: '10px', border: '1px solid transparent', background: 'transparent', color: 'var(--ds-text-body)',
+  cursor: 'pointer', position: 'relative', flexShrink: 0,
+};
 
 interface CrmHeaderProps {
   onMenuToggle: () => void;
@@ -19,6 +28,10 @@ export function CrmHeader({ onMenuToggle }: CrmHeaderProps) {
   const { currentOrg } = useOrg();
   const { notifications, markNotificationRead, markAllNotificationsRead } = useCrm();
   const [showNotifs, setShowNotifs] = useState(false);
+  const theme = useStore(st => st.theme);
+  const toggleTheme = useStore(st => st.toggleTheme);
+  const setLanguage = useStore(st => st.setLanguage);
+  const userEmail = useAuthStore(st => st.user?.email ?? null);
   const notifRef = useRef<HTMLDivElement>(null);
 
   const t = (key: string, def: string) =>
@@ -67,23 +80,17 @@ export function CrmHeader({ onMenuToggle }: CrmHeaderProps) {
   return (
     <header
       style={{
-        height: '56px',
+        height: '60px',
         background: 'var(--ds-bg-card)',
-        borderBlockEnd: '0.5px solid var(--ds-border)',
+        borderBlockEnd: '1px solid var(--ds-border)',
         display: 'flex',
         alignItems: 'center',
-        paddingInlineStart: '1rem',
-        paddingInlineEnd: '1rem',
-        gap: '0.75rem',
+        paddingInline: '1rem',
+        gap: '8px',
       }}
     >
-      {/* Mobile hamburger */}
-      <button
-        onClick={onMenuToggle}
-        className="crm-header-menu"
-        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem', color: 'var(--ds-text-body)', display: 'none' }}
-        aria-label="Toggle menu"
-      >
+      <button onClick={onMenuToggle} className="crm-header-menu crm-header-btn" style={{ ...iconButton, display: 'none' }}
+        aria-label={t('crm.header.menu', 'Menu')}>
         <Menu size={20} />
       </button>
 
@@ -92,37 +99,40 @@ export function CrmHeader({ onMenuToggle }: CrmHeaderProps) {
 
       <div style={{ flex: 1 }} />
 
-      {/* Search placeholder */}
-      <div
-        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--ds-bg-page)', border: '1px solid var(--ds-border)', borderRadius: '8px', padding: '6px 12px', maxWidth: '280px', width: '100%' }}
-        className="crm-header-search"
-      >
-        <Search size={14} style={{ color: 'var(--ds-text-muted)', flexShrink: 0 }} />
-        <span style={{ fontSize: '13px', color: 'var(--ds-text-muted)' }}>
-          {t('crm.search.placeholder', 'Search...')}
-        </span>
-      </div>
+      <button type="button" className="crm-header-btn" onClick={() => setLanguage(isAr ? 'en' : 'ar')}
+        aria-label={t(isAr ? 'crm.header.switchToEnglish' : 'crm.header.switchToArabic', isAr ? 'Switch to English' : 'التبديل إلى العربية')}
+        style={{ ...iconButton, width: 'auto', paddingInline: '10px', gap: '6px', border: '1px solid var(--ds-border)', fontSize: '13px', fontWeight: 500 }}>
+        <Languages size={16} />
+        {/* The other language, written in that language. */}
+        <span className="crm-header-lang-long" lang={isAr ? 'en' : 'ar'}>{isAr ? 'English' : 'العربية'}</span>
+        <span className="crm-header-lang-short" lang={isAr ? 'en' : 'ar'} style={{ display: 'none' }}>{isAr ? 'EN' : 'ع'}</span>
+      </button>
 
-      <div style={{ flex: 1 }} />
+      <button type="button" className="crm-header-btn" onClick={toggleTheme} style={iconButton}
+        aria-label={t(theme === 'dark' ? 'crm.header.lightMode' : 'crm.header.darkMode', theme === 'dark' ? 'Light mode' : 'Dark mode')}>
+        {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+      </button>
 
       {/* Bell icon + notification dropdown */}
       <div ref={notifRef} style={{ position: 'relative' }}>
         <button
+          className="crm-header-btn"
           onClick={() => setShowNotifs(prev => !prev)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem', color: 'var(--ds-text-body)', position: 'relative' }}
+          style={iconButton}
           aria-label={t('crm.nav.notifications', 'Notifications')}
         >
-          <Bell size={20} />
+          <Bell size={19} />
           {unreadCount > 0 && (
             <span
               style={{
                 position: 'absolute',
-                insetBlockStart: '-2px',
-                insetInlineEnd: '-4px',
-                width: '16px',
+                insetBlockStart: '4px',
+                insetInlineEnd: '4px',
+                minWidth: '16px',
                 height: '16px',
-                borderRadius: '50%',
-                background: '#EF4444',
+                paddingInline: '3px',
+                borderRadius: '999px',
+                background: 'var(--ds-error)',
                 color: '#FFFFFF',
                 fontSize: '9px',
                 fontWeight: 700,
@@ -131,7 +141,7 @@ export function CrmHeader({ onMenuToggle }: CrmHeaderProps) {
                 justifyContent: 'center',
               }}
             >
-              {unreadCount > 9 ? '9+' : unreadCount}
+              {unreadCount > 9 ? intl.formatNumber(9) + '+' : intl.formatNumber(unreadCount)}
             </span>
           )}
         </button>
@@ -216,23 +226,26 @@ export function CrmHeader({ onMenuToggle }: CrmHeaderProps) {
         )}
       </div>
 
-      {/* Avatar circle */}
       <div
+        title={userEmail ?? undefined}
         style={{
           width: '32px', height: '32px', borderRadius: '50%',
           background: 'var(--ds-accent-primary)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: '#FFFFFF', fontSize: '13px', fontWeight: 600, flexShrink: 0,
+          color: 'var(--ds-on-primary)', fontSize: '13px', fontWeight: 600, flexShrink: 0, marginInlineStart: '4px',
         }}
       >
-        {orgName.charAt(0).toUpperCase() || 'C'}
+        {(userEmail ?? orgName).charAt(0).toUpperCase() || 'C'}
       </div>
 
       {/* Responsive CSS */}
       <style>{`
+        .crm-header-btn:hover { background: var(--ds-bg-tinted) !important; }
+        .crm-header-btn:focus-visible { outline: 2px solid var(--ds-accent-primary); outline-offset: 2px; }
         @media (max-width: 767px) {
-          .crm-header-menu { display: block !important; }
-          .crm-header-search { display: none !important; }
+          .crm-header-menu { display: inline-flex !important; }
+          .crm-header-lang-long { display: none !important; }
+          .crm-header-lang-short { display: inline !important; }
           .crm-notif-dropdown { width: 100vw !important; inset-inline-start: auto !important; inset-inline-end: -1rem !important; border-radius: 0 0 16px 16px !important; }
         }
       `}</style>

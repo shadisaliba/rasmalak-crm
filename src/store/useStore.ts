@@ -236,7 +236,7 @@ export const useStore = create<AppState>()(
       setLanguage: (language) => set({ language }),
 
       // Theme
-      theme: 'light',
+      theme: 'dark',
       setTheme: (theme) => set({ theme }),
       toggleTheme: () => set((state) => ({ theme: state.theme === 'light' ? 'dark' : 'light' })),
 
@@ -250,6 +250,12 @@ export const useStore = create<AppState>()(
     }),
     {
       name: 'rasmalak-storage',
+      // Version 1 made dark the default; earlier saved states carried light only as the old default.
+      version: 1,
+      migrate: (persisted, version) => {
+        const state = (persisted ?? {}) as Record<string, unknown>;
+        return (version < 1 ? { ...state, theme: 'dark' } : state) as never;
+      },
       partialize: (state) => ({
         currency: state.currency,
         language: state.language,

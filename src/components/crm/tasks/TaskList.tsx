@@ -90,7 +90,7 @@ export function TaskList() {
           <button
             style={{
               display: 'flex', alignItems: 'center', gap: '0.5rem',
-              background: 'var(--ds-accent-primary)', color: '#FFFFFF',
+              background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)',
               border: 'none', borderRadius: '8px', padding: '9px 18px',
               fontSize: '13px', fontWeight: 500, cursor: 'pointer',
             }}
@@ -234,7 +234,7 @@ function FilterPill({ label, active, onClick }: { label: string; active: boolean
         borderRadius: '9999px',
         border: 'none',
         background: active ? 'var(--ds-accent-primary)' : 'var(--ds-bg-card)',
-        color: active ? '#FFFFFF' : 'var(--ds-text-body)',
+        color: active ? 'var(--ds-on-primary)' : 'var(--ds-text-body)',
         fontSize: '12px',
         fontWeight: 500,
         cursor: 'pointer',

@@ -130,7 +130,7 @@ export function ContactList() {
               alignItems: 'center',
               gap: '0.5rem',
               background: 'var(--ds-accent-primary)',
-              color: '#FFFFFF',
+              color: 'var(--ds-on-primary)',
               border: 'none',
               borderRadius: '8px',
               padding: '9px 18px',
@@ -305,7 +305,7 @@ export function ContactList() {
             </p>
             <button
               onClick={() => setShowForm(false)}
-              style={{ marginTop: '1rem', background: 'var(--ds-accent-primary)', color: '#FFFFFF', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer' }}
+              style={{ marginTop: '1rem', background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer' }}
             >
               {t('crm.action.close', 'Close')}
             </button>

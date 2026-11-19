@@ -68,7 +68,7 @@ export function StageEditor() {
         </h2>
         <button
           onClick={() => { setShowAdd(true); setEditName(''); setEditNameAr(''); }}
-          style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--ds-accent-primary)', color: '#FFFFFF', border: 'none', borderRadius: '8px', padding: '8px 14px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', border: 'none', borderRadius: '8px', padding: '8px 14px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
         >
           <Plus size={14} />
           {t('crm.pipeline.addStage', 'Add Stage')}
@@ -94,7 +94,7 @@ export function StageEditor() {
                 <input value={editNameAr} onChange={e => setEditNameAr(e.target.value)} dir="rtl" style={inputStyle} placeholder="الاسم" />
                 <input type="color" value={editColor} onChange={e => setEditColor(e.target.value)} style={{ width: '32px', height: '32px', border: 'none', cursor: 'pointer' }} />
                 <input type="number" value={editProb} onChange={e => setEditProb(Number(e.target.value))} min={0} max={100} style={{ ...inputStyle, width: '60px' }} />
-                <button onClick={handleSave} style={{ background: 'var(--ds-accent-primary)', color: '#FFFFFF', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>
+                <button onClick={handleSave} style={{ background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>
                   {t('crm.action.save', 'Save')}
                 </button>
                 <button onClick={() => setEditingId(null)} style={{ background: 'none', border: '1px solid var(--ds-border)', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer', color: 'var(--ds-text-body)' }}>
@@ -127,7 +127,7 @@ export function StageEditor() {
             <input value={editName} onChange={e => setEditName(e.target.value)} style={inputStyle} placeholder="Stage name" />
             <input value={editNameAr} onChange={e => setEditNameAr(e.target.value)} dir="rtl" style={inputStyle} placeholder="اسم المرحلة" />
             <input type="color" value={editColor} onChange={e => setEditColor(e.target.value)} style={{ width: '32px', height: '32px', border: 'none', cursor: 'pointer' }} />
-            <button onClick={handleAdd} disabled={!editName.trim()} style={{ background: 'var(--ds-accent-primary)', color: '#FFFFFF', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>
+            <button onClick={handleAdd} disabled={!editName.trim()} style={{ background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>
               {t('crm.action.create', 'Create')}
             </button>
             <button onClick={() => setShowAdd(false)} style={{ background: 'none', border: '1px solid var(--ds-border)', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer', color: 'var(--ds-text-body)' }}>

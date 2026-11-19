@@ -107,7 +107,7 @@ export function ProposalGenerator({ orgId }: ProposalGeneratorProps) {
         disabled={!selectedTemplate || !selectedDeal || isLoading}
         style={{
           display: 'flex', alignItems: 'center', gap: '6px', padding: '9px 18px',
-          background: 'var(--ds-accent-primary)', color: '#FFFFFF', border: 'none',
+          background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', border: 'none',
           borderRadius: '8px', fontSize: '13px', fontWeight: 500,
           cursor: selectedTemplate && selectedDeal ? 'pointer' : 'not-allowed',
           opacity: selectedTemplate && selectedDeal ? 1 : 0.5,

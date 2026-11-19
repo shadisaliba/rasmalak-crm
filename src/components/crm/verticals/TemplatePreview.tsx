@@ -109,7 +109,7 @@ export function TemplatePreview({ template, onClose, onInstall }: TemplatePrevie
 
         <button onClick={onInstall} style={{
           width: '100%', padding: '10px', fontSize: '14px', fontWeight: 500, borderRadius: '10px',
-          border: 'none', background: 'var(--ds-accent-primary)', color: '#FFFFFF', cursor: 'pointer',
+          border: 'none', background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', cursor: 'pointer',
         }}>
           {t('verticals.installNow', 'Install Template')}
         </button>

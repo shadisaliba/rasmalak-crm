@@ -13,7 +13,7 @@ const fieldStyle = {
   background: 'var(--ds-bg-card)', color: 'var(--ds-text-body)', outline: 'none',
 } as const;
 const primaryButton = {
-  display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--ds-primary)', color: '#FFFFFF',
+  display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--ds-primary)', color: 'var(--ds-on-primary)',
   border: 'none', borderRadius: '8px', padding: '8px 14px', fontSize: '13px', fontWeight: 500, cursor: 'pointer',
 } as const;
 const secondaryButton = {

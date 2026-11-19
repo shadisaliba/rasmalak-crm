@@ -111,7 +111,7 @@ export function QuoteBuilder({ currency = 'USD', onGenerate }: QuoteBuilderProps
           disabled={items.every(i => !i.description || i.unitPrice === 0)}
           style={{
             marginTop: '16px', display: 'flex', alignItems: 'center', gap: '6px',
-            background: 'var(--ds-accent-primary)', color: '#FFFFFF', border: 'none',
+            background: 'var(--ds-accent-primary)', color: 'var(--ds-on-primary)', border: 'none',
             borderRadius: '8px', padding: '9px 18px', fontSize: '13px', fontWeight: 500, cursor: 'pointer',
           }}
         >

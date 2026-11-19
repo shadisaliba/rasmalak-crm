@@ -270,7 +270,7 @@ export function ContactForm({ contact, onClose, onSuccess }: ContactFormProps) {
               disabled={isSubmitting}
               style={{
                 background: isSubmitting ? 'var(--ds-text-muted)' : 'var(--ds-accent-primary)',
-                color: '#FFFFFF',
+                color: 'var(--ds-on-primary)',
                 border: 'none',
                 borderRadius: '8px',
                 padding: '9px 18px',

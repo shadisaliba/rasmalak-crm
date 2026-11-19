@@ -35,7 +35,7 @@ export function TrialBanner() {
         onClick={() => router.push('/crm/settings/billing')}
         style={{
           background: 'var(--ds-accent-primary)',
-          color: '#FFFFFF',
+          color: 'var(--ds-on-primary)',
           border: 'none',
           borderRadius: '6px',
           padding: '4px 12px',
