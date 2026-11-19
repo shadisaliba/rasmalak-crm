@@ -8,6 +8,10 @@ import { useIntl } from 'react-intl';
 import { Button, Input } from '@/components/ui';
 import { ThemeLanguageSwitcher } from '@/components';
 import { HOME_ROUTE, nextPathFromLocation } from '@/lib/routes';
+import { supabase } from '@/lib/supabaseClient';
+
+// Preview deployments set this to open straight into the demo account (see /api/demo/session).
+const DEMO_AUTO_LOGIN = process.env.NEXT_PUBLIC_DEMO_AUTO_LOGIN === 'true';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -22,12 +26,26 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockedUntil, setLockedUntil] = useState(0);
+  const [demo, setDemo] = useState<'working' | 'off'>(DEMO_AUTO_LOGIN ? 'working' : 'off');
 
   useEffect(() => {
     if (isAuthenticated) {
       router.push(nextPathFromLocation() ?? HOME_ROUTE);
     }
   }, [isAuthenticated, router]);
+
+  // Sign in to the demo account; ?manual=1 shows the normal form instead.
+  useEffect(() => {
+    if (!DEMO_AUTO_LOGIN || isAuthenticated) return;
+    let ignore = false;
+    const manual = new URLSearchParams(window.location.search).has('manual');
+    (manual ? Promise.reject(new Error('manual')) : fetch('/api/demo/session', { method: 'POST' }))
+      .then(res => (res.ok ? res.json() : Promise.reject(new Error('demo login unavailable'))))
+      .then(tokens => supabase.auth.setSession(tokens))
+      .then(({ error: sessionError }) => { if (sessionError) throw sessionError; })
+      .catch(() => { if (!ignore) setDemo('off'); });
+    return () => { ignore = true; };
+  }, [isAuthenticated]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +79,14 @@ export default function LoginPage() {
       setError(result.error || intl.formatMessage({ id: 'auth.login_error', defaultMessage: 'Login failed' }));
     }
   };
+
+  if (demo === 'working') {
+    return (
+      <div role="status" className="min-h-screen flex items-center justify-center" style={{ background: 'var(--ds-bg-page)', color: 'var(--ds-text-muted)', fontSize: '14px' }}>
+        {intl.formatMessage({ id: 'auth.demoOpening', defaultMessage: 'Opening the demo…' })}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex relative">

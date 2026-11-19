@@ -50,4 +50,5 @@ export default {
   master_money_subtitle: 'Join thousands of users in the MENA region taking control of their financial future. Track expenses, set budgets, and grow your wealth.',
   password_requirements: 'Password must be at least 8 characters with uppercase, lowercase, and a number',
   too_many_attempts: 'Too many attempts. Please wait {seconds} seconds.',
+  'demoOpening': 'Opening the demo…',
 };
