@@ -8,6 +8,8 @@ import { useCrm } from '@/store/crmStore';
 import { useOrgPermission } from '@/store/orgStore';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ContactTimeline } from './ContactTimeline';
+import { useSmeEnabled } from '@/sme/ui/useSmeEnabled';
+import { PartyFinancePanel } from '@/sme/parties/ui/PartyFinancePanel';
 import type { CrmContact } from '@/types/crm';
 
 interface ContactDetailProps {
@@ -17,7 +19,8 @@ interface ContactDetailProps {
 export function ContactDetail({ contactId }: ContactDetailProps) {
   const intl = useIntl();
   const router = useRouter();
-  const { contacts, deals, tasks, communications, isLoading, deleteContact } = useCrm();
+  const { contacts, deals, tasks, communications, isLoading, deleteContact, updateContact } = useCrm();
+  const sme = useSmeEnabled();
   const canWrite = useOrgPermission('contacts.write');
   const canDelete = useOrgPermission('contacts.delete');
   const [activeTab, setActiveTab] = useState('details');
@@ -64,6 +67,7 @@ export function ContactDetail({ contactId }: ContactDetailProps) {
     { key: 'timeline', label: t('crm.tabs.timeline', 'Timeline') },
     { key: 'deals', label: `${t('crm.tabs.deals', 'Deals')} (${contactDeals.length})` },
     { key: 'tasks', label: `${t('crm.tabs.tasks', 'Tasks')} (${contactTasks.length})` },
+    ...(sme ? [{ key: 'finance', label: t('sme.party.financeTab', 'Finance') }] : []),
   ];
 
   return (
@@ -189,6 +193,10 @@ export function ContactDetail({ contactId }: ContactDetailProps) {
         {activeTab === 'timeline' && <ContactTimeline communications={contactComms} />}
         {activeTab === 'deals' && <DealsTab deals={contactDeals} />}
         {activeTab === 'tasks' && <TasksTab tasks={contactTasks} />}
+        {activeTab === 'finance' && (
+          <PartyFinancePanel party={{ contactId: contact.id }} roles={contact.partyRoles ?? []} canEditRoles={canWrite}
+            onRolesChange={roles => updateContact(contact.id, { partyRoles: roles })} />
+        )}
       </div>
 
       {/* Delete confirmation */}

@@ -149,6 +149,9 @@ export type SmeModule = (typeof SME_MODULES)[number];
 // CRM CONTACTS & COMPANIES
 // ============================================================
 
+/** A CRM record used as a customer and/or supplier (W3a-01). */
+export type PartyRole = 'customer' | 'supplier';
+
 export interface CrmCompany {
   id: string;
   orgId: string;
@@ -166,6 +169,7 @@ export interface CrmCompany {
   country: string | null;
   parentId: string | null;
   tags: string[];
+  partyRoles: PartyRole[];
   customFields: Record<string, unknown>;
   notes: string | null;
   searchNameNormalized: string | null;
@@ -201,6 +205,7 @@ export interface CrmContact {
   jobTitleAr: string | null;
   department: string | null;
   tags: string[];
+  partyRoles: PartyRole[];
   source: ContactSource;
   customFields: Record<string, unknown>;
   notes: string | null;

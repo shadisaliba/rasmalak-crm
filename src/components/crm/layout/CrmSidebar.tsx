@@ -20,6 +20,7 @@ import {
   FileText,
   Landmark,
   ArrowLeftRight,
+  Building2,
 } from 'lucide-react';
 
 interface CrmSidebarProps {
@@ -31,6 +32,7 @@ const NAV_ITEMS = [
   { id: 'dashboard', path: '/crm/dashboard', icon: LayoutDashboard, labelKey: 'crm.nav.dashboard', labelDefault: 'Dashboard' },
   { id: 'pipeline', path: '/crm', icon: Kanban, labelKey: 'crm.nav.pipeline', labelDefault: 'Pipeline' },
   { id: 'contacts', path: '/crm/contacts', icon: Users, labelKey: 'crm.nav.contacts', labelDefault: 'Contacts' },
+  { id: 'companies', path: '/crm/companies', icon: Building2, labelKey: 'crm.nav.companies', labelDefault: 'Companies' },
   { id: 'deals', path: '/crm/deals', icon: Handshake, labelKey: 'crm.nav.deals', labelDefault: 'Deals' },
   { id: 'tasks', path: '/crm/tasks', icon: CheckSquare, labelKey: 'crm.nav.tasks', labelDefault: 'Tasks' },
   { id: 'reports', path: '/crm/reports', icon: BarChart3, labelKey: 'crm.nav.reports', labelDefault: 'Reports' },

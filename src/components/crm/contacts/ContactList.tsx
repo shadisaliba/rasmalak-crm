@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useCallback, useMemo, useRef } from 'react';
+import { useSmeEnabled } from '@/sme/ui/useSmeEnabled';
+import { PartyRoleFilter, matchesPartyFilter, type PartyFilter } from '@/sme/parties/ui/PartyRoleFilter';
 import { useRouter } from 'next/navigation';
 import { useIntl } from 'react-intl';
 import { Users, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -25,6 +27,8 @@ export function ContactList() {
   const [searchResults, setSearchResults] = useState<CrmContact[] | null>(null);
   const [page, setPage] = useState(0);
   const [showForm, setShowForm] = useState(false);
+  const sme = useSmeEnabled();
+  const [partyFilter, setPartyFilter] = useState<PartyFilter>('all');
 
   // Build client-side search index when contacts change
   const clientIndex = useMemo(() => buildSearchIndex(contacts), [contacts]);
@@ -63,7 +67,7 @@ export function ContactList() {
     setPage(0);
   }, [searchContacts, clientIndex, contacts]);
 
-  const displayedContacts = searchResults ?? contacts;
+  const displayedContacts = (searchResults ?? contacts).filter(c => matchesPartyFilter(c.partyRoles, partyFilter));
   const totalPages = Math.ceil(displayedContacts.length / PAGE_SIZE);
   const pageContacts = displayedContacts.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
@@ -143,8 +147,9 @@ export function ContactList() {
       </div>
 
       {/* Search */}
-      <div style={{ marginBottom: '1rem' }}>
-        <ArabicSearchInput onSearch={handleSearch} />
+      <div style={{ marginBottom: '1rem', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ flex: '1 1 260px' }}><ArabicSearchInput onSearch={handleSearch} /></div>
+        {sme && <PartyRoleFilter value={partyFilter} onChange={v => { setPartyFilter(v); setPage(0); }} />}
       </div>
 
       {/* Empty state */}

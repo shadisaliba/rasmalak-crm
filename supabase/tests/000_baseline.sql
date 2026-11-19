@@ -143,6 +143,8 @@ begin
             b || '/b1000000-0000-4000-b000-0000000000b1/b.csv', 'text/csv', 10, repeat('b', 64), 'sme-import/1', ub, 'in_review');
   insert into sme_import_rows (org_id, batch_id, row_number, raw, status)
     values (b, 'b1000000-0000-4000-b000-0000000000b1', 1, '{}', 'valid');
+  insert into sme_party_identifiers (org_id, company_id, kind, value, last4, created_by)
+    values (b, (select id from crm_companies where org_id = b limit 1), 'tax_number', 'B0001234', '1234', ub);
 end $$;
 
 select is_empty(
