@@ -47,7 +47,8 @@ select is(crm_decide_outbound_draft('d1000000-0000-4000-8000-000000000002', 'dis
 
 reset role;
 select results_eq(
-  $$ select action from crm_audit_log where entity_type = 'crm_outbound_draft' order by created_at $$,
+  $$ select action from crm_audit_log where entity_type = 'crm_outbound_draft'
+       and entity_id in ('d1000000-0000-4000-8000-000000000001', 'd1000000-0000-4000-8000-000000000002') order by created_at $$,
   $$ values ('outbound_draft.approved'::text), ('outbound_draft.discarded'::text) $$,
   'each decision is audited'
 );

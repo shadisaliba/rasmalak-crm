@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { useOrg, useOrgPermission } from '@/store/orgStore';
@@ -38,6 +39,7 @@ export function TransactionsPage() {
   const search = useSearchParams();
   const { currentOrg } = useOrg();
   const canPost = useOrgPermission('sme.ledger.post');
+  const canImport = useOrgPermission('sme.imports.execute');
   const [filters, setFilters] = useState<Filters>({ ...EMPTY_FILTERS, account: search.get('account') ?? '' });
   const [applied, setApplied] = useState<Filters>(filters);
   const [load, setLoad] = useState<Load>({ status: 'loading' });
@@ -81,9 +83,16 @@ export function TransactionsPage() {
           <h1 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--ds-text-heading)', margin: '0 0 4px' }}>{L.t('sme.money.tx.title')}</h1>
           <p style={{ fontSize: '13px', color: 'var(--ds-text-muted)', margin: 0 }}>{L.t('sme.money.tx.description')}</p>
         </div>
-        {canPost && accounts.some(a => a.status === 'active') && (
-          <button type="button" style={primaryButton} onClick={() => setAdding(!adding)}>{L.t('sme.money.tx.add')}</button>
-        )}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {canImport && accounts.some(a => a.status === 'active') && (
+            <Link href={`/crm/money/transactions/import${applied.account ? `?account=${applied.account}` : ''}`} style={{ ...secondaryButton, textDecoration: 'none' }}>
+              {L.t('sme.money.tx.import')}
+            </Link>
+          )}
+          {canPost && accounts.some(a => a.status === 'active') && (
+            <button type="button" style={primaryButton} onClick={() => setAdding(!adding)}>{L.t('sme.money.tx.add')}</button>
+          )}
+        </div>
       </div>
 
       <SmeGate permission="sme.ledger.read">
@@ -221,7 +230,7 @@ function TransactionForm({ orgId, accounts, categories, defaultAccount, onDone, 
           </select>
         </Field>
         <Field text={L.t('sme.money.form.amountIn', { currency: account?.currency ?? '' })}>
-          <input value={form.amount} inputMode="decimal" onChange={e => setForm({ ...form, amount: e.target.value })} style={input} />
+          <input value={form.amount} inputMode="decimal" dir="ltr" onChange={e => setForm({ ...form, amount: e.target.value })} style={input} />
         </Field>
         <Field text={L.t('sme.money.form.date')}><input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} style={input} /></Field>
         <Field text={L.t('sme.money.form.description')}><input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} style={input} /></Field>
@@ -412,7 +421,7 @@ function ProvenancePanel({ row, counterparties }: { row: TransactionRow; counter
 
   const items: Array<[string, string]> = [
     [L.t('sme.money.tx.prov.source'), L.t(`sme.sourceKind.${row.source_kind}`)],
-    ...(row.import_batch_id ? [[L.t('sme.money.tx.prov.importBatch'), row.import_batch_id] as [string, string]] : []),
+    ...(row.import_batch_id ? [[L.t('sme.money.tx.prov.importFile'), L.t('sme.money.tx.prov.importFileValue', { file: row.import_file_name ?? row.import_batch_id, row: row.import_row_number ?? '' })] as [string, string]] : []),
     [L.t('sme.money.tx.prov.postedBy'), who(row.created_by)],
     [L.t('sme.money.tx.prov.postedAt'), L.dateTime(row.created_at)],
     ...(row.external_ref ? [[L.t('sme.money.form.reference'), row.external_ref] as [string, string]] : []),

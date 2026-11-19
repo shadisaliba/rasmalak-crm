@@ -37,6 +37,8 @@ export interface TransactionRow {
   import_batch_id: string | null;
   import_row_id: string | null;
   document_id: string | null;
+  import_file_name: string | null;
+  import_row_number: number | null;
   transfer_group_id: string | null;
   reversal_of: string | null;
   reason: string | null;

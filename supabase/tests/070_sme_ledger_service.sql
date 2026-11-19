@@ -106,7 +106,8 @@ select lives_ok($$ select sme_classify_transaction('00000000-0000-4000-a000-0000
   jsonb_build_object('category_id', sme_system_category('service_income'), 'channel', 'bank_transfer'), null, 'cls-1') $$, 'a posted transaction can be reclassified');
 select is((select count(distinct category_id)::int from sme_transactions_current where id in (tests.id('sale'), tests.id('sale_rev'))), 1,
   'its reversal follows the new category');
-select is((select sum(t.amount_minor)::bigint from sme_transactions_current t where t.category_id = sme_system_category('service_income')), 0::bigint,
+select is((select sum(t.amount_minor)::bigint from sme_transactions_current t
+           where t.id in (tests.id('sale'), tests.id('sale_rev')) and t.category_id = sme_system_category('service_income')), 0::bigint,
   'so the category nets to zero');
 select is((select count(*)::int from sme_transaction_classifications where transaction_id = tests.id('sale')), 2, 'classification history is kept');
 

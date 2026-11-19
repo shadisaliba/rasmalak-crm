@@ -1,4 +1,5 @@
 import type { OutboxEvent, SmeEventType } from '../types';
+import { handleImportParseRequested } from '@/sme/imports/server/parseHandler';
 
 export type EventHandler = (event: OutboxEvent) => Promise<void>;
 
@@ -13,7 +14,7 @@ export const EVENT_HANDLERS: Record<SmeEventType, EventHandler> = {
   TransactionPosted: acknowledge,
   TransactionReversed: acknowledge,
   TransactionClassified: acknowledge,
-  ImportParseRequested: acknowledge,
+  ImportParseRequested: event => handleImportParseRequested(event),
   ImportCommitted: acknowledge,
   InvoiceStatusChanged: acknowledge,
   BillStatusChanged: acknowledge,

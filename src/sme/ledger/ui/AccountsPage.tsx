@@ -173,7 +173,7 @@ function AddAccountForm({ orgId, onDone, onCancel }: { orgId: string; onDone: ()
         <p style={muted}>{L.t('sme.money.form.openingHelp')}</p>
         <div style={formGrid}>
           <Field text={L.t('sme.money.form.openingAmount', { currency: form.currency })}>
-            <input value={form.opening} inputMode="decimal" onChange={e => setForm({ ...form, opening: e.target.value })} style={input} />
+            <input value={form.opening} inputMode="decimal" dir="ltr" onChange={e => setForm({ ...form, opening: e.target.value })} style={input} />
           </Field>
           <Field text={L.t('sme.money.form.openingDate')}>
             <input type="date" value={form.openingDate} onChange={e => setForm({ ...form, openingDate: e.target.value })} style={input} />
@@ -241,11 +241,11 @@ function TransferForm({ orgId, accounts, onDone, onCancel }: { orgId: string; ac
         <Field text={L.t('sme.money.transfer.from')}><select value={form.from} onChange={e => setForm({ ...form, from: e.target.value })} style={input}>{accountOptions}</select></Field>
         <Field text={L.t('sme.money.transfer.to')}><select value={form.to} onChange={e => setForm({ ...form, to: e.target.value })} style={input}>{accountOptions}</select></Field>
         <Field text={L.t('sme.money.form.amountIn', { currency: from?.currency ?? '' })}>
-          <input value={form.amount} inputMode="decimal" onChange={e => setForm({ ...form, amount: e.target.value })} style={input} />
+          <input value={form.amount} inputMode="decimal" dir="ltr" onChange={e => setForm({ ...form, amount: e.target.value })} style={input} />
         </Field>
         {crossCurrency && (
           <Field text={L.t('sme.money.transfer.received', { currency: to?.currency ?? '' })}>
-            <input value={form.toAmount} inputMode="decimal" onChange={e => setForm({ ...form, toAmount: e.target.value })} style={input} />
+            <input value={form.toAmount} inputMode="decimal" dir="ltr" onChange={e => setForm({ ...form, toAmount: e.target.value })} style={input} />
           </Field>
         )}
         <Field text={L.t('sme.money.form.date')}><input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} style={input} /></Field>

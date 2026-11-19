@@ -138,6 +138,11 @@ begin
     values ('b1000000-0000-4000-b000-0000000000f1', b, 'b1000000-0000-4000-b000-0000000000a1', current_date, 1000, 'JOD', 1000, 'manual', 'fp-b', 'idem-b', ub);
   insert into sme_transaction_classifications (org_id, transaction_id, classified_by)
     values (b, 'b1000000-0000-4000-b000-0000000000f1', ub);
+  insert into sme_import_batches (id, org_id, account_id, file_name, storage_path, mime_type, byte_size, source_hash, parser_version, uploaded_by, status)
+    values ('b1000000-0000-4000-b000-0000000000b1', b, 'b1000000-0000-4000-b000-0000000000a1', 'b.csv',
+            b || '/b1000000-0000-4000-b000-0000000000b1/b.csv', 'text/csv', 10, repeat('b', 64), 'sme-import/1', ub, 'in_review');
+  insert into sme_import_rows (org_id, batch_id, row_number, raw, status)
+    values (b, 'b1000000-0000-4000-b000-0000000000b1', 1, '{}', 'valid');
 end $$;
 
 select is_empty(
