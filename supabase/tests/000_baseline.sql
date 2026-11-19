@@ -121,6 +121,11 @@ begin
     values (b, 'deal_scoring', 'gemini', 'test-model', 'ok', 10, 'digest-b');
   insert into crm_outbound_drafts (org_id, workflow_id, channel, recipient, payload)
     values (b, v_workflow, 'slack', 'C-B', '{"message":"b"}');
+  insert into sme_idempotency (org_id, key, operation, request_hash, response)
+    values (b, 'idem-b', 'test', 'hash', '{}');
+  insert into sme_audit_events (org_id, action, subject_type, correlation_id)
+    values (b, 'test.event', 'test', gen_random_uuid());
+  insert into sme_outbox (org_id, event_type, payload, dedupe_key) values (b, 'Test', '{}', 'b-1');
 end $$;
 
 select is_empty(
