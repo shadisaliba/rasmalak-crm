@@ -11,6 +11,8 @@ import { STALE_AFTER_DAYS, todayInAmman } from '../domain/dates';
 import { ACCOUNT_KINDS } from '../api/schemas';
 import type { AccountSummary } from '../types';
 import { FxFields, type FxValue } from './FxFields';
+import { DataCompletenessBanner } from '@/sme/kpi/ui/DataCompletenessBanner';
+import { ExploreDemoButton } from '@/sme/demo/ui/ExploreDemoButton';
 import { Chip, Field, FormError, card, formGrid, input, muted, parseAmount, primaryButton, secondaryButton, useIdempotencyKey, useLedgerText } from './shared';
 
 type Load = { status: 'loading' } | { status: 'failed'; error: SmeApiError } | { status: 'ready'; items: AccountSummary[] };
@@ -46,6 +48,7 @@ export function AccountsPage() {
         </div>
         {load.status === 'ready' && load.items.length > 0 && (
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <ExploreDemoButton />
             {addButton}
             {canPost && load.items.filter(a => a.status === 'active').length > 1 && (
               <button type="button" style={secondaryButton} onClick={() => setPanel(panel === 'transfer' ? 'none' : 'transfer')}>{L.t('sme.money.transfer.open')}</button>
@@ -64,9 +67,12 @@ export function AccountsPage() {
         ) : load.status === 'failed' ? (
           <DataState state="failed" message={errorText(load.error, L.intl.locale)} onRetry={reload} />
         ) : load.items.length === 0 ? (
-          <DataState state="empty" message={L.t('sme.money.accounts.empty')} action={panel === 'account' ? undefined : addButton} />
+          <DataState state="empty" message={L.t('sme.money.accounts.empty')} action={<>{panel === 'account' ? undefined : addButton}<ExploreDemoButton /></>} />
         ) : (
-          <AccountList items={load.items} />
+          <>
+            <DataCompletenessBanner refreshKey={reloadKey} />
+            <AccountList items={load.items} />
+          </>
         )}
       </SmeGate>
     </div>

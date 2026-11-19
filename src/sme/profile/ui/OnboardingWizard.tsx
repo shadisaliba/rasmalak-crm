@@ -6,6 +6,7 @@ import { useIntl } from 'react-intl';
 import { useOrg } from '@/store/orgStore';
 import { HOME_ROUTE } from '@/lib/routes';
 import { SmeGate } from './SmeGate';
+import { ExploreDemoButton } from '@/sme/demo/ui/ExploreDemoButton';
 import { useProfileBundle } from './useProfileBundle';
 import { ConsentSection, FactsSection, FinanceSection, IdentitySection, primaryButton, sectionCard } from './ProfileSections';
 
@@ -28,6 +29,10 @@ export function OnboardingWizard() {
       <div>
         <h1 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--ds-text-heading)', margin: '0 0 4px' }}>{t('sme.onboarding.title')}</h1>
         <p style={{ fontSize: '13px', color: 'var(--ds-text-muted)', margin: 0 }}>{t('sme.onboarding.step', { n: step + 1, total: STEPS.length })}</p>
+        <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '13px', color: 'var(--ds-text-body)' }}>{t('sme.demo.onboardingHint')}</span>
+          <ExploreDemoButton />
+        </div>
       </div>
       <SmeGate permission="sme.profile.manage">
         {!loaded || !bundle || !currentOrg ? (

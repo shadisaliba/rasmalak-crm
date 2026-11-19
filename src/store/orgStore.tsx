@@ -73,6 +73,9 @@ const DEFAULT_PERMISSIONS: CrmPermissions = {
 
 interface OrgContextType {
   currentOrg: Organization | null;
+  /** Every organization the user belongs to (live and demo). */
+  organizations: Organization[];
+  switchOrg: (orgId: string) => void;
   orgMembers: OrgMember[];
   orgRoles: OrgRole[];
   userRole: string | null;
@@ -93,8 +96,19 @@ interface OrgContextType {
 
 const OrgContext = createContext<OrgContextType | null>(null);
 
+// The organization the user last chose on this device.
+const CURRENT_ORG_KEY = 'crm-current-org';
+function readStoredOrg(): string | null {
+  try { return localStorage.getItem(CURRENT_ORG_KEY); } catch { return null; }
+}
+function storeOrg(orgId: string) {
+  try { localStorage.setItem(CURRENT_ORG_KEY, orgId); } catch { /* private mode: the choice lasts this session */ }
+}
+
 export function OrgProvider({ children }: { children: ReactNode }) {
   const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [selection, setSelection] = useState(0);
   const [orgMembers, setOrgMembers] = useState<OrgMember[]>([]);
   const [orgRoles, setOrgRoles] = useState<OrgRole[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -151,12 +165,14 @@ export function OrgProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // Auto-select first org (multi-org switcher is roadmap)
-        const firstMembership = memberRows[0];
-        const orgData = firstMembership.organizations as Record<string, unknown>;
-        const org = mapRow<Organization>(orgData);
+        const memberships = memberRows.map(r => ({ org: mapRow<Organization>(r.organizations as Record<string, unknown>), role: r.role as string }));
+        setOrganizations(memberships.map(m => m.org));
+        // A remembered choice wins; otherwise a live organization comes before any demo.
+        const stored = readStoredOrg();
+        const chosen = memberships.find(m => m.org.id === stored) ?? memberships.find(m => !m.org.isDemo) ?? memberships[0];
+        const org = chosen.org;
         setCurrentOrg(org);
-        setUserRole(firstMembership.role);
+        setUserRole(chosen.role);
 
         // Load all members for this org
         const { data: allMembers, error: membersError } = await supabase
@@ -192,7 +208,12 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     };
 
     loadUserOrg();
-  }, [userId, initialized, resolvePermissions]);
+  }, [userId, initialized, resolvePermissions, selection]);
+
+  const switchOrg = useCallback((orgId: string) => {
+    storeOrg(orgId);
+    setSelection(s => s + 1);
+  }, []);
 
   // Create a new organization
   const createOrg = useCallback(async (data: CreateOrgInput): Promise<Organization | null> => {
@@ -218,6 +239,8 @@ export function OrgProvider({ children }: { children: ReactNode }) {
       if (!row) return null;
 
       const org = mapRow<Organization>(row);
+      storeOrg(org.id);
+      setOrganizations(prev => [...prev, org]);
 
       // Wait briefly for triggers to fire (owner member, pipeline, roles)
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -382,6 +405,8 @@ export function OrgProvider({ children }: { children: ReactNode }) {
 
   const value: OrgContextType = {
     currentOrg,
+    organizations,
+    switchOrg,
     orgMembers,
     orgRoles,
     userRole,

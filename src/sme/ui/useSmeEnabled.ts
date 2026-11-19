@@ -10,5 +10,6 @@ import { useBilling } from '@/store/billingStore';
 export function useSmeEnabled(): boolean {
   const { currentOrg } = useOrg();
   const { hasFeature } = useBilling();
-  return currentOrg?.country === 'JO' && hasFeature('sme_suite');
+  // Demo organizations carry the suite without a subscription, as sme_enabled() does.
+  return currentOrg?.country === 'JO' && (currentOrg.isDemo || hasFeature('sme_suite'));
 }

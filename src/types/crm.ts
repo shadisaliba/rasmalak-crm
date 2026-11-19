@@ -19,6 +19,8 @@ export interface Organization {
   currency: string;
   logoUrl: string | null;
   settings: Record<string, unknown>;
+  /** Sample-data organization (W2-07); never becomes live. */
+  isDemo: boolean;
   createdBy: string;
   createdAt: string;
   updatedAt: string;

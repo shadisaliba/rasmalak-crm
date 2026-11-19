@@ -7,6 +7,7 @@ import { useOrg } from '@/store/orgStore';
 import { useCrm } from '@/store/crmStore';
 import { Menu, Search, Bell, Check } from 'lucide-react';
 import type { CrmNotification } from '@/types/crm';
+import { OrgSwitcher } from './OrgSwitcher';
 
 interface CrmHeaderProps {
   onMenuToggle: () => void;
@@ -86,10 +87,8 @@ export function CrmHeader({ onMenuToggle }: CrmHeaderProps) {
         <Menu size={20} />
       </button>
 
-      {/* Org name */}
-      <div style={{ fontSize: '15px', fontWeight: 500, color: 'var(--ds-text-heading)' }}>
-        {orgName}
-      </div>
+      {/* Org name, or a switcher for users in several organizations */}
+      <OrgSwitcher />
 
       <div style={{ flex: 1 }} />
 

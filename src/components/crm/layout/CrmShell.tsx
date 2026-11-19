@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { CrmSidebar } from './CrmSidebar';
 import { CrmHeader } from './CrmHeader';
+import { DemoBanner } from '@/sme/demo/ui/DemoBanner';
 
 /**
  * CrmShell — combines CrmSidebar + CrmHeader + main content area.
@@ -45,6 +46,7 @@ export function CrmShell({ children }: { children: React.ReactNode }) {
             overflowY: 'auto',
           }}
         >
+          <DemoBanner />
           {children}
         </main>
       </div>
