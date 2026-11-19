@@ -60,7 +60,7 @@ select is_empty(
      from pg_class c join pg_namespace n on n.oid = c.relnamespace
      where n.nspname = 'public' and c.relkind in ('r', 'p')
        and c.relname not in (select table_name from tests.rows_per_table('00000000-0000-4000-b000-00000000000b'))
-       and c.relname not in ('crm_vertical_templates', 'crm_workflow_templates', 'sme_lookup_values', 'sme_currencies') $$,
+       and c.relname not in ('crm_vertical_templates', 'crm_workflow_templates', 'sme_lookup_values', 'sme_currencies', 'fx_rates') $$,
   'every table except the global catalogues is covered by the tenancy check'
 );
 

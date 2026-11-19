@@ -3,6 +3,8 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useLogout } from '@/store/useStore';
 import { useIntl } from 'react-intl';
+import { useOrgPermission } from '@/store/orgStore';
+import { useSmeEnabled } from '@/sme/ui/useSmeEnabled';
 import {
   Kanban,
   Users,
@@ -16,6 +18,8 @@ import {
   Zap,
   LayoutDashboard,
   FileText,
+  Landmark,
+  ArrowLeftRight,
 } from 'lucide-react';
 
 interface CrmSidebarProps {
@@ -34,6 +38,12 @@ const NAV_ITEMS = [
   { id: 'documents', path: '/crm/documents', icon: FileText, labelKey: 'crm.nav.documents', labelDefault: 'Documents' },
 ] as const;
 
+// SME Jordan finance screens; shown only when the organization has SME enabled.
+const MONEY_ITEMS = [
+  { id: 'money-accounts', path: '/crm/money/accounts', icon: Landmark, labelKey: 'sme.nav.accounts', labelDefault: 'Accounts' },
+  { id: 'money-transactions', path: '/crm/money/transactions', icon: ArrowLeftRight, labelKey: 'sme.nav.transactions', labelDefault: 'Transactions' },
+] as const;
+
 const SECONDARY_ITEMS = [
   { id: 'import', path: '/crm/import', icon: Upload, labelKey: 'crm.nav.import', labelDefault: 'Import Data' },
   { id: 'settings', path: '/crm/settings', icon: Settings, labelKey: 'crm.nav.settings', labelDefault: 'Settings' },
@@ -47,6 +57,9 @@ export function CrmSidebar({ isOpen, onClose }: CrmSidebarProps) {
 
   const t = (key: string, def: string) =>
     intl.formatMessage({ id: key, defaultMessage: def });
+  const smeEnabled = useSmeEnabled();
+  const canReadLedger = useOrgPermission('sme.ledger.read');
+  const showMoney = smeEnabled && canReadLedger;
 
   const isActive = (path: string) => {
     if (path === '/crm') return pathname === '/crm';
@@ -160,6 +173,37 @@ export function CrmSidebar({ isOpen, onClose }: CrmSidebarProps) {
               </button>
             );
           })}
+
+          {showMoney && (
+            <>
+              <div style={{ height: '1px', background: 'var(--ds-border)', margin: '0.5rem 0.75rem' }} />
+              <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--ds-text-muted)', paddingInlineStart: '0.75rem', paddingBlock: '0.25rem' }}>
+                {t('sme.nav.money', 'Money')}
+              </span>
+              {MONEY_ITEMS.map(item => {
+                const Icon = item.icon;
+                const active = isActive(item.path);
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => navigate(item.path)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '0.75rem',
+                      paddingInlineStart: '0.75rem', paddingInlineEnd: '0.75rem', paddingBlock: '0.5rem',
+                      borderRadius: '8px', border: 'none',
+                      background: active ? 'var(--ds-bg-tinted)' : 'transparent',
+                      color: active ? 'var(--ds-accent-primary)' : 'var(--ds-text-body)',
+                      cursor: 'pointer', fontSize: '14px', fontWeight: active ? 500 : 400,
+                      textAlign: 'start', width: '100%', minHeight: '2.75rem', transition: 'background 150ms ease',
+                    }}
+                  >
+                    <Icon size={18} />
+                    {t(item.labelKey, item.labelDefault)}
+                  </button>
+                );
+              })}
+            </>
+          )}
 
           {/* Divider */}
           <div style={{ height: '1px', background: 'var(--ds-border)', margin: '0.5rem 0.75rem' }} />
