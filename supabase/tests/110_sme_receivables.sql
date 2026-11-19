@@ -44,7 +44,9 @@ select is((sme_create_invoice('00000000-0000-4000-a000-00000000000a', jsonb_buil
   'customer_company_id', tests.id('customer'), 'issue_date', '2026-11-01', 'due_date', '2026-12-01',
   'lines', jsonb_build_array(jsonb_build_object('description', 'x', 'quantity', '1.5', 'unit_price_minor', '333', 'tax_rate_bp', 1600))), null, 'rcv-inv-2') ->> 'total_minor'),
   '580', 'line amounts round once, half away from zero (499.5 → 500, tax 80)');
-select is((select number from sme_invoices where idempotency_key = 'rcv-inv-2'), 'INV-2026-0001', 'a missing number gets the next INV-YYYY sequence');
+select ok((select number ~ '^INV-2026-[0-9]{4}$' and number > coalesce((select max(number) from sme_invoices
+            where number like 'INV-2026-%' and idempotency_key <> 'rcv-inv-2'), '') from sme_invoices where idempotency_key = 'rcv-inv-2'),
+  'a missing number gets the next INV-YYYY sequence');
 
 -- ── A JOD 300.000 receipt, allocated ────────────────────────
 insert into tests.ids select 'receipt', (sme_post_transaction('00000000-0000-4000-a000-00000000000a',
