@@ -23,17 +23,19 @@ const NETWORK_ERROR: SmeApiError = {
  */
 export async function smeApi<T>(
   path: string,
-  options: { orgId: string; method?: 'GET' | 'POST'; body?: unknown; idempotencyKey?: string },
+  options: { orgId?: string; method?: 'GET' | 'POST'; body?: unknown; idempotencyKey?: string },
 ): Promise<SmeResult<T>> {
   const { data } = await supabase.auth.getSession();
-  const headers: Record<string, string> = { 'x-org-id': options.orgId, 'x-correlation-id': crypto.randomUUID() };
+  const headers: Record<string, string> = { 'x-correlation-id': crypto.randomUUID() };
+  if (options.orgId) headers['x-org-id'] = options.orgId;
   if (data.session?.access_token) headers.authorization = `Bearer ${data.session.access_token}`;
   if (options.body !== undefined) headers['content-type'] = 'application/json';
   if (options.method === 'POST') headers['idempotency-key'] = options.idempotencyKey ?? crypto.randomUUID();
 
   let res: Response;
   try {
-    res = await fetch(`/api/sme/v1/${path}`, {
+    // An absolute path reaches other APIs with the same auth and error handling (e.g. /api/staff/v1).
+    res = await fetch(path.startsWith('/') ? path : `/api/sme/v1/${path}`, {
       method: options.method ?? 'GET',
       headers,
       body: options.body === undefined ? undefined : JSON.stringify(options.body),

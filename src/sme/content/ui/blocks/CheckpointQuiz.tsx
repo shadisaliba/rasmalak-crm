@@ -11,11 +11,15 @@ interface CheckpointQuizProps {
   // True when the section is already complete (e.g. passed in a previous visit).
   passed?: boolean;
   onPass?: () => void;
+  /** Percent correct once every question is answered; stored apart from completion. */
+  onScore?: (score: number) => void;
 }
 
-export default function CheckpointQuiz({ title, quiz, passed, onPass }: CheckpointQuizProps) {
+export default function CheckpointQuiz({ title, quiz, passed, onPass, onScore }: CheckpointQuizProps) {
   const intl = useIntl();
   const [selected, setSelected] = useState<Record<number, number>>({});
+  // Quizzes are optional (blueprint §6): skipping hides the questions and never blocks the lesson.
+  const [skipped, setSkipped] = useState(false);
 
   const answeredCount = Object.keys(selected).length;
   const allAnswered = answeredCount === quiz.length;
@@ -26,6 +30,7 @@ export default function CheckpointQuiz({ title, quiz, passed, onPass }: Checkpoi
     const next = { ...selected, [qi]: oi };
     setSelected(next);
     const done = Object.keys(next).length === quiz.length;
+    if (done) onScore?.(Math.round((quiz.filter((q, i) => q.options[next[i]]?.correct).length / quiz.length) * 100));
     if (done && quiz.every((q, i) => q.options[next[i]]?.correct)) {
       onPass?.();
     }
@@ -109,6 +114,22 @@ export default function CheckpointQuiz({ title, quiz, passed, onPass }: Checkpoi
         </span>
       </div>
 
+      {skipped ? (
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px', fontSize: '0.8125rem', color: 'var(--ds-text-muted)' }}>
+          <span>{intl.formatMessage({ id: 'learn.course.quiz_skipped' })}</span>
+          <button type="button" onClick={() => setSkipped(false)}
+            style={{ background: 'none', border: 'none', padding: 0, color: 'var(--ds-primary)', cursor: 'pointer', fontSize: 'inherit', textDecoration: 'underline' }}>
+            {intl.formatMessage({ id: 'learn.course.quiz_show' })}
+          </button>
+        </div>
+      ) : !allAnswered && (
+        <button type="button" onClick={() => setSkipped(true)}
+          style={{ background: 'none', border: 'none', padding: 0, marginBottom: 'var(--spacing-3)', color: 'var(--ds-text-muted)', cursor: 'pointer', fontSize: '0.8125rem', textDecoration: 'underline' }}>
+          {intl.formatMessage({ id: 'learn.course.quiz_skip' })}
+        </button>
+      )}
+
+      {!skipped && (<>
       {/* Already passed in a previous visit */}
       {passed && !allAnswered && (
         <div
@@ -271,7 +292,7 @@ export default function CheckpointQuiz({ title, quiz, passed, onPass }: Checkpoi
                   height: '32px',
                   borderRadius: '50%',
                   background: 'var(--ds-primary)',
-                  color: '#FFFFFF',
+                  color: 'var(--ds-on-primary)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -308,7 +329,7 @@ export default function CheckpointQuiz({ title, quiz, passed, onPass }: Checkpoi
                   alignItems: 'center',
                   gap: '6px',
                   background: 'var(--ds-primary)',
-                  color: '#FFFFFF',
+                  color: 'var(--ds-on-primary)',
                   border: 'none',
                   borderRadius: '8px',
                   padding: '10px 16px',
@@ -328,6 +349,7 @@ export default function CheckpointQuiz({ title, quiz, passed, onPass }: Checkpoi
           )}
         </div>
       )}
+      </>)}
     </div>
   );
 }

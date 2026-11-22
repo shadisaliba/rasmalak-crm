@@ -603,6 +603,7 @@ export default {
   'nav.grow': 'Plan and learn',
   'nav.tools': 'Tools',
   'nav.learn': 'Learn',
+  'nav.contentReview': 'Content review',
   'nav.sales': 'Sales',
   'nav.salesOverview': 'Sales overview',
   'nav.business': 'Business',

@@ -6,13 +6,14 @@ import { useIntl } from 'react-intl';
 import type { LucideIcon } from 'lucide-react';
 import {
   Home, LayoutDashboard, Kanban, Users, Building2, Handshake, CheckSquare, BarChart3, Zap, FileText,
-  Upload, Settings, LogOut, X, Landmark, ArrowLeftRight, ReceiptText, FileMinus, BriefcaseBusiness, KeyRound, TrendingUp, Calculator,
+  Upload, Settings, LogOut, X, Landmark, ArrowLeftRight, ReceiptText, FileMinus, BriefcaseBusiness, KeyRound, TrendingUp, Calculator, GraduationCap, FilePenLine,
 } from 'lucide-react';
 import { useLogout } from '@/store/useStore';
 import { useAuthStore } from '@/store/authStore';
 import { useOrg } from '@/store/orgStore';
 import type { CrmPermissions } from '@/types/crm';
 import { useSmeEnabled } from '@/sme/ui/useSmeEnabled';
+import { useIsStaff } from '@/sme/content/ui/useIsStaff';
 
 interface CrmSidebarProps {
   isOpen: boolean;
@@ -28,6 +29,8 @@ interface NavItem {
   permission?: keyof CrmPermissions;
   /** Exact match only (the pipeline lives at /crm, a prefix of every page). */
   exact?: boolean;
+  /** Platform staff only (content review). */
+  staffOnly?: boolean;
 }
 interface NavGroup { id: string; labelKey?: string; labelDefault?: string; items: NavItem[] }
 
@@ -57,6 +60,7 @@ const SME_GROUPS: NavGroup[] = [
   {
     id: 'grow', labelKey: 'sme.nav.grow', labelDefault: 'Plan and learn', items: [
       { id: 'tools', path: '/crm/tools', icon: Calculator, labelKey: 'sme.nav.tools', labelDefault: 'Tools', permission: 'sme.calc.run' },
+      { id: 'learn', path: '/crm/learn', icon: GraduationCap, labelKey: 'sme.nav.learn', labelDefault: 'Learn', permission: 'sme.learn.use' },
     ],
   },
   {
@@ -69,6 +73,7 @@ const SME_GROUPS: NavGroup[] = [
     id: 'business', labelKey: 'sme.nav.business', labelDefault: 'Business', items: [
       { id: 'profile', path: '/crm/settings/business/profile', icon: BriefcaseBusiness, labelKey: 'sme.nav.businessProfile', labelDefault: 'Business profile', permission: 'sme.profile.read' },
       { id: 'access', path: '/crm/settings/business/access', icon: KeyRound, labelKey: 'sme.nav.access', labelDefault: 'Team and access', permission: 'sme.access.manage' },
+      { id: 'content-review', path: '/crm/staff/content', icon: FilePenLine, labelKey: 'sme.nav.contentReview', labelDefault: 'Content review', staffOnly: true },
       { id: 'settings', path: '/crm/settings', icon: Settings, labelKey: 'crm.nav.settings', labelDefault: 'Settings', exact: true },
     ],
   },
@@ -87,10 +92,11 @@ export function CrmSidebar({ isOpen, onClose }: CrmSidebarProps) {
   const { currentOrg, userPermissions } = useOrg();
   const email = useAuthStore(s => s.user?.email ?? '');
   const sme = useSmeEnabled();
+  const staff = useIsStaff();
   const t = (key: string, def: string) => intl.formatMessage({ id: key, defaultMessage: def });
 
   const groups = (sme ? SME_GROUPS : CRM_GROUPS)
-    .map(g => ({ ...g, items: g.items.filter(i => !i.permission || userPermissions[i.permission]) }))
+    .map(g => ({ ...g, items: g.items.filter(i => (!i.permission || userPermissions[i.permission]) && (!i.staffOnly || staff)) }))
     .filter(g => g.items.length > 0);
   const isActive = (item: NavItem) => (item.exact ? pathname === item.path : pathname === item.path || pathname.startsWith(`${item.path}/`));
   const orgName = currentOrg ? (intl.locale.startsWith('ar') ? currentOrg.nameAr || currentOrg.name : currentOrg.name) : '';
