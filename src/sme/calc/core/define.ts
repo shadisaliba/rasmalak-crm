@@ -21,7 +21,7 @@ export function defineCalculator<I>(def: CalculatorDef<I>): RegisteredCalculator
           errors: parsed.error.issues.map((issue): CalcError => ({
             code: 'VALIDATION_FAILED',
             field: issue.path.map(String).join('.') || undefined,
-            messageKey: `tools.error.${issueReason(issue.message, issue.code)}`,
+            messageKey: `tools.error.${issueReason(issue.message, issue.code, valueAt(raw, issue.path))}`,
           })),
         };
       }
@@ -43,7 +43,13 @@ const KNOWN_REASONS = new Set([
   'below_minimum', 'above_maximum',
 ]);
 
-function issueReason(message: string, code: string): string {
+function valueAt(raw: unknown, path: PropertyKey[]): unknown {
+  return path.reduce<unknown>((v, k) => (v !== null && typeof v === 'object' ? (v as Record<PropertyKey, unknown>)[k] : undefined), raw);
+}
+
+// zod reports a missing select as invalid_value, not invalid_type, so a missing value decides "required".
+function issueReason(message: string, code: string, value: unknown): string {
+  if (value === undefined || value === '') return 'required';
   if (KNOWN_REASONS.has(message)) return message;
   return code === 'invalid_type' ? 'required' : 'invalid';
 }

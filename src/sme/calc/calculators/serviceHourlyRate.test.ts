@@ -87,3 +87,18 @@ describe('service_hourly_rate (F4.08, CAL-S01)', () => {
     }
   });
 });
+
+describe('core input errors', () => {
+  it('reports a missing value as required, whatever zod calls it', () => {
+    const missing = Object.fromEntries(Object.entries(consultant).filter(([k]) => k !== 'target_annual_pay'));
+    const outcome = runCalculation('service_hourly_rate', missing, ctx).outcome;
+    expect(outcome).toEqual({ ok: false, errors: [expect.objectContaining({ field: 'target_annual_pay', messageKey: 'tools.error.required' })] });
+    const missingSelect = runCalculation('loan_affordability', { currency: 'JOD', principal: '1000000', term_months: '12', annual_rate_percent: '5' }, ctx).outcome;
+    expect(!missingSelect.ok && missingSelect.errors.find(e => e.field === 'rate_basis')?.messageKey).toBe('tools.error.required');
+  });
+
+  it('turns results beyond the money range into an input error', () => {
+    const huge = runCalculation('service_hourly_rate', { ...consultant, target_annual_pay: '1000000000000000', annual_overhead: '1000000000000000', target_profit: '1000000000000000', working_weeks: '1', hours_per_week: '1', utilization_percent: '1' }, ctx).outcome;
+    expect(huge).toEqual({ ok: false, errors: [expect.objectContaining({ code: 'VALIDATION_FAILED', messageKey: 'tools.error.too_large' })] });
+  });
+});
