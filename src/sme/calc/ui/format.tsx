@@ -20,12 +20,16 @@ export function useCalcText() {
       case 'days': return L.t('tools.value.days', { value: exact(v.value, 1) });
       case 'hours': return L.t('tools.value.hours', { value: exact(v.value, 2) });
       case 'date': return L.date(v.value);
-      case 'text': return L.t(v.textKey, v.values);
+      case 'text': return tv(v.textKey, v.values);
       case 'none': return L.t(v.reasonKey);
     }
   };
 
-  return { ...L, value, exact };
+  // Numbers inside calculator sentences arrive as plain decimal strings; show them in the UI's digits.
+  const tv = (id: string, values?: Record<string, string>) =>
+    L.t(id, values && Object.fromEntries(Object.entries(values).map(([k, v]) => [k, /^-?\d+(\.\d+)?$/.test(v) ? exact(v, 10) : v])));
+
+  return { ...L, value, exact, tv };
 }
 
 export type RawValues = Record<string, string | Record<string, string>[]>;

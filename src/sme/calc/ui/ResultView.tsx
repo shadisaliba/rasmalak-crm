@@ -48,7 +48,7 @@ export function ResultView({ result }: { result: ResultData }) {
       {result.warnings.length > 0 && (
         <div role="status" style={{ padding: '10px 14px', borderRadius: '12px', border: '1px solid var(--ds-warning-border)', background: 'var(--ds-warning-bg)', color: 'var(--ds-warning-text)', fontSize: '13px' }}>
           <strong style={{ display: 'block', marginBlockEnd: '4px' }}>{T.t('tools.result.warnings')}</strong>
-          <ul style={{ margin: 0, paddingInlineStart: '18px' }}>{result.warnings.map(w => <li key={w.key}>{T.t(w.messageKey, w.values)}</li>)}</ul>
+          <ul style={{ margin: 0, paddingInlineStart: '18px' }}>{result.warnings.map(w => <li key={w.key}>{T.tv(w.messageKey, w.values)}</li>)}</ul>
         </div>
       )}
 
@@ -61,7 +61,7 @@ export function ResultView({ result }: { result: ResultData }) {
             {result.assumptions.map(a => (
               <li key={a.key} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', fontSize: '13px', lineHeight: 1.6 }}>
                 <Chip tone={a.source === 'unverified_user_rate' ? 'warning' : 'neutral'}>{T.t(`tools.assumption.source.${a.source}`)}</Chip>
-                <span>{T.t(a.messageKey, a.values)}</span>
+                <span>{T.tv(a.messageKey, a.values)}</span>
               </li>
             ))}
           </ul>
@@ -109,7 +109,7 @@ function ResultTableView({ table }: { table: ResultTable }) {
           <tbody>
             {table.rows.map(row => (
               <tr key={row.key}>
-                {row.labelKey && <th scope="row" style={{ ...cell, fontWeight: 500 }}>{T.t(row.labelKey, row.labelValues)}</th>}
+                {row.labelKey && <th scope="row" style={{ ...cell, fontWeight: 500 }}>{T.tv(row.labelKey, row.labelValues)}</th>}
                 {table.columns.map(c => {
                   const v = row.cells[c.key];
                   return <td key={c.key} style={{ ...cell, color: v?.kind === 'none' ? 'var(--ds-text-muted)' : undefined }}>{v ? T.value(v) : ''}</td>;

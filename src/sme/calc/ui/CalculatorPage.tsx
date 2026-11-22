@@ -132,7 +132,7 @@ function Calculator({ calc }: { calc: RegisteredCalculator }) {
     const general: string[] = [];
     for (const e of calcErrors) {
       if (e.field) byField[e.field] = e.messageKey;
-      else general.push(T.t(e.messageKey, e.values));
+      else general.push(T.tv(e.messageKey, e.values));
     }
     setErrors(byField);
     return { error: general.join(' ') || (calcErrors.length ? null : errorText(r.error, T.intl.locale)) };
