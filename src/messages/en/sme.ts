@@ -16,7 +16,7 @@ export default {
   'module.reports': 'Reports',
   'access.title': 'Roles and access',
   'access.description': 'Who can see and change your business finances. Bookkeepers and advisers get only the modules you choose.',
-  'access.notEnabled': 'Finance features are not enabled for this organization yet. They are available to Jordanian organizations on a plan that includes them.',
+  'access.notEnabled': 'Finance features are for organizations based in Jordan. Set your organization\'s country to Jordan in Settings to use them.',
   'access.denied': 'You do not have permission to manage access.',
   'access.allModules': 'All modules for this role',
   'access.granted': 'Granted {date}',

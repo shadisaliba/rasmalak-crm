@@ -1,8 +1,15 @@
-# Rasmalak CRM
+# Rasmalak SME platform
 
-Arabic-first CRM for small businesses in the MENA region, with the SME Jordan financial
-intelligence build in progress. Conventions and architecture: [`CLAUDE.md`](CLAUDE.md).
-SME build plan: [`docs/SME_JORDAN_CURSOR_PLAYBOOK.md`](docs/SME_JORDAN_CURSOR_PLAYBOOK.md).
+The business side of Rasmalak as its own product: an Arabic-first platform that helps small
+businesses in Jordan run the business. Money (accounts, transactions, invoices, bills, cash
+forecast), Sales (the CRM), Tools (business calculators), Learn (Jordan playbooks), Ask Rasmalak
+(AI assistant) and Compliance. The product name is not chosen yet; "Rasmalak CRM" in the UI is a
+placeholder.
+
+- Product spec: [`docs/blueprint/`](docs/blueprint/)
+- Build order: [`docs/SME_JORDAN_CURSOR_PLAYBOOK.md`](docs/SME_JORDAN_CURSOR_PLAYBOOK.md)
+- Conventions and architecture: [`CLAUDE.md`](CLAUDE.md)
+- Decisions and sign-off gates: [`docs/gates/`](docs/gates/)
 
 ## Local development
 

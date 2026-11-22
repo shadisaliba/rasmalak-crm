@@ -62,9 +62,15 @@ set local role authenticated;
 select tests.act_as('a2000000-0000-4000-a000-000000000001');
 select throws_ok($$ select sme_update_profile('00000000-0000-4000-a000-00000000000a', '{"trade_name":"x"}', gen_random_uuid(), 'p-5') $$,
   'P0001', 'ACCESS_DENIED', 'an adviser can read but not change the profile');
+reset role;
+update organizations set country = 'AE' where id = '00000000-0000-4000-b000-00000000000b';
+set local role authenticated;
 select tests.act_as('b0000000-0000-4000-b000-000000000001');
 select throws_ok($$ select sme_update_profile('00000000-0000-4000-b000-00000000000b', '{"trade_name":"x"}', gen_random_uuid(), 'p-6') $$,
-  'P0001', 'FEATURE_NOT_ENABLED', 'organizations without the SME suite cannot use it');
+  'P0001', 'FEATURE_NOT_ENABLED', 'organizations outside Jordan cannot use the SME modules');
+reset role;
+update organizations set country = 'JO' where id = '00000000-0000-4000-b000-00000000000b';
+set local role authenticated;
 
 -- ── Consent ─────────────────────────────────────────────────
 select tests.act_as('a0000000-0000-4000-a000-000000000001');

@@ -40,7 +40,7 @@ insert into crm_contacts (org_id, first_name, last_name, email, created_by) valu
   ('00000000-0000-4000-a000-00000000000a', 'Lina', 'Haddad', 'lina@org-a.example.test', 'a0000000-0000-4000-a000-000000000001'),
   ('00000000-0000-4000-b000-00000000000b', 'Omar', 'Khalil', 'omar@org-b.example.test', 'b0000000-0000-4000-b000-000000000001');
 
--- Org A is on a plan that includes the SME suite, so SME features are enabled locally.
--- Org B has no subscription, which keeps the FEATURE_NOT_ENABLED paths testable.
+-- Both organizations are Jordanian, so both have the SME modules (the plan no longer matters).
+-- Org A is on a paid plan and Org B has none, which keeps the CRM plan-gating paths testable.
 insert into subscriptions (org_id, plan, status, seats_included, seats_max) values
   ('00000000-0000-4000-a000-00000000000a', 'organization', 'active', 10, 35);

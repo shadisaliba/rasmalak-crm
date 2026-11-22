@@ -970,7 +970,7 @@ export type GatedFeature =
   | 'visual_automation' | 'whatsapp_business' | 'advanced_reports'
   | 'custom_roles' | 'email_tracking' | 'audit_trail'
   | 'api_access' | 'ai_deal_scoring' | 'lead_scoring'
-  | 'document_templates' | 'vertical_templates' | 'sme_suite';
+  | 'document_templates' | 'vertical_templates';
 
 export const PLAN_FEATURE_MAP: Record<GatedFeature, PlanTier[]> = {
   multiple_pipelines: ['organization', 'enterprise', 'custom'],
@@ -987,8 +987,6 @@ export const PLAN_FEATURE_MAP: Record<GatedFeature, PlanTier[]> = {
   lead_scoring: ['enterprise', 'custom'],
   document_templates: ['organization', 'enterprise', 'custom'],
   vertical_templates: ['enterprise', 'custom'],
-  // Placeholder tiers until pricing is decided (playbook §1.3); sme_enabled() in SQL mirrors this.
-  sme_suite: ['organization', 'enterprise', 'custom'],
 };
 
 export const PLAN_SEAT_LIMITS: Record<PlanTier, number> = {

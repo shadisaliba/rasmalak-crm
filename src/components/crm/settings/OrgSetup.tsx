@@ -26,8 +26,9 @@ export function OrgSetup() {
   const [name, setName] = useState('');
   const [nameAr, setNameAr] = useState('');
   const [industry, setIndustry] = useState('');
-  const [country, setCountry] = useState('');
-  const [currency, setCurrency] = useState('SAR');
+  // Year 1 is Jordan only (blueprint §1), so new businesses start as Jordanian with JOD.
+  const [country, setCountry] = useState('JO');
+  const [currency, setCurrency] = useState('JOD');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -47,7 +48,7 @@ export function OrgSetup() {
       nameAr: nameAr.trim() || undefined,
       industry: industry || undefined,
       country: country || undefined,
-      currency: currency || 'SAR',
+      currency: currency || 'JOD',
     };
 
     const org = await createOrg(data);
