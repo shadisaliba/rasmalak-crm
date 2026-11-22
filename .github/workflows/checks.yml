@@ -16,7 +16,7 @@ concurrency:
 jobs:
   code:
     name: Lint, types, unit tests, i18n
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -33,7 +33,7 @@ jobs:
 
   supabase:
     name: Database tests, build, end-to-end
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
       # Users and password from supabase/seed.sql. They exist only in the local database.
