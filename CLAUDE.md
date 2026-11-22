@@ -160,6 +160,8 @@ supabase start         # Local Supabase (Docker); prints URL and keys for .env.l
 supabase db reset      # Re-apply migrations and seed.sql
 supabase test db       # pgTAP
 npm test               # Playwright (BASE_URL, .env.test.local; expects the local seed)
+node scripts/grant-staff.mjs <email> content_editor,subject_reviewer   # platform staff roles (service role)
+node scripts/import-consumer-courses.mjs --author <editor email>        # consumer courses as draft lessons
 ```
 
 Seeded local users (password `Passw0rd!local`): `owner.a@example.test` (Org A owner), `owner.b@example.test` (Org B owner), `no.org@example.test`, `join.me@example.test`.
@@ -181,6 +183,9 @@ Seeded local users (password `Passw0rd!local`): `owner.a@example.test` (Org A ow
 | `/crm/onboarding` | Business onboarding (blueprint §4) |
 | `/crm/money/accounts`, `/crm/money/transactions`, `/crm/money/transactions/import` | Accounts and cashboxes, the ledger, statement imports |
 | `/crm/money/receivables`, `/crm/money/payables` | Invoice records and supplier bills, with ageing |
+| `/crm/tools`, `/crm/tools/[code]`, `/crm/tools/saved` | Calculators (blueprint §8), one service for every screen; saved scenarios |
+| `/crm/learn`, `/crm/learn/[slug]` | Published lessons (blueprint §6) |
+| `/crm/staff/content` | Content review for platform staff (drafts, review, publishing) |
 | `/crm/sales` | Sales overview (KPIs, recent activity, at-risk deals) |
 | `/crm` | Pipeline board |
 | `/crm/contacts`, `/crm/contacts/[id]` | Contacts |
