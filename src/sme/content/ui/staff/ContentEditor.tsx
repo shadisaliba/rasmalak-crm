@@ -76,7 +76,7 @@ export function ContentEditor() {
   const latest = versions[0];
   const open = latest && (latest.state === 'draft' || latest.state === 'changes_requested') ? latest : undefined;
   // The form follows the latest version of the chosen locale (React's "adjust state on prop change").
-  const syncKey = `${locale}:${latest?.id ?? 'none'}`;
+  const syncKey = `${locale}:${latest?.id ?? 'none'}:${latest?.state ?? ''}`;
   const [syncedKey, setSyncedKey] = useState('');
   if (load.status === 'ready' && syncedKey !== syncKey) {
     setSyncedKey(syncKey);
