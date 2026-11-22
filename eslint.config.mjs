@@ -18,6 +18,8 @@ const eslintConfig = defineConfig([
     "public/fallback-*.js",
     "tests/report/**",
     "test-results/**",
+    // Agent and scratch worktrees are full copies of the repository.
+    ".claude/**",
   ]),
   // R14: every LLM call goes through src/ai/orchestrator.ts.
   {
