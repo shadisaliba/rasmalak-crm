@@ -1,0 +1,36 @@
+// Calculator-specific text (blueprint §8), keyed `<calculator code>.<part>`.
+const calc: Record<string, string> = {
+  // ── service_hourly_rate (F4.08) ─────────────────────────
+  'service_hourly_rate.title': 'Service hourly rate',
+  'service_hourly_rate.description': 'The hourly and day rate that covers your pay, your overheads and your profit, based on the hours you can really bill.',
+  'service_hourly_rate.field.target_annual_pay': 'Pay you want for yourself in a year',
+  'service_hourly_rate.help.target_annual_pay': 'What you would pay yourself as a salary, before any personal tax.',
+  'service_hourly_rate.field.annual_overhead': 'Yearly running costs',
+  'service_hourly_rate.help.annual_overhead': 'Rent, software, phone, transport, insurance and anything else the business pays for in a year.',
+  'service_hourly_rate.field.target_profit': 'Profit you want the business to keep in a year',
+  'service_hourly_rate.field.working_weeks': 'Working weeks in a year',
+  'service_hourly_rate.help.working_weeks': 'Leave out holidays, sick days and slow weeks. Many consultants work 44 to 48 weeks.',
+  'service_hourly_rate.field.hours_per_week': 'Working hours in a week',
+  'service_hourly_rate.field.utilization_percent': 'Share of hours you can bill',
+  'service_hourly_rate.help.utilization_percent': 'Time spent on sales, admin and travel is not billable. 50 % to 70 % is common.',
+  'service_hourly_rate.field.days_per_week': 'Working days in a week',
+  'service_hourly_rate.figure.hourly_rate': 'Hourly rate',
+  'service_hourly_rate.figure.day_rate': 'Day rate',
+  'service_hourly_rate.figure.required_revenue': 'Revenue you need in a year',
+  'service_hourly_rate.figure.billable_hours': 'Billable hours in a year',
+  'service_hourly_rate.table.utilization': 'If you bill more or fewer hours',
+  'service_hourly_rate.col.utilization': 'Billable share',
+  'service_hourly_rate.col.billable_hours': 'Billable hours',
+  'service_hourly_rate.col.hourly_rate': 'Hourly rate',
+  'service_hourly_rate.col.day_rate': 'Day rate',
+  'service_hourly_rate.trace.revenue': 'Revenue you need',
+  'service_hourly_rate.trace.billable_hours': 'Billable hours',
+  'service_hourly_rate.trace.hourly_rate': 'Hourly rate',
+  'service_hourly_rate.trace.day_rate': 'Day rate',
+  'service_hourly_rate.assumption.days_per_week': 'A working day is your weekly hours spread over {days} days.',
+  'service_hourly_rate.assumption.tax_excluded': 'These rates exclude sales tax. If you must charge it, it is added on top and paid to the tax department; it is not part of your income.',
+  'service_hourly_rate.warning.nothing_to_cover': 'Pay, running costs and profit are all zero, so the rate is zero.',
+  'service_hourly_rate.error.zero_hours': 'Billable hours can’t be zero. Enter working weeks, weekly hours and a billable share above zero.',
+};
+
+export default calc;
