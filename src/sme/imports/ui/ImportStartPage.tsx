@@ -152,10 +152,15 @@ export function ImportStartPage() {
       return setError(errorText(created.error, L.intl.locale));
     }
     const { batch_id: batchId, upload, mime_type: mimeType } = created.data;
-    const uploaded = await supabase.storage.from('sme-imports').uploadToSignedUrl(upload.path, upload.token, loaded.file, { contentType: mimeType });
+    // supabase-js ignores contentType for a File and sends the type the browser guessed, which the
+    // bucket refuses for CSVs on Windows (application/vnd.ms-excel) or with no type at all.
+    const body = new File([loaded.file], loaded.file.name, { type: mimeType });
+    const uploaded = await supabase.storage.from('sme-imports').uploadToSignedUrl(upload.path, upload.token, body);
     if (uploaded.error) {
       setBusy(false);
-      return setError(L.t('sme.import.error.upload'));
+      // A status means storage answered and refused; without one the request never got there.
+      console.error('[sme-import] upload failed', { batchId, status: uploaded.error.status, message: uploaded.error.message });
+      return setError(L.t(uploaded.error.status ? 'sme.import.error.uploadRefused' : 'sme.import.error.upload'));
     }
     const parsed = await smeApi(`import-batches/${batchId}/parse`, {
       orgId: currentOrg.id, method: 'POST', idempotencyKey: parseKey.current(), body: { column_mapping: mapping, parse_options: options },

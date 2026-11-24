@@ -1,18 +1,37 @@
 /**
  * FIN-S01 (W2-06): import a Jordanian bank CSV, map date / description / amount, review, commit.
  * The same file is refused before parsing; an overlapping file posts only its new lines; each
- * commit emits one ImportCommitted event.
+ * commit emits one ImportCommitted event. A CSV the browser mislabels still uploads, and a refused
+ * upload is reported as refused.
  */
+import fs from 'node:fs';
 import path from 'node:path';
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type APIRequestContext, type Page } from '@playwright/test';
 import { forceEnglish, signIn } from '../helpers';
 
 const ORG_A = '00000000-0000-4000-a000-00000000000a';
 const REST = `${process.env.SUPABASE_URL}/rest/v1`;
+const STORAGE = `${process.env.SUPABASE_URL}/storage/v1`;
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
 const service = { apikey: KEY, Authorization: `Bearer ${KEY}` };
 const FIXTURE_1 = path.join(__dirname, '../../fixtures/sme/bank_statement_jo_01.csv');
 const FIXTURE_2 = path.join(__dirname, '../../fixtures/sme/bank_statement_jo_02.csv');
+
+// A storage server older than the schema it runs on fails every upload (42P10 on its upsert). This
+// happens after `supabase db reset` from a checkout that `supabase link` pinned to newer service
+// versions, because the reset migrates storage with the pinned version but keeps the running server.
+test.beforeAll(async () => {
+  test.skip(!KEY, 'Needs the local seed and service key');
+  const object = `${STORAGE}/object/sme-imports/_e2e/preflight-${Date.now().toString(36)}.csv`;
+  const res = await fetch(object, { method: 'POST', headers: { ...service, 'content-type': 'text/csv' }, body: 'date,amount\n' });
+  if (!res.ok) {
+    const version = await fetch(`${STORAGE}/version`).then(r => r.text(), () => 'unknown');
+    throw new Error(`Local Storage (server ${version}) refused an upload: ${res.status} ${await res.text()}. If the error is 42P10, `
+      + 'the storage schema was migrated by a newer storage-api than the one running: run `supabase stop && supabase start` '
+      + 'from the checkout that ran the reset (see supabase/.temp/storage-version).');
+  }
+  await fetch(object, { method: 'DELETE', headers: service });
+});
 
 // Signing out elsewhere revokes shared sessions, and the API checks the session, so sign in here.
 test.use({ storageState: { cookies: [], origins: [] } });
@@ -27,7 +46,18 @@ async function balance(accountId: string) {
   return (await res.json())[0] as { balance_minor: number; transaction_count: number };
 }
 
-async function chooseFile(page: Page, accountId: string, file: string) {
+async function createAccount(page: Page, request: APIRequestContext, label: string): Promise<string> {
+  const token = await page.evaluate(() => JSON.parse(localStorage.getItem('rasmalak-auth')!).access_token as string);
+  const run = Date.now().toString(36);
+  const created = await request.post('/api/sme/v1/accounts', {
+    headers: { Authorization: `Bearer ${token}`, 'x-org-id': ORG_A, 'idempotency-key': `${label}-${run}` },
+    data: { account: { kind: 'bank', name: `E2E ${label} ${run}`, currency: 'JOD' } },
+  });
+  expect(created.status()).toBe(201);
+  return (await created.json()).account_id as string;
+}
+
+async function chooseFile(page: Page, accountId: string, file: Parameters<Page['setInputFiles']>[1]) {
   await page.goto(`/crm/money/transactions/import?account=${accountId}`);
   await expect(page.getByRole('heading', { name: 'Import a bank statement' })).toBeVisible({ timeout: 15_000 });
   await page.getByLabel('Statement file (CSV or XLSX)').setInputFiles(file);
@@ -45,16 +75,9 @@ async function uploadAndReview(page: Page): Promise<string> {
 }
 
 test('FIN-S01: import, refuse the same file, and post only new lines from an overlapping one', async ({ page, request }) => {
-  test.skip(!KEY || !process.env.CRON_SECRET, 'Needs the local seed, service key and cron secret');
+  test.skip(!process.env.CRON_SECRET, 'Needs the cron secret');
   test.setTimeout(120_000);
-  const token = await page.evaluate(() => JSON.parse(localStorage.getItem('rasmalak-auth')!).access_token as string);
-  const run = Date.now().toString(36);
-  const created = await request.post('/api/sme/v1/accounts', {
-    headers: { Authorization: `Bearer ${token}`, 'x-org-id': ORG_A, 'idempotency-key': `fin-s01-${run}` },
-    data: { account: { kind: 'bank', name: `E2E statement ${run}`, currency: 'JOD' } },
-  });
-  expect(created.status()).toBe(201);
-  const accountId = (await created.json()).account_id as string;
+  const accountId = await createAccount(page, request, 'statement');
 
   // First statement: 30 lines.
   await chooseFile(page, accountId, FIXTURE_1);
@@ -98,4 +121,23 @@ test('FIN-S01: import, refuse the same file, and post only new lines from an ove
     expect(rows).toHaveLength(1);
     expect(rows[0].processed_at).not.toBeNull();
   }
+});
+
+test('A CSV that Windows reports as an Excel file still uploads', async ({ page, request }) => {
+  const accountId = await createAccount(page, request, 'windows-csv');
+  await chooseFile(page, accountId, { name: 'bank_statement_jo_01.csv', mimeType: 'application/vnd.ms-excel', buffer: fs.readFileSync(FIXTURE_1) });
+  await uploadAndReview(page);
+  await expect(page.getByTestId('import-counts')).toContainText('Valid: 30', { timeout: 30_000 });
+});
+
+test('A refused upload says so instead of blaming the connection', async ({ page, request }) => {
+  const accountId = await createAccount(page, request, 'refused-upload');
+  await page.route('**/storage/v1/object/upload/sign/**', route => route.fulfill({
+    status: 500, contentType: 'application/json',
+    body: JSON.stringify({ statusCode: '500', error: 'DatabaseError', message: 'database error' }),
+  }));
+  await chooseFile(page, accountId, FIXTURE_1);
+  await page.getByRole('button', { name: 'Upload and read the file' }).click();
+  await expect(page.getByRole('region', { name: 'Tell us what each column means' }).getByRole('alert'))
+    .toHaveText('Our file storage did not accept the file. Please try again in a few minutes.');
 });
