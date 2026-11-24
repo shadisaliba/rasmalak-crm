@@ -6,7 +6,7 @@ import { useIntl } from 'react-intl';
 import type { LucideIcon } from 'lucide-react';
 import {
   Home, LayoutDashboard, Kanban, Users, Building2, Handshake, CheckSquare, BarChart3, Zap, FileText,
-  Upload, Settings, LogOut, X, Landmark, ArrowLeftRight, ReceiptText, FileMinus, BriefcaseBusiness, KeyRound, TrendingUp, ChartLine, ListChecks, Calculator, GraduationCap, FilePenLine,
+  Upload, Settings, LogOut, X, Landmark, ArrowLeftRight, ReceiptText, FileMinus, BriefcaseBusiness, KeyRound, TrendingUp, ChartLine, ListChecks, FileBarChart, Calculator, GraduationCap, FilePenLine,
 } from 'lucide-react';
 import { useLogout } from '@/store/useStore';
 import { useAuthStore } from '@/store/authStore';
@@ -57,6 +57,7 @@ const SME_GROUPS: NavGroup[] = [
       { id: 'receivables', path: '/crm/money/receivables', icon: ReceiptText, labelKey: 'sme.nav.receivables', labelDefault: 'Invoice records', permission: 'sme.receivables.read' },
       { id: 'payables', path: '/crm/money/payables', icon: FileMinus, labelKey: 'sme.nav.payables', labelDefault: 'Bills', permission: 'sme.payables.read' },
       { id: 'forecast', path: '/crm/money/forecast', icon: ChartLine, labelKey: 'forecast.nav', labelDefault: 'Cash forecast', permission: 'sme.forecast.read' },
+      { id: 'money-reports', path: '/crm/money/reports', icon: FileBarChart, labelKey: 'reports.nav', labelDefault: 'Reports', permission: 'sme.ledger.read' },
     ],
   },
   {

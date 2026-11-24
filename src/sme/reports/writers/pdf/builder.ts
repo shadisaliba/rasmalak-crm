@@ -77,9 +77,9 @@ export class ReportDocument {
       align: ar ? 'right' : 'left',
     });
 
-    // Rasmalak AI branding — always opposite side
+    // Brand — always opposite side
     const brandX = ar ? MARGIN_X : PAGE_W - MARGIN_X;
-    ctx.drawText('Rasmalak AI', brandX, 8, {
+    ctx.drawText(ar ? 'رسمالك' : 'Rasmalak', brandX, 8, {
       size: 10,
       bold: true,
       color: COLORS.white,

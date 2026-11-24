@@ -37,3 +37,29 @@ describe('page-label ordering', () => {
     expect(out.indexOf(D5)).toBeLessThan(out.indexOf(D1));
   });
 });
+
+describe('joining after right-joining letters', () => {
+  // Presentation forms: lam initial FEDF, lam final FEDE; dal final FEAA; reh isolated FEAD;
+  // seen initial FEB3; teh marbuta final FE94; meem initial FEE3; alef isolated FE8D.
+  it('starts a new join after alef: "ال" is an isolated alef then an initial lam', () => {
+    // Glyphs come out in visual (reversed) order.
+    const al = shapeArabic('ال');
+    expect(al).toEqual([0xfedd, 0xfe8d]);
+    expect(shapeArabic('العميل').at(-2)).toBe(0xfedf);
+  });
+
+  it('shapes "مدرسة" as meem-dal joined, reh alone, seen-teh marbuta joined', () => {
+    expect(shapeArabic('مدرسة')).toEqual([0xfe94, 0xfeb3, 0xfead, 0xfeaa, 0xfee3]);
+  });
+});
+
+describe('isolated and final forms of right-joining letters', () => {
+  it('uses the isolated form at the start and the final form after a joining letter', () => {
+    // و د ذ ر ز: isolated alone; final after ب (dual-joining).
+    const cases: Array<[number, number, number]> = [[0x0648, 0xfeed, 0xfeee], [0x062f, 0xfea9, 0xfeaa], [0x0630, 0xfeab, 0xfeac], [0x0631, 0xfead, 0xfeae], [0x0632, 0xfeaf, 0xfeb0]];
+    for (const [letter, isolated, final] of cases) {
+      expect(shapeArabic(String.fromCodePoint(letter))).toEqual([isolated]);
+      expect(shapeArabic(String.fromCodePoint(0x0628, letter))[0]).toBe(final);
+    }
+  });
+});
