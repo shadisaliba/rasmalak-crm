@@ -1,4 +1,4 @@
-# CLAUDE.md — Rasmalak CRM
+# CLAUDE.md — Rasmalak SME platform
 
 This is the primary reference for any AI assistant working on this repository. Read it fully before making changes.
 
@@ -6,9 +6,22 @@ This is the primary reference for any AI assistant working on this repository. R
 
 ## What This Project Is
 
-**Rasmalak CRM** (placeholder product name) is a bilingual, Arabic-first CRM for small businesses in the MENA region: contacts, companies, deals and pipeline, tasks, communications, automation, documents and integrations. It is a separate product from the consumer Rasmalak app, with its own repository, Supabase project and Vercel project.
+This repository is the **Rasmalak SME platform**: the business side of Rasmalak, now a standalone product, separate from the consumer (individuals) app, with its own repository, Supabase project and Vercel project. The product name is not chosen yet; the UI and the repository still say "Rasmalak CRM" as a placeholder.
 
-The **SME Jordan** build adds financial intelligence, playbooks, an AI business assistant, calculators and a compliance navigator for Jordanian businesses. It follows `docs/SME_JORDAN_CURSOR_PLAYBOOK.md`; see the SME section below.
+It helps small businesses in Jordan run the business. Everything below is one product:
+
+| Section | What it is | Blueprint |
+|---|---|---|
+| Home and Money | Accounts, transactions and imports, customer invoices, supplier bills, cash forecast, KPIs, actions | §5 |
+| Sales | The CRM: contacts, companies, deals and pipeline, tasks, communications, automation, documents, integrations | — |
+| Tools | Versioned business calculators | §8 |
+| Learn | Reviewed, Jordan-specific playbooks and lessons | §6 |
+| Ask Rasmalak | AI business assistant grounded in the business's own data | §7 |
+| Compliance | Jordan compliance navigator | §9 |
+
+The CRM was built earlier, when Rasmalak had SME and individual sides. It is **one part** of the platform (the Sales section), not the product with an SME add-on. Every Jordanian organization gets the whole platform whatever its plan (decision of 22 Nov 2026, `docs/gates/decisions.md`).
+
+The product spec is the blueprint in `docs/blueprint/`; the build order is `docs/SME_JORDAN_CURSOR_PLAYBOOK.md`. See the SME section below.
 
 Arabic is the default language and RTL the default direction.
 
@@ -166,7 +179,11 @@ Seeded local users (password `Passw0rd!local`): `owner.a@example.test` (Org A ow
 
 | Route | Description |
 |---|---|
-| `/crm/dashboard` | KPIs, recent activity, at-risk deals |
+| `/crm/dashboard` | Home: the financial home (FIN-01) for Jordanian organizations, the sales dashboard otherwise |
+| `/crm/onboarding` | Business onboarding (blueprint §4) |
+| `/crm/money/accounts`, `/crm/money/transactions`, `/crm/money/transactions/import` | Accounts and cashboxes, the ledger, statement imports |
+| `/crm/money/receivables`, `/crm/money/payables` | Invoice records and supplier bills, with ageing |
+| `/crm/sales` | Sales overview (KPIs, recent activity, at-risk deals) |
 | `/crm` | Pipeline board |
 | `/crm/contacts`, `/crm/contacts/[id]` | Contacts |
 | `/crm/deals`, `/crm/deals/[id]` | Deals |
@@ -175,6 +192,7 @@ Seeded local users (password `Passw0rd!local`): `owner.a@example.test` (Org A ow
 | `/crm/automation` | Workflows, templates, execution log, Outbox |
 | `/crm/documents` | Templates, quotes, proposals |
 | `/crm/import` | Contact import |
+| `/crm/settings/business/*` | Business profile, team and access |
 | `/crm/settings/*` | Security (password, TOTP), preferences, team and invitations, pipeline, fields, audit, billing, integrations, health, API keys, verticals, WhatsApp |
 | `/crm/setup` | Create an organization |
 | `/crm/invite/[token]` | Accept an invitation |
@@ -192,7 +210,7 @@ The SME Jordan build is specified in **`docs/SME_JORDAN_CURSOR_PLAYBOOK.md`** (b
 - **AI, rules, content.** One door to the LLM (R14). The AI never computes figures; every number comes from evidence with IDs (R15). Jordanian legal, tax, SSC, licensing and e-invoicing content comes only from published, reviewed, effective-dated rule versions. **Assistants must not write Jordanian legal content, rates, thresholds, fees or deadlines**; create `draft` placeholders for reviewers (R16). No external action without confirmation (R17). Uploaded document text is untrusted (R18). Calculators and engines are pure, versioned and tested (R19).
 - **Engineering.** zod at every API boundary, no `any` (R20). Timestamped migrations with pgTAP, including an RLS test for a second organization (R21). SME code lives in `src/sme/<module>/{domain,server,api,ui}` and modules talk through exported services, not each other's tables (R22).
 
-**Architecture (playbook §3):** browser → `/api/sme/v1/*` route handler (zod, `requireUser`, correlation id) → `sme_*` RPC with the user's JWT (permission check, rows, audit and outbox in one transaction). Reads go through RLS. The outbox worker `/api/cron/sme-outbox` (service role, `CRON_SECRET`) runs idempotent handlers. SME navigation (Finance, Business) shows only when the organization's country is `JO` and the plan includes `sme_suite`.
+**Architecture (playbook §3):** browser → `/api/sme/v1/*` route handler (zod, `requireUser`, correlation id) → `sme_*` RPC with the user's JWT (permission check, rows, audit and outbox in one transaction). Reads go through RLS. The outbox worker `/api/cron/sme-outbox` (service role, `CRON_SECRET`) runs idempotent handlers. The SME navigation (Home, Money, Sales, Tools, Learn, Business) shows for every organization whose country is `JO`; `sme_enabled()` checks the same thing in the database. Plans no longer switch SME off.
 
 **Already in place:** `src/sme/money` (W0-08), the forecast engine core and report writers ported from the consumer app (W0-06, ledger in `docs/PORTED_FROM_CONSUMER.md`), the error contract (`src/lib/apiError.ts`), `requireUser` and `requireOrgPermission` (`src/lib/serverAuth.ts`), and outbound drafts (W0-10).
 

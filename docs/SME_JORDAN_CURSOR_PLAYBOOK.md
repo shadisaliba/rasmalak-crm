@@ -33,6 +33,8 @@ Rasmalak CRM is a standalone business product, separate from the consumer Rasmal
 | Tools & Calculators | §8, F4 | One versioned calculation service used by the UI, the dashboard and the assistant |
 | Jordan Compliance Navigator | §9, F5 | Source register, reviewed rules, applicability, obligations calendar |
 
+> **Update 22 Nov 2026.** The product is the **SME platform**, and the CRM is its Sales section, not the product with SME added on. Every Jordanian organization gets the SME modules whatever its plan; `sme_suite` is retired (see §1.2 and `docs/gates/decisions.md`). The technical rules and the order of prompts are unchanged.
+
 It is an intelligence and education layer. It is **not** an ERP, a bank, a statutory ledger, a tax-filing service, an e-invoicing (JoFotara) client, a payroll processor or a substitute for legal advice (blueprint §1).
 
 ### 1.2 Decisions already made — do not revisit
@@ -45,6 +47,7 @@ It is an intelligence and education layer. It is **not** an ERP, a bank, a statu
 | 18 Nov 2026 | The CRM gets its own Git repository. Code needed from consumer `main` is **copied in once**; there are no shared packages. |
 | 18 Nov 2026 | The April consumer pages are **removed** from the CRM. Anything SME needs is ported fresh from consumer `main`. |
 | 18 Nov 2026 | SME lesson and compliance content lives in the **database**, with editor and reviewer workflow. |
+| 22 Nov 2026 | The product is the SME platform for running a small business; the CRM stays inside it as the Sales section. Every organization with `country = 'JO'` gets the SME modules whatever its plan; the `sme_suite` plan feature is retired. Tools and Learn are built before the rest of Wave 3a. |
 
 ### 1.3 Defaults until a human decides (blueprint §14)
 
@@ -59,7 +62,7 @@ Build to these defaults. Each one is reversible; none may be "improved" without 
 | Hosting region and data residency | Not chosen. `HUMAN GATE` at W0-03. | Security lead and counsel |
 | Record retention | Financial rows are never hard-deleted; organization deletion is blocked for SME-enabled organizations until a retention policy exists. | Counsel, Wave 1 |
 | Country scope | Country and currency are per organization. SME features are enabled only when `country = 'JO'`. Base currency JOD. | — |
-| Pricing | SME is gated by a new plan feature `sme_suite`. Tier mapping is a placeholder. | Product owner, Wave 4 |
+| Pricing | ~~SME is gated by a new plan feature `sme_suite`.~~ Superseded 22 Nov 2026: SME is on for every Jordanian organization; plan tiers may limit individual features later. | Product owner, Wave 4 |
 | First paid segment | Professional services and micro trading. Affects demo data and default categories only. | Product owner, Wave 1 |
 | AI and document-extraction hosting | Keep provider choice behind `src/ai/config.ts`; ship with the existing hosted providers; the self-hosted Qwen provider stays optional. | Security lead, Wave 1 |
 | Product name in UI | Placeholder "Rasmalak CRM". | Product owner |
@@ -193,7 +196,7 @@ Outbox  ──► /api/cron/sme-outbox (service role, CRON_SECRET) ──► ide
 
 ### 3.3 Navigation
 
-The CRM sidebar (`src/components/crm/layout/CrmSidebar.tsx`) gains two groups. They are visible only when the organization's country is `JO` and the plan includes `sme_suite`; each item also checks its module permission.
+The CRM sidebar (`src/components/crm/layout/CrmSidebar.tsx`) gains two groups. They are visible for every organization whose country is `JO` (22 Nov 2026; previously also required `sme_suite`); each item also checks its module permission.
 
 | Group | Item | Path | Blueprint screen |
 | --- | --- | --- | --- |
@@ -534,7 +537,7 @@ Cursor does not run this wave. Waves 2 and 3a may start in parallel, but **no SM
    );
    ```
    Read how `src/store/orgStore.tsx` computes `userPermissions` today. If it differs, the SQL function becomes the source of truth: add `sme_my_permissions(p_org) returns jsonb` and make `orgStore` use it.
-5. `sme_enabled(p_org) returns boolean`: the organization's country is `JO` **and** its subscription plan includes `sme_suite`. Add `sme_suite` to `GatedFeature` and `PLAN_FEATURE_MAP` (placeholder: `organization`, `enterprise`, `custom`). Every SME RPC checks it and raises `FEATURE_NOT_ENABLED`.
+5. `sme_enabled(p_org) returns boolean`: the organization's country is `JO` **and** its subscription plan includes `sme_suite`. Add `sme_suite` to `GatedFeature` and `PLAN_FEATURE_MAP` (placeholder: `organization`, `enterprise`, `custom`). Every SME RPC checks it and raises `FEATURE_NOT_ENABLED`. *(Superseded 22 Nov 2026: the check is the country only; migration `20261122000000_sme_enabled_for_jordan.sql`.)*
 6. `sme_revoke_member(p_org, p_user, p_reason)`: sets `revoked_at`, `is_active=false`, audits, and emits `RoleRevoked`. Its handler invalidates assistant caches for that user and organization (W3b-07).
 7. UI: `/crm/settings/business/access` lists members with their role, allowed modules, granted and revoked dates; invite (W0-04 flow) with role and module choice; revoke with reason. Every grant is audited.
 
@@ -1594,7 +1597,7 @@ Messages live in `src/messages/{en,ar}/errors.ts` under `errors.<CODE>`.
 | --- | --- | --- |
 | `UNAUTHENTICATED` | 401 | No valid session |
 | `ACCESS_DENIED` | 403 | Missing permission or wrong organization |
-| `FEATURE_NOT_ENABLED` | 403 | Organization is not `JO` or the plan lacks `sme_suite` |
+| `FEATURE_NOT_ENABLED` | 403 | Organization is not `JO` |
 | `NOT_FOUND` | 404 | Not found, or not visible to this user |
 | `IDEMPOTENCY_KEY_REQUIRED` | 400 | Mutating request without `Idempotency-Key` |
 | `VALIDATION_FAILED` | 422 | Zod validation failed; details list the fields |

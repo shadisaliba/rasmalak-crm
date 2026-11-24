@@ -54,7 +54,7 @@ select is((select name_ar from org_roles where org_id = '00000000-0000-4000-a000
 
 -- ── Feature gate ────────────────────────────────────────────
 select ok(sme_enabled('00000000-0000-4000-a000-00000000000a'), 'Org A (JO, organization plan) has SME enabled');
-select ok(not sme_enabled('00000000-0000-4000-b000-00000000000b'), 'Org B (no subscription) does not');
+select ok(sme_enabled('00000000-0000-4000-b000-00000000000b'), 'Org B (JO, no subscription) has it too: the plan does not switch SME off');
 update organizations set country = 'AE' where id = '00000000-0000-4000-a000-00000000000a';
 select ok(not sme_enabled('00000000-0000-4000-a000-00000000000a'), 'SME is for Jordanian organizations only');
 update organizations set country = 'JO' where id = '00000000-0000-4000-a000-00000000000a';

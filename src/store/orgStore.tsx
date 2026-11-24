@@ -167,9 +167,13 @@ export function OrgProvider({ children }: { children: ReactNode }) {
 
         const memberships = memberRows.map(r => ({ org: mapRow<Organization>(r.organizations as Record<string, unknown>), role: r.role as string }));
         setOrganizations(memberships.map(m => m.org));
-        // A remembered choice wins; otherwise a live organization comes before any demo.
+        // A remembered choice wins; otherwise a live organization comes before any demo, except on
+        // demo previews, where visitors should land in the sample business.
         const stored = readStoredOrg();
-        const chosen = memberships.find(m => m.org.id === stored) ?? memberships.find(m => !m.org.isDemo) ?? memberships[0];
+        const preferDemo = process.env.NEXT_PUBLIC_DEMO_AUTO_LOGIN === 'true';
+        const chosen = memberships.find(m => m.org.id === stored)
+          ?? memberships.find(m => Boolean(m.org.isDemo) === preferDemo)
+          ?? memberships[0];
         const org = chosen.org;
         setCurrentOrg(org);
         setUserRole(chosen.role);
