@@ -1683,7 +1683,7 @@ Tick an item (☐ → ☑) and add the PR link in the same PR that completes it.
 | F1.06 Expense intelligence | W2-04, W3a-08 | ☐ | |
 | F1.07 Receivables | W3a-02, W3a-04 | ☑ | branch, no PR yet |
 | F1.08 Payables and suppliers | W3a-03 | ☑ | branch, no PR yet |
-| F1.09 13-week cash forecast | W3a-07 | ☑ | PR_LINK |
+| F1.09 13-week cash forecast | W3a-07 | ☑ | [#8](https://github.com/shadisaliba/rasmalak-crm/pull/8) |
 | F1.10 Profit and business KPIs | W3a-08 | ☐ | |
 | F1.11 Financial health actions | W3a-09 | ☐ | |
 | F2.01 Starting a business in Jordan | W3b-01, W3b-02 (structure); reviewers (content) | ☐ | |
@@ -1700,7 +1700,7 @@ Tick an item (☐ → ☑) and add the PR link in the same PR that completes it.
 | F3.05 Document analysis | W3b-09 | ☐ | |
 | F3.06 Playbook and calculator routing | W3b-03, W3b-07 | ☐ | |
 | F3.11 Assistant governance | W3b-07 | ☐ | |
-| F4.01 Cash forecast | W3a-06, W3a-07 | ☑ | PR_LINK (opens FIN-05) |
+| F4.01 Cash forecast | W3a-06, W3a-07 | ☑ | [#8](https://github.com/shadisaliba/rasmalak-crm/pull/8) (opens FIN-05) |
 | F4.02 Break-even | W3a-06 | ☑ | branch, no PR yet |
 | F4.03 Profit margin and markup | W3a-06 | ☑ | branch, no PR yet |
 | F4.04 Working capital | W3a-06 | ☑ | branch, no PR yet |
