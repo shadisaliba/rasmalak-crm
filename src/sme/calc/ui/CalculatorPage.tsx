@@ -166,7 +166,10 @@ function Calculator({ calc }: { calc: RegisteredCalculator }) {
         back={{ href: '/crm/tools', label: T.t('tools.back') }}
         badge={<Chip tone="info">{T.t('tools.version', { version: calc.version })}</Chip>} />
       <SmeGate permission="sme.calc.run">
-        {calc.unavailableReasonKey ? <DataState state="empty" message={T.t(calc.unavailableReasonKey)} /> : (
+        {calc.screen ? (
+          <DataState state="empty" message={T.t(`calc.${calc.code}.onScreen`)}
+            action={<Link href={calc.screen} style={{ ...primaryButton, textDecoration: 'none' }}>{T.t(`calc.${calc.code}.open`)}</Link>} />
+        ) : calc.unavailableReasonKey ? <DataState state="empty" message={T.t(calc.unavailableReasonKey)} /> : (
           <>
             {needsRule && <DataState state="review_needed" message={T.t('tools.availability.needs_rule.note')} />}
             {loadedFrom !== null && <DataState state="partial" message={T.t('tools.loadedFrom', { name: loadedFrom })} />}

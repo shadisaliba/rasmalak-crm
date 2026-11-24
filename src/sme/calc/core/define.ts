@@ -13,6 +13,7 @@ export function defineCalculator<I>(def: CalculatorDef<I>): RegisteredCalculator
     ruleParams: def.ruleParams ?? [],
     example: def.example,
     unavailableReasonKey: def.unavailableReasonKey,
+    screen: def.screen,
     run(raw, ctx): CalcOutcome {
       const parsed = def.input.safeParse(raw);
       if (!parsed.success) {
