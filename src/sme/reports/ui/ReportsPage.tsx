@@ -202,7 +202,8 @@ function Summary({ summary, computedAt }: { summary: FinancialSummary; computedA
               {top3 && <p style={{ margin: 0, fontSize: '12px', color: 'var(--ds-text-body)' }}>{L.t('kpi.top3', { percent: L.decimal(top3) })}</p>}
               {metric.reasons.length > 0 && (
                 <ul style={{ margin: 0, paddingInlineStart: '16px', fontSize: '12px', color: 'var(--ds-warning-text)' }}>
-                  {metric.reasons.map((r, i) => <li key={i}>{reason(r)}</li>)}
+                  {metric.reasons.slice(0, 2).map((r, i) => <li key={i}>{reason(r)}</li>)}
+                  {metric.reasons.length > 2 && <li>{L.t('kpi.moreReasons', { count: L.number(metric.reasons.length - 2) })}</li>}
                 </ul>
               )}
               <p style={{ ...muted, fontSize: '11px' }}>{L.t(`kpi.basis.${k}`)}</p>

@@ -40,6 +40,7 @@ const kpi = {
   'reason.no_direct_cost_category': 'لا تُستخدم فئة تكلفة مباشرة (مثل تكلفة البضاعة)',
   'reason.stale_account': 'لم يُحدَّث {account} مؤخرًا',
   'reason.foreign_excluded': 'الفواتير بعملات أخرى غير محتسبة ({invoices} فواتير عملاء، {bills} فواتير موردين)',
+  'moreReasons': 'و{count} أخرى',
   'profitInstead': 'صافي التدفق النقدي بدلًا منه: {amount}',
   'top3': 'أكبر ثلاثة: {percent}٪',
   'flagged': 'غير معتاد في {months}',

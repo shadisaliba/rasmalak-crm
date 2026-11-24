@@ -40,6 +40,7 @@ const kpi = {
   'reason.no_direct_cost_category': 'No direct-cost category (such as cost of goods) is in use',
   'reason.stale_account': '{account} has not been updated recently',
   'reason.foreign_excluded': 'Invoices and bills in other currencies are not included ({invoices} invoices, {bills} bills)',
+  'moreReasons': 'and {count} more',
   'profitInstead': 'Net cash flow instead: {amount}',
   'top3': 'Top three: {percent}%',
   'flagged': 'Unusual in {months}',
