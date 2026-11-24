@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useOrg, useOrgPermission } from '@/store/orgStore';
 import { smeApi, errorText, type SmeApiError, type SmeResult } from '@/sme/api/client';
+import { fetchRun } from './fetchRun';
 import { DataState } from '@/sme/ui/DataState';
 import { PageHeader } from '@/sme/ui/PageHeader';
 import { SmeGate } from '@/sme/profile/ui/SmeGate';
@@ -21,16 +22,6 @@ import { ScenarioEditor } from './ScenarioEditor';
 
 type Load = { status: 'loading' } | { status: 'failed'; error: SmeApiError } | { status: 'ready'; run: ForecastRun; stale: boolean };
 const CADENCE_TO_RECURRENCE: Record<string, ScheduledItemRow['recurrence']> = { weekly: 'weekly', monthly: 'monthly', quarterly: 'quarterly', yearly: 'annually' };
-
-/** The stored run if it matches today's inputs; otherwise recompute, falling back to the stale run. */
-async function fetchRun(orgId: string, scenarioId: string | null): Promise<SmeResult<{ run: ForecastRun; stale: boolean }>> {
-  const latest = await smeApi<{ forecast: ForecastRun | null; stale: boolean }>(`forecasts/latest${scenarioId ? `?scenario_id=${scenarioId}` : ''}`, { orgId });
-  if (!latest.ok) return latest;
-  if (latest.data.forecast && !latest.data.stale) return { ok: true, data: { run: latest.data.forecast, stale: false } };
-  const fresh = await smeApi<ForecastRun>('forecasts', { orgId, method: 'POST', body: { scenario_id: scenarioId } });
-  if (fresh.ok) return { ok: true, data: { run: fresh.data, stale: false } };
-  return latest.data.forecast ? { ok: true, data: { run: latest.data.forecast, stale: true } } : fresh;
-}
 
 export function ForecastPage() {
   return (
