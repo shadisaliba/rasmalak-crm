@@ -10,7 +10,14 @@ import { ENGINE_VERSION } from '@/sme/forecast/domain/types';
 import { INTL_LOCALE } from '@/sme/money';
 import enMessages from '@/messages/en';
 import arMessages from '@/messages/ar';
-import { displayValue, type ReportCode, type ReportDoc, type ReportRow, type ReportSection } from '../domain/render';
+import { arabicDigits, displayValue, type ReportCode, type ReportDoc, type ReportRow, type ReportSection } from '../domain/render';
+
+/** Generation time in Jordan, in the report's digits. */
+function generatedAt(locale: 'ar' | 'en'): string {
+  const text = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Amman', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })
+    .format(new Date()).replace(',', '');
+  return `${locale === 'ar' ? arabicDigits(text) : text} (${locale === 'ar' ? 'بتوقيت عمّان' : 'Amman time'})`;
+}
 
 export interface ReportRequest { code: ReportCode; period: { from: string; to: string }; locale: 'ar' | 'en' }
 
@@ -229,9 +236,9 @@ export async function buildReport(db: SupabaseClient, org: string, req: ReportRe
       { label: tr('reports.prov.organization'), value: orgName },
       { label: tr('reports.prov.period'), value: usesPeriod ? periodText : tr('reports.prov.none') },
       { label: tr('reports.prov.asOf'), value: displayValue(asOf, 'date', locale) },
-      { label: tr('reports.prov.generatedAt'), value: new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC' },
+      { label: tr('reports.prov.generatedAt'), value: generatedAt(locale) },
       { label: tr('reports.prov.versions'), value: `KPI ${KPI_VERSION} · forecast ${ENGINE_VERSION} · data quality ${DATA_QUALITY_VERSION}` },
-      { label: tr('reports.prov.filters'), value: usesPeriod ? `${period.from}..${period.to}` : tr('reports.prov.none') },
+      { label: tr('reports.prov.filters'), value: usesPeriod ? periodText : tr('reports.prov.none') },
       { label: tr('reports.prov.rows'), value: displayValue(String(rows), 'count', locale) },
       { label: tr('reports.prov.dataQuality'), value: grade === 'insufficient' ? tr('kpi.status.insufficient_data') : grade },
       { label: tr('reports.prov.note'), value: tr('reports.note') },

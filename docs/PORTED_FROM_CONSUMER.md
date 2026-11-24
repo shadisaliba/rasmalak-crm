@@ -22,7 +22,7 @@ will not stay in sync on their own. Donor: `Shadimasarweh/Rasmalak` branch `main
 | `src/lib/cycles.ts` | `720f174` | `src/sme/forecast/engine-core/cycles.ts` | None | W0-06 |
 | `src/lib/cycles.test.ts` | `720f174` | `src/sme/forecast/engine-core/cycles.test.ts` | None | W0-06 |
 | `src/lib/pdf/arabic.ts` | `720f174` | `src/sme/reports/writers/pdf/arabic.ts` | Shaping fixes (W3a-10): the isolated and final forms of waw, dal, thal, reh, zain and jeh were swapped, and a letter after a right-joining letter (alef, dal, reh…) wrongly joined to it. The consumer app has the same bugs | W0-06 |
-| `src/lib/pdf/builder.ts` | `720f174` | `src/sme/reports/writers/pdf/builder.ts` | None | W0-06 |
+| `src/lib/pdf/builder.ts` | `720f174` | `src/sme/reports/writers/pdf/builder.ts` | Header brand reads Rasmalak (رسمالك in Arabic), not the consumer app's "Rasmalak AI" (W3a-10) | W0-06 |
 | `src/lib/pdf/layout.ts` | `720f174` | `src/sme/reports/writers/pdf/layout.ts` | None; fonts still load from `public/fonts/` | W0-06 |
 | `src/lib/pdf/ttf.ts` | `720f174` | `src/sme/reports/writers/pdf/ttf.ts` | None | W0-06 |
 | `src/lib/pdf/writer.ts` | `720f174` | `src/sme/reports/writers/pdf/writer.ts` | None | W0-06 |
