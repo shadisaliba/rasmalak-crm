@@ -164,6 +164,8 @@ npm test               # Playwright (BASE_URL, .env.test.local; expects the loca
 
 Seeded local users (password `Passw0rd!local`): `owner.a@example.test` (Org A owner), `owner.b@example.test` (Org B owner), `no.org@example.test`, `join.me@example.test`.
 
+`supabase link` pins the hosted service versions in `supabase/.temp/*-version`. `supabase db reset` from a pinned checkout migrates the storage schema with the pinned storage-api but keeps the running containers. If they are older, every upload then fails with 500 `DatabaseError` 42P10. After linking, run `supabase stop && supabase start` from the linked checkout so the containers match the pins.
+
 ---
 
 ## Branches and Deployment
