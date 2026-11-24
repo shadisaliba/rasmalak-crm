@@ -71,13 +71,13 @@ const FORMS: Record<number, [number, number, number, number]> = {
   0x0623: [0xfe83, 0xfe84, 0xfe83, 0xfe84], // أ
   0x0625: [0xfe87, 0xfe88, 0xfe87, 0xfe88], // إ
   0x0671: [0xfb50, 0xfb51, 0xfb50, 0xfb51], // ٱ
-  0x0648: [0xfeee, 0xfeed, 0xfeee, 0xfeed], // و
+  0x0648: [0xfeed, 0xfeee, 0xfeed, 0xfeee], // و
   0x0624: [0xfe85, 0xfe86, 0xfe85, 0xfe86], // ؤ
-  0x062f: [0xfeaa, 0xfea9, 0xfeaa, 0xfea9], // د
-  0x0630: [0xfeac, 0xfeab, 0xfeac, 0xfeab], // ذ
-  0x0631: [0xfeae, 0xfead, 0xfeae, 0xfead], // ر
-  0x0632: [0xfeb0, 0xfeaf, 0xfeb0, 0xfeaf], // ز
-  0x0698: [0xfb8b, 0xfb8a, 0xfb8b, 0xfb8a], // ژ
+  0x062f: [0xfea9, 0xfeaa, 0xfea9, 0xfeaa], // د
+  0x0630: [0xfeab, 0xfeac, 0xfeab, 0xfeac], // ذ
+  0x0631: [0xfead, 0xfeae, 0xfead, 0xfeae], // ر
+  0x0632: [0xfeaf, 0xfeb0, 0xfeaf, 0xfeb0], // ز
+  0x0698: [0xfb8a, 0xfb8b, 0xfb8a, 0xfb8b], // ژ
   0x0626: [0xfe89, 0xfe8a, 0xfe8b, 0xfe8c], // ئ
   0x0628: [0xfe8f, 0xfe90, 0xfe91, 0xfe92], // ب
   0x062a: [0xfe95, 0xfe96, 0xfe97, 0xfe98], // ت
@@ -165,10 +165,10 @@ export function shapeArabic(text: string): number[] {
       if (chars[n].join !== 'T') { nextJoin = chars[n].join; break; }
     }
 
-    // joinsLeft: character to our RIGHT (prev in memory) is D or R joining.
-    // R-joining characters (ALEF, WAW, DAL, REH…) DO cause the character to
-    // their left to take FINAL/MEDIAL form — the bug was excluding 'R' here.
-    const joinsLeft = (prevJoin === 'D' || prevJoin === 'R');
+    // joinsLeft: we connect to the character on our RIGHT (previous in memory). Only a
+    // dual-joining letter connects onward: ALEF, DAL, REH, ZAIN and WAW (right-joining) never
+    // join to the letter after them, so "ال" is an isolated alef then an initial lam.
+    const joinsLeft = prevJoin === 'D';
     // joinsRight: character to our LEFT (next in memory) is D or R joining.
     const joinsRight = (nextJoin === 'D' || nextJoin === 'R');
 
