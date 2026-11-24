@@ -1106,8 +1106,8 @@ export interface CalcContext {
 4. Permission `sme.reports.export`; audit `ReportExported` with the filter digest; organization-scoped queries only.
 
 **Acceptance**
-- [ ] An export run by an Org A member contains no Org B rows (test with overlapping party names).
-- [ ] Arabic PDF renders joined letters and Arabic-Indic numerals correctly (snapshot test from the ported shaper tests).
+- [x] An export run by an Org A member contains no Org B rows (test with overlapping party names).
+- [x] Arabic PDF renders joined letters and Arabic-Indic numerals correctly (snapshot test from the ported shaper tests).
 
 ### W3a-11 Financial home
 
@@ -1119,7 +1119,7 @@ export interface CalcContext {
 3. Product events: `sme_product_events (id, org_id, user_id, event_name, props jsonb, created_at)` written through `sme_track(p_org, p_event, p_props)`, which accepts only the event names in blueprint §5–§10 screen tables (`DashboardViewed`, `TransactionPosted`, `ForecastRecalculated` …). Props never contain amounts, names or free text. Demo organizations are excluded.
 
 **Wave 3a exit checklist**
-- [ ] FIN-S02, FIN-S03 and CAL-S01 pass in CI.
+- [x] FIN-S02, FIN-S03 and CAL-S01 pass in CI.
 - [ ] All §5 and §8 acceptance criteria are listed in the PR with evidence.
 - [ ] `HUMAN GATE` G1 (KPI sign-off) recorded before production.
 
@@ -1727,7 +1727,7 @@ Tick an item (☐ → ☑) and add the PR link in the same PR that completes it.
 | FIN-03 | W3a-02 | ☑ | | AI-03 | W3b-07 | ☐ |
 | FIN-04 | W3a-03 | ☑ | | AI-04 | W3b-07 | ☐ |
 | FIN-05 | W3a-07 | ☑ | | CAL-01 to CAL-04 | W3a-05 | ☑ |
-| FIN-06 | W3a-10 | ☐ | | CMP-01 | W3b-05 | ☐ |
+| FIN-06 | W3a-10 | ☑ | | CMP-01 | W3b-05 | ☐ |
 | LRN-01, LRN-02 | W3b-02 | ☑ | | CMP-02, CMP-04 | W3b-06 | ☐ |
 | LRN-03, LRN-04 | W3b-03 | ☐ | | CMP-03, CMP-05 | W3b-04 | ☐ |
 
