@@ -1,0 +1,36 @@
+// نصوص الحاسبات (المخطط §8)، بمفاتيح `<رمز الحاسبة>.<الجزء>`.
+const calc: Record<string, string> = {
+  // ── service_hourly_rate (F4.08) ─────────────────────────
+  'service_hourly_rate.title': 'سعر الساعة للخدمات',
+  'service_hourly_rate.description': 'سعر الساعة واليوم الذي يغطي أجرك ومصاريف التشغيل والربح، بحسب الساعات التي تستطيع فعلاً أن تحاسب عليها.',
+  'service_hourly_rate.field.target_annual_pay': 'الأجر الذي تريده لنفسك في السنة',
+  'service_hourly_rate.help.target_annual_pay': 'ما ستدفعه لنفسك راتبًا، قبل أي ضريبة شخصية.',
+  'service_hourly_rate.field.annual_overhead': 'مصاريف التشغيل السنوية',
+  'service_hourly_rate.help.annual_overhead': 'الإيجار والبرامج والهاتف والمواصلات والتأمين وكل ما تدفعه المنشأة خلال السنة.',
+  'service_hourly_rate.field.target_profit': 'الربح الذي تريد أن تحتفظ به المنشأة في السنة',
+  'service_hourly_rate.field.working_weeks': 'أسابيع العمل في السنة',
+  'service_hourly_rate.help.working_weeks': 'استثنِ العطل وأيام المرض والأسابيع الهادئة. كثير من المستشارين يعملون بين ٤٤ و٤٨ أسبوعًا.',
+  'service_hourly_rate.field.hours_per_week': 'ساعات العمل في الأسبوع',
+  'service_hourly_rate.field.utilization_percent': 'نسبة الساعات التي تحاسب عليها',
+  'service_hourly_rate.help.utilization_percent': 'الوقت الذي تقضيه في البيع والإدارة والتنقل لا يُحاسَب عليه. النسبة الشائعة بين ٥٠٪ و٧٠٪.',
+  'service_hourly_rate.field.days_per_week': 'أيام العمل في الأسبوع',
+  'service_hourly_rate.figure.hourly_rate': 'سعر الساعة',
+  'service_hourly_rate.figure.day_rate': 'سعر اليوم',
+  'service_hourly_rate.figure.required_revenue': 'الإيراد الذي تحتاجه في السنة',
+  'service_hourly_rate.figure.billable_hours': 'الساعات المحاسَب عليها في السنة',
+  'service_hourly_rate.table.utilization': 'لو حاسبت على ساعات أكثر أو أقل',
+  'service_hourly_rate.col.utilization': 'النسبة المحاسَب عليها',
+  'service_hourly_rate.col.billable_hours': 'الساعات المحاسَب عليها',
+  'service_hourly_rate.col.hourly_rate': 'سعر الساعة',
+  'service_hourly_rate.col.day_rate': 'سعر اليوم',
+  'service_hourly_rate.trace.revenue': 'الإيراد الذي تحتاجه',
+  'service_hourly_rate.trace.billable_hours': 'الساعات المحاسَب عليها',
+  'service_hourly_rate.trace.hourly_rate': 'سعر الساعة',
+  'service_hourly_rate.trace.day_rate': 'سعر اليوم',
+  'service_hourly_rate.assumption.days_per_week': 'يوم العمل هو ساعاتك الأسبوعية موزعة على {days} أيام.',
+  'service_hourly_rate.assumption.tax_excluded': 'هذه الأسعار لا تشمل ضريبة المبيعات. إن كان عليك تحصيلها فهي تُضاف فوق السعر وتُدفع لدائرة الضريبة، وليست جزءًا من دخلك.',
+  'service_hourly_rate.warning.nothing_to_cover': 'الأجر والمصاريف والربح كلها صفر، لذا السعر صفر.',
+  'service_hourly_rate.error.zero_hours': 'لا يمكن أن تكون الساعات المحاسَب عليها صفرًا. أدخل أسابيع عمل وساعات أسبوعية ونسبة محاسبة أكبر من صفر.',
+};
+
+export default calc;

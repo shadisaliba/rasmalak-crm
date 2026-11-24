@@ -6,7 +6,7 @@ import { useIntl } from 'react-intl';
 import type { LucideIcon } from 'lucide-react';
 import {
   Home, LayoutDashboard, Kanban, Users, Building2, Handshake, CheckSquare, BarChart3, Zap, FileText,
-  Upload, Settings, LogOut, X, Landmark, ArrowLeftRight, ReceiptText, FileMinus, BriefcaseBusiness, KeyRound, TrendingUp,
+  Upload, Settings, LogOut, X, Landmark, ArrowLeftRight, ReceiptText, FileMinus, BriefcaseBusiness, KeyRound, TrendingUp, Calculator,
 } from 'lucide-react';
 import { useLogout } from '@/store/useStore';
 import { useAuthStore } from '@/store/authStore';
@@ -43,7 +43,7 @@ const SALES_ITEMS: NavItem[] = [
   { id: 'import', path: '/crm/import', icon: Upload, labelKey: 'crm.nav.import', labelDefault: 'Import Data', permission: 'import.execute' },
 ];
 
-// Blueprint navigation (§2): Home, Money, then the CRM as Sales, then Business settings.
+// Blueprint navigation (§2): Home, Money, Tools and Learn, then the CRM as Sales, then Business settings.
 const SME_GROUPS: NavGroup[] = [
   { id: 'home', items: [{ id: 'home', path: '/crm/dashboard', icon: Home, labelKey: 'sme.nav.home', labelDefault: 'Home' }] },
   {
@@ -52,6 +52,11 @@ const SME_GROUPS: NavGroup[] = [
       { id: 'transactions', path: '/crm/money/transactions', icon: ArrowLeftRight, labelKey: 'sme.nav.transactions', labelDefault: 'Transactions', permission: 'sme.ledger.read' },
       { id: 'receivables', path: '/crm/money/receivables', icon: ReceiptText, labelKey: 'sme.nav.receivables', labelDefault: 'Invoice records', permission: 'sme.receivables.read' },
       { id: 'payables', path: '/crm/money/payables', icon: FileMinus, labelKey: 'sme.nav.payables', labelDefault: 'Bills', permission: 'sme.payables.read' },
+    ],
+  },
+  {
+    id: 'grow', labelKey: 'sme.nav.grow', labelDefault: 'Plan and learn', items: [
+      { id: 'tools', path: '/crm/tools', icon: Calculator, labelKey: 'sme.nav.tools', labelDefault: 'Tools', permission: 'sme.calc.run' },
     ],
   },
   {

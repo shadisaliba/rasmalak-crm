@@ -157,6 +157,8 @@ begin
     values (b, 'b1000000-0000-4000-b000-0000000000d1', 1, 'B bill line', 1, 1000, 1000, 0);
   insert into sme_bill_allocations (org_id, bill_id, transaction_id, amount_minor, idempotency_key, created_by)
     values (b, 'b1000000-0000-4000-b000-0000000000d1', 'b1000000-0000-4000-b000-0000000000f1', 100, 'b-bill-alloc', ub);
+  insert into sme_calculation_records (org_id, calculator_code, calculator_version, as_of, input_snapshot, output, created_by)
+    values (b, 'break_even', '1.0.0', current_date, '{}', '{"figures":[],"tables":[]}', ub);
 end $$;
 
 select is_empty(
