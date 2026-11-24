@@ -21,14 +21,14 @@ will not stay in sync on their own. Donor: `Shadimasarweh/Rasmalak` branch `main
 | `src/ai/deterministic/fixtures.ts` | `720f174` | `src/sme/forecast/engine-core/fixtures.ts` | `@/lib/cycles` import made relative | W0-06 |
 | `src/lib/cycles.ts` | `720f174` | `src/sme/forecast/engine-core/cycles.ts` | None | W0-06 |
 | `src/lib/cycles.test.ts` | `720f174` | `src/sme/forecast/engine-core/cycles.test.ts` | None | W0-06 |
-| `src/lib/pdf/arabic.ts` | `720f174` | `src/sme/reports/writers/pdf/arabic.ts` | None | W0-06 |
+| `src/lib/pdf/arabic.ts` | `720f174` | `src/sme/reports/writers/pdf/arabic.ts` | Shaping fixes (W3a-10): the isolated and final forms of waw, dal, thal, reh, zain and jeh were swapped, and a letter after a right-joining letter (alef, dal, reh…) wrongly joined to it. The consumer app has the same bugs | W0-06 |
 | `src/lib/pdf/builder.ts` | `720f174` | `src/sme/reports/writers/pdf/builder.ts` | None | W0-06 |
 | `src/lib/pdf/layout.ts` | `720f174` | `src/sme/reports/writers/pdf/layout.ts` | None; fonts still load from `public/fonts/` | W0-06 |
 | `src/lib/pdf/ttf.ts` | `720f174` | `src/sme/reports/writers/pdf/ttf.ts` | None | W0-06 |
 | `src/lib/pdf/writer.ts` | `720f174` | `src/sme/reports/writers/pdf/writer.ts` | None | W0-06 |
-| `src/lib/pdf/__tests__/arabicShaper.test.ts` | `720f174` | `src/sme/reports/writers/pdf/__tests__/arabicShaper.test.ts` | None | W0-06 |
+| `src/lib/pdf/__tests__/arabicShaper.test.ts` | `720f174` | `src/sme/reports/writers/pdf/__tests__/arabicShaper.test.ts` | Tests for the W3a-10 shaping fixes added | W0-06 |
 | `src/lib/xlsx/builder.ts` | `720f174` | `src/sme/reports/writers/xlsx/builder.ts` | None (writer only; no SheetJS) | W0-06 |
-| `src/lib/xlsx/xml.ts` | `720f174` | `src/sme/reports/writers/xlsx/xml.ts` | None (writer only; no SheetJS) | W0-06 |
+| `src/lib/xlsx/xml.ts` | `720f174` | `src/sme/reports/writers/xlsx/xml.ts` | Style 7, a three-decimal number format for JOD amounts (W3a-10) | W0-06 |
 | `src/lib/xlsx/zip.ts` | `720f174` | `src/sme/reports/writers/xlsx/zip.ts` | None (writer only; no SheetJS) | W0-06 |
 | `vitest.config.ts` | `720f174` | `vitest.config.ts` | None | W0-06 |
 | `src/calculators/simpleLoanCalculator.ts` | `720f174` | `src/sme/calc/calculators/loanAffordability.ts` | Copied unchanged to `src/sme/calc/calculators/ported/simpleLoanCalculator.ts` first, then rewritten and the copy removed. Kept: the reducing-balance instalment `M = P·r(1+r)^n / ((1+r)^n − 1)` (`P / n` at a zero rate) and the schedule loop with a last-payment adjustment. Changed: money is bigint fils and rates are decimal.js instead of JS `number`; each figure is rounded once, half away from zero, with a trace note instead of `round2`; the last payment clears the exact remaining balance instead of stopping at a 0.01 tolerance; payment dates dropped. Added: flat-rate basis, fixed or percentage fees, quarterly payments, the effective annual rate by Newton–Raphson IRR, and the +2 / +4 point stress table | W3a-06 |

@@ -83,10 +83,11 @@ export function workbook(sheets: Array<{ name: string }>): string {
 export function styles(): string {
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-  <numFmts count="3">
+  <numFmts count="4">
     <numFmt numFmtId="164" formatCode="#,##0.00"/>
     <numFmt numFmtId="165" formatCode="#,##0"/>
     <numFmt numFmtId="166" formatCode="0.00%"/>
+    <numFmt numFmtId="167" formatCode="#,##0.000"/>
   </numFmts>
   <fonts count="3">
     <font><sz val="11"/><name val="Calibri"/></font>
@@ -112,7 +113,7 @@ export function styles(): string {
   <cellStyleXfs count="1">
     <xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>
   </cellStyleXfs>
-  <cellXfs count="7">
+  <cellXfs count="8">
     <!-- 0: normal -->
     <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0">
       <alignment wrapText="0"/>
@@ -139,6 +140,10 @@ export function styles(): string {
     </xf>
     <!-- 6: alt row fill -->
     <xf numFmtId="0" fontId="0" fillId="3" borderId="1" xfId="0"/>
+    <!-- 7: three-decimal amount (JOD) -->
+    <xf numFmtId="167" fontId="0" fillId="0" borderId="1" xfId="0">
+      <alignment horizontal="right"/>
+    </xf>
   </cellXfs>
 </styleSheet>`;
 }
@@ -156,7 +161,7 @@ ${items}
 // ── xl/worksheets/sheetN.xml ─────────────────────────────────────────────────
 
 export type CellValue = string | number | null;
-export type CellStyle = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+export type CellStyle = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 export interface Cell {
   v: CellValue;
