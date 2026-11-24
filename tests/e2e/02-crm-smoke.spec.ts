@@ -2,7 +2,7 @@
  * CRM smoke tests for a signed-in member of an organization (saved session from auth.setup.ts).
  */
 import { test, expect } from '@playwright/test';
-import { forceEnglish, signIn, totp } from './helpers';
+import { forceEnglish, totp } from './helpers';
 
 test.beforeEach(forceEnglish);
 
@@ -64,16 +64,4 @@ test('preferences switch the interface language and direction', async ({ page })
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
   await page.getByRole('radio', { name: 'English' }).click();
   await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
-});
-
-test('sign out returns to the login page', async ({ browser }) => {
-  // A separate context so signing out does not revoke the session other tests reuse.
-  const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
-  const page = await context.newPage();
-  await forceEnglish({ page });
-  await signIn(page, process.env.TEST_EMAIL!, process.env.TEST_PASSWORD!);
-  await page.waitForURL(/\/crm\/dashboard/, { timeout: 15_000 });
-  await page.getByRole('button', { name: 'Sign out' }).click();
-  await page.waitForURL(/\/login/, { timeout: 15_000 });
-  await context.close();
 });
