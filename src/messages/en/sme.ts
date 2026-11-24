@@ -304,6 +304,7 @@ export default {
   'import.error.fileType': 'Choose a CSV or XLSX file.',
   'import.error.fileSize': 'This file is larger than {mb, number} MB.',
   'import.error.upload': 'The file could not be uploaded. Check your connection and try again.',
+  'import.error.uploadRefused': 'Our file storage did not accept the file. Please try again in a few minutes.',
   'import.duplicate.committed': 'This file was already imported on {date}. Importing it again would count the same money twice.',
   'import.duplicate.open': 'This file is already being imported. Open that import to continue.',
   'import.duplicate.unfinished': 'An earlier upload of this file did not finish.',
