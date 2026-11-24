@@ -5,7 +5,7 @@ export const MAX_ATTEMPTS = 10;
 
 /** Storage operations the worker needs; the Supabase version lives in ./server. */
 export interface OutboxStore {
-  claim(limit: number): Promise<Array<{ id: number; orgId: string; eventType: string; payload: unknown; attempts: number }>>;
+  claim(limit: number): Promise<Array<{ id: number; orgId: string; eventType: string; payload: unknown; attempts: number; createdAt?: string }>>;
   complete(id: number): Promise<void>;
   fail(id: number, error: string): Promise<void>;
 }
