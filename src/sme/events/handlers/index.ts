@@ -2,6 +2,7 @@ import type { OutboxEvent, SmeEventType } from '../types';
 import { handleImportParseRequested } from '@/sme/imports/server/parseHandler';
 import { handleForecastInputChanged } from '@/sme/forecast/server/handler';
 import { handleActionInputChanged } from '@/sme/actions/server/handler';
+import { handleKpiInputChanged } from '@/sme/kpi/server/handler';
 
 export type EventHandler = (event: OutboxEvent) => Promise<void>;
 
@@ -13,15 +14,21 @@ const acknowledge: EventHandler = async () => {};
 const forecastThenActions: EventHandler = async event => {
   await handleForecastInputChanged(event);
   await handleActionInputChanged(event);
+  await handleKpiInputChanged(event);
+};
+
+const forecastAndKpis: EventHandler = async event => {
+  await handleForecastInputChanged(event);
+  await handleKpiInputChanged(event);
 };
 
 export const EVENT_HANDLERS: Record<SmeEventType, EventHandler> = {
   BusinessProfileUpdated: acknowledge,
   RoleRevoked: acknowledge,
   AccountCreated: acknowledge,
-  TransactionPosted: event => handleForecastInputChanged(event),
-  TransactionReversed: event => handleForecastInputChanged(event),
-  TransactionClassified: acknowledge,
+  TransactionPosted: forecastAndKpis,
+  TransactionReversed: forecastAndKpis,
+  TransactionClassified: event => handleKpiInputChanged(event),
   ImportParseRequested: event => handleImportParseRequested(event),
   ImportCommitted: forecastThenActions,
   InvoiceStatusChanged: forecastThenActions,
