@@ -1,6 +1,6 @@
 import Decimal from 'decimal.js';
 import { z } from 'zod';
-import { CURRENCY_CODES, minorUnits, type CurrencyCode } from '@/sme/money';
+import { CURRENCY_CODES, minorUnits, money, type CurrencyCode } from '@/sme/money';
 import type { ResultValue, TraceStep } from './types';
 
 // Rates and ratios use decimal.js; money stays in bigint minor units until the result (R5).
@@ -57,8 +57,9 @@ export function dec(value: bigint | number | string): Dec {
 
 // ── Result values ───────────────────────────────────────────
 
+/** Throws MoneyError beyond the money range; runCalculation reports it as an input that is too large. */
 export function moneyValue(minor: bigint, currency: CurrencyCode): ResultValue {
-  return { kind: 'money', minor: minor.toString(), currency };
+  return { kind: 'money', minor: money(minor, currency).minor.toString(), currency };
 }
 
 /** A percent result; `ratio` 0.355 is shown as 35.5 %. Kept to 4 decimals of a percent. */

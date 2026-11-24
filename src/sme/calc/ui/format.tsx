@@ -25,9 +25,10 @@ export function useCalcText() {
     }
   };
 
-  // Numbers inside calculator sentences arrive as plain decimal strings; show them in the UI's digits.
+  // Numbers and dates inside calculator sentences arrive as plain strings; show them in the UI's locale.
+  const local = (v: string) => (/^-?\d+(\.\d+)?$/.test(v) ? exact(v, 10) : /^\d{4}-\d{2}-\d{2}$/.test(v) ? L.date(v) : v);
   const tv = (id: string, values?: Record<string, string>) =>
-    L.t(id, values && Object.fromEntries(Object.entries(values).map(([k, v]) => [k, /^-?\d+(\.\d+)?$/.test(v) ? exact(v, 10) : v])));
+    L.t(id, values && Object.fromEntries(Object.entries(values).map(([k, v]) => [k, local(v)])));
 
   return { ...L, value, exact, tv };
 }
