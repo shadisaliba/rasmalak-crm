@@ -304,6 +304,7 @@ export default {
   'import.error.fileType': 'اختر ملف CSV أو XLSX.',
   'import.error.fileSize': 'حجم الملف أكبر من {mb, number} ميغابايت.',
   'import.error.upload': 'تعذّر رفع الملف. تحقّق من الاتصال وحاول مرة أخرى.',
+  'import.error.uploadRefused': 'لم تقبل خدمة تخزين الملفات لدينا هذا الملف. يرجى المحاولة مرة أخرى بعد دقائق.',
   'import.duplicate.committed': 'استُورد هذا الملف سابقًا بتاريخ {date}. استيراده مجددًا سيحتسب المبالغ نفسها مرتين.',
   'import.duplicate.open': 'هذا الملف قيد الاستيراد حاليًا. افتح ذلك الاستيراد للمتابعة.',
   'import.duplicate.unfinished': 'لم يكتمل رفع سابق لهذا الملف.',
