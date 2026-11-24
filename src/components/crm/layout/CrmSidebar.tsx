@@ -6,7 +6,7 @@ import { useIntl } from 'react-intl';
 import type { LucideIcon } from 'lucide-react';
 import {
   Home, LayoutDashboard, Kanban, Users, Building2, Handshake, CheckSquare, BarChart3, Zap, FileText,
-  Upload, Settings, LogOut, X, Landmark, ArrowLeftRight, ReceiptText, FileMinus, BriefcaseBusiness, KeyRound, TrendingUp, ChartLine, Calculator, GraduationCap, FilePenLine,
+  Upload, Settings, LogOut, X, Landmark, ArrowLeftRight, ReceiptText, FileMinus, BriefcaseBusiness, KeyRound, TrendingUp, ChartLine, ListChecks, Calculator, GraduationCap, FilePenLine,
 } from 'lucide-react';
 import { useLogout } from '@/store/useStore';
 import { useAuthStore } from '@/store/authStore';
@@ -51,6 +51,7 @@ const SME_GROUPS: NavGroup[] = [
   { id: 'home', items: [{ id: 'home', path: '/crm/dashboard', icon: Home, labelKey: 'sme.nav.home', labelDefault: 'Home' }] },
   {
     id: 'money', labelKey: 'sme.nav.money', labelDefault: 'Money', items: [
+      { id: 'actions', path: '/crm/money/actions', icon: ListChecks, labelKey: 'actions.nav', labelDefault: 'Needs attention', permission: 'sme.ledger.read' },
       { id: 'accounts', path: '/crm/money/accounts', icon: Landmark, labelKey: 'sme.nav.accounts', labelDefault: 'Accounts', permission: 'sme.ledger.read' },
       { id: 'transactions', path: '/crm/money/transactions', icon: ArrowLeftRight, labelKey: 'sme.nav.transactions', labelDefault: 'Transactions', permission: 'sme.ledger.read' },
       { id: 'receivables', path: '/crm/money/receivables', icon: ReceiptText, labelKey: 'sme.nav.receivables', labelDefault: 'Invoice records', permission: 'sme.receivables.read' },
