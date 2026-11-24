@@ -44,7 +44,7 @@ export async function loadForecastInputs(db: SupabaseClient, org: string, asOf: 
     all<Row>((f, t) => db.from('sme_transactions').select('account_id, base_amount_minor::text').eq('org_id', org).gt('value_date', asOf).order('id').range(f, t)),
     db.from('sme_categories').select('id, code, kind, cost_behavior').or(`org_id.is.null,org_id.eq.${org}`),
     all<Row>((f, t) => db.from('sme_transactions_current')
-      .select('id, value_date, base_amount_minor::text, description, category_id, is_reversal, is_reversed')
+      .select('id, value_date, base_amount_minor::text, description, category_id, source_kind, transfer_group_id, is_reversal, is_reversed')
       .eq('org_id', org).gte('value_date', since).lte('value_date', asOf).order('id').range(f, t)),
     all<Row>((f, t) => db.from('sme_invoice_balances')
       .select('invoice_id, number, customer_company_id, customer_contact_id, due_date, currency, outstanding_minor::text, derived_status')
@@ -129,9 +129,11 @@ export async function loadForecastInputs(db: SupabaseClient, org: string, asOf: 
   const matched = await matchedTransactions(db, org, since);
   const historyRows: ForecastHistoryTransaction[] = live.map(t => {
     const c = t.category_id ? cats.get(String(t.category_id)) : undefined;
+    // Transfers and opening balances are recognised by how they were posted, even uncategorized.
+    const posted: CategoryKind | null = t.source_kind === 'opening_balance' ? 'opening_balance' : t.source_kind === 'transfer' || t.transfer_group_id ? 'transfer' : null;
     return {
       id: String(t.id), date: String(t.value_date), amountMinor: BigInt(String(t.base_amount_minor)),
-      categoryCode: c ? String(c.code) : null, categoryKind: c ? (c.kind as CategoryKind) : null,
+      categoryCode: c ? String(c.code) : null, categoryKind: posted ?? (c ? (c.kind as CategoryKind) : null),
       costBehavior: c ? (c.cost_behavior as 'fixed' | 'variable' | null) : null,
       description: String(t.description ?? ''), matched: matched.has(String(t.id)),
     };
