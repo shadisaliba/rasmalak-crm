@@ -1722,7 +1722,7 @@ Tick an item (☐ → ☑) and add the PR link in the same PR that completes it.
 
 | Screen | Prompt | Done | | Screen | Prompt | Done |
 | --- | --- | --- | --- | --- | --- | --- |
-| FIN-01 | W3a-11 | ☐ | | AI-01 | W3b-07 | ☐ |
+| FIN-01 | W3a-11 | ☑ | | AI-01 | W3b-07 | ☐ |
 | FIN-02 | W2-05, W2-06 | ☑ | | AI-02 | W3b-09 | ☐ |
 | FIN-03 | W3a-02 | ☑ | | AI-03 | W3b-07 | ☐ |
 | FIN-04 | W3a-03 | ☑ | | AI-04 | W3b-07 | ☐ |
