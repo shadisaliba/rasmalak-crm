@@ -1056,8 +1056,8 @@ export interface CalcContext {
 5. Route: `GET /api/sme/v1/financial-summary?from=&to=`.
 
 **Acceptance**
-- [ ] Blueprint §5: no profit metric when recognition data is insufficient; the alternative is shown with the reason.
-- [ ] The FIN-S02 data yields revenue_recognized 800.000, cash_in 300.000 and receivables_outstanding 500.000 for the period.
+- [x] Blueprint §5: no profit metric when recognition data is insufficient; the alternative is shown with the reason.
+- [x] The FIN-S02 data yields revenue_recognized 800.000, cash_in 300.000 and receivables_outstanding 500.000 for the period.
 
 ### W3a-09 Action centre
 
@@ -1679,12 +1679,12 @@ Tick an item (☐ → ☑) and add the PR link in the same PR that completes it.
 | F1.02 Cash and account register | W2-04, W2-05 | ☑ | branch, no PR yet |
 | F1.03 Transaction intake & reconciliation | W2-06, W3a-02, W3a-03 | ☐ | |
 | F1.04 Jordan payment channels | W2-04, W3a-04 | ☑ | branch, no PR yet |
-| F1.05 Revenue intelligence | W3a-08 | ☐ | |
-| F1.06 Expense intelligence | W2-04, W3a-08 | ☐ | |
+| F1.05 Revenue intelligence | W3a-08 | ☑ | [#11](https://github.com/shadisaliba/rasmalak-crm/pull/11) (G1 sign-off pending) |
+| F1.06 Expense intelligence | W2-04, W3a-08 | ☑ | [#11](https://github.com/shadisaliba/rasmalak-crm/pull/11) (G1 sign-off pending) |
 | F1.07 Receivables | W3a-02, W3a-04 | ☑ | branch, no PR yet |
 | F1.08 Payables and suppliers | W3a-03 | ☑ | branch, no PR yet |
 | F1.09 13-week cash forecast | W3a-07 | ☑ | [#8](https://github.com/shadisaliba/rasmalak-crm/pull/8) |
-| F1.10 Profit and business KPIs | W3a-08 | ☐ | |
+| F1.10 Profit and business KPIs | W3a-08 | ☑ | [#11](https://github.com/shadisaliba/rasmalak-crm/pull/11) (G1 sign-off pending) |
 | F1.11 Financial health actions | W3a-09 | ☐ | |
 | F2.01 Starting a business in Jordan | W3b-01, W3b-02 (structure); reviewers (content) | ☐ | |
 | F2.02 Cash and financial literacy | W3b-02 | ☐ | |

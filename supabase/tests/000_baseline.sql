@@ -171,6 +171,7 @@ begin
   insert into sme_action_settings (org_id, rule_code) values (b, 'receivable_overdue') on conflict do nothing;
   insert into sme_action_evaluations (org_id) values (b) on conflict do nothing;
   insert into sme_product_events (org_id, user_id, event_name) values (b, ub, 'DashboardViewed');
+  insert into sme_kpi_snapshots (org_id, period_key, kpi_version, input_digest, payload) values (b, '2026-11-01_2026-11-30', 'kpi-v1-proposed', repeat('b', 64), '{}') on conflict do nothing;
   insert into sme_forecast_runs (org_id, scenario_id, engine_version, as_of, input_digest, result, trigger)
     values (b, 'b1000000-0000-4000-b000-0000000000f1', '1.0.0', current_date, repeat('b', 64), '{}', 'request');
 end $$;
