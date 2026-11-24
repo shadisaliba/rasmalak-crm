@@ -5,11 +5,11 @@ import { CALCULATOR_CODES } from '../core/types';
 const ctx = contextWithoutRules('2026-11-22');
 
 describe('cash_forecast (F4.01)', () => {
-  it('is listed as unavailable until the thirteen-week forecast exists, and never computes', () => {
+  it('opens the thirteen-week forecast screen and never computes figures of its own', () => {
     const calc = getCalculator('cash_forecast')!;
     expect(calc).toEqual(expect.objectContaining({ version: '1.0.0', blueprintId: 'F4.01', group: 'cash_planning', fields: [], example: {} }));
-    expect(catalogueEntry(calc, ctx)).toEqual(expect.objectContaining({ availability: 'unavailable', unavailableReasonKey: 'calc.cash_forecast.unavailable' }));
-    expect(runCalculation('cash_forecast', {}, ctx).outcome).toEqual({ ok: false, errors: [{ code: 'DATA_INCOMPLETE', messageKey: 'calc.cash_forecast.unavailable' }] });
+    expect(catalogueEntry(calc, ctx)).toEqual(expect.objectContaining({ availability: 'available', screen: '/crm/money/forecast' }));
+    expect(runCalculation('cash_forecast', {}, ctx).outcome).toEqual({ ok: false, errors: [{ code: 'DATA_INCOMPLETE', messageKey: 'calc.cash_forecast.onScreen' }] });
   });
 });
 

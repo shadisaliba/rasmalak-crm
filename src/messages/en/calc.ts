@@ -35,7 +35,8 @@ const calc: Record<string, string> = {
   // ── cash_forecast (F4.01) ───────────────────────────────
   'cash_forecast.title': 'Cash forecast',
   'cash_forecast.description': 'Your expected cash week by week for the next thirteen weeks, with the lowest point and any week you could run short.',
-  'cash_forecast.unavailable': 'The thirteen-week cash forecast is not ready yet. It will use your accounts, invoices and bills once it is.',
+  'cash_forecast.onScreen': 'The cash forecast has its own screen, built from your accounts, invoices, bills and scheduled items.',
+  'cash_forecast.open': 'Open the cash forecast',
 
   // ── break_even (F4.02) ──────────────────────────────────
   'break_even.title': 'Break-even point',

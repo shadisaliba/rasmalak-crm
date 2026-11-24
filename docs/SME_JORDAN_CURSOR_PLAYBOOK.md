@@ -1025,9 +1025,9 @@ export interface CalcContext {
 8. Screen FIN-05 `/crm/money/forecast`: weekly in/out bars, a closing-balance line with the band, the minimum-balance and shortfall callout, the assumptions panel, the data-quality grade, and side-by-side baseline vs scenario. No button anywhere schedules or sends a payment.
 
 **Acceptance (FIN-S03 — `src/sme/forecast/domain/engine.test.ts` and `tests/e2e/sme/fin-s03-shortfall.spec.ts`)**
-- [ ] A supplier bill due before an expected customer receipt produces the correct shortfall week, with its assumptions listed.
-- [ ] Moving that bill in a scenario removes the shortfall; the baseline is unchanged.
-- [ ] Blueprint §5: projection equals opening cleared cash plus included inflows minus included outflows, with sources and scenario assumptions visible.
+- [x] A supplier bill due before an expected customer receipt produces the correct shortfall week, with its assumptions listed.
+- [x] Moving that bill in a scenario removes the shortfall; the baseline is unchanged.
+- [x] Blueprint §5: projection equals opening cleared cash plus included inflows minus included outflows, with sources and scenario assumptions visible.
 
 ### W3a-08 Financial summary and KPIs
 
@@ -1683,7 +1683,7 @@ Tick an item (☐ → ☑) and add the PR link in the same PR that completes it.
 | F1.06 Expense intelligence | W2-04, W3a-08 | ☐ | |
 | F1.07 Receivables | W3a-02, W3a-04 | ☑ | branch, no PR yet |
 | F1.08 Payables and suppliers | W3a-03 | ☑ | branch, no PR yet |
-| F1.09 13-week cash forecast | W3a-07 | ☐ | |
+| F1.09 13-week cash forecast | W3a-07 | ☑ | [#8](https://github.com/shadisaliba/rasmalak-crm/pull/8) |
 | F1.10 Profit and business KPIs | W3a-08 | ☐ | |
 | F1.11 Financial health actions | W3a-09 | ☐ | |
 | F2.01 Starting a business in Jordan | W3b-01, W3b-02 (structure); reviewers (content) | ☐ | |
@@ -1700,7 +1700,7 @@ Tick an item (☐ → ☑) and add the PR link in the same PR that completes it.
 | F3.05 Document analysis | W3b-09 | ☐ | |
 | F3.06 Playbook and calculator routing | W3b-03, W3b-07 | ☐ | |
 | F3.11 Assistant governance | W3b-07 | ☐ | |
-| F4.01 Cash forecast | W3a-06, W3a-07 | ☐ | |
+| F4.01 Cash forecast | W3a-06, W3a-07 | ☑ | [#8](https://github.com/shadisaliba/rasmalak-crm/pull/8) (opens FIN-05) |
 | F4.02 Break-even | W3a-06 | ☑ | branch, no PR yet |
 | F4.03 Profit margin and markup | W3a-06 | ☑ | branch, no PR yet |
 | F4.04 Working capital | W3a-06 | ☑ | branch, no PR yet |
@@ -1726,7 +1726,7 @@ Tick an item (☐ → ☑) and add the PR link in the same PR that completes it.
 | FIN-02 | W2-05, W2-06 | ☑ | | AI-02 | W3b-09 | ☐ |
 | FIN-03 | W3a-02 | ☑ | | AI-03 | W3b-07 | ☐ |
 | FIN-04 | W3a-03 | ☑ | | AI-04 | W3b-07 | ☐ |
-| FIN-05 | W3a-07 | ☐ | | CAL-01 to CAL-04 | W3a-05 | ☑ |
+| FIN-05 | W3a-07 | ☑ | | CAL-01 to CAL-04 | W3a-05 | ☑ |
 | FIN-06 | W3a-10 | ☐ | | CMP-01 | W3b-05 | ☐ |
 | LRN-01, LRN-02 | W3b-02 | ☑ | | CMP-02, CMP-04 | W3b-06 | ☐ |
 | LRN-03, LRN-04 | W3b-03 | ☐ | | CMP-03, CMP-05 | W3b-04 | ☐ |

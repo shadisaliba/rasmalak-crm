@@ -37,6 +37,8 @@ export interface OutboxEvent<T extends SmeEventType = SmeEventType> {
   eventType: T;
   payload: SmeEventPayloads[T];
   attempts: number;
+  /** When the event was emitted; lets a handler skip work a later run already covers. */
+  createdAt?: string;
 }
 
 export function isSmeEventType(value: string): value is SmeEventType {

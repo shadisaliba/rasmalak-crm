@@ -73,5 +73,5 @@ function CatalogueCard({ item }: { item: CatalogueEntry }) {
   );
   const style = { ...card, display: 'flex', flexDirection: 'column' as const, gap: '8px', textDecoration: 'none', color: 'inherit', minHeight: '140px' };
   if (unavailable) return <div style={{ ...style, opacity: 0.75 }} aria-disabled>{body}</div>;
-  return <Link href={`/crm/tools/${item.code}`} className="crm-nav-item" style={style}>{body}</Link>;
+  return <Link href={item.screen ?? `/crm/tools/${item.code}`} className="crm-nav-item" style={style}>{body}</Link>;
 }

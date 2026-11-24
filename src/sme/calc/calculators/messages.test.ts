@@ -48,7 +48,7 @@ describe('calculator text', () => {
     });
 
     it(`${calc.code}: the example runs`, () => {
-      if (calc.unavailableReasonKey) return;
+      if (calc.unavailableReasonKey || calc.screen) return;
       const outcome = runCalculation(calc.code, calc.example, ctx).outcome;
       // Regulated calculators may fail closed without a reviewed rule; anything else must succeed.
       if (!outcome.ok) expect(outcome.errors.map(e => e.code)).toEqual(['RULE_NOT_VERIFIED']);

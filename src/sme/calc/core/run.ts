@@ -27,6 +27,7 @@ export interface CatalogueEntry {
   availability: Availability;
   missingRules: string[];
   unavailableReasonKey?: string;
+  screen?: string;
 }
 
 export function catalogueEntry(calc: RegisteredCalculator, ctx: CalcContext): CatalogueEntry {
@@ -34,7 +35,7 @@ export function catalogueEntry(calc: RegisteredCalculator, ctx: CalcContext): Ca
   const availability: Availability = calc.unavailableReasonKey ? 'unavailable' : missingRules.length > 0 ? 'needs_rule' : 'available';
   return {
     code: calc.code, version: calc.version, blueprintId: calc.blueprintId, group: calc.group, complexity: calc.complexity,
-    availability, missingRules, unavailableReasonKey: calc.unavailableReasonKey,
+    availability, missingRules, unavailableReasonKey: calc.unavailableReasonKey, screen: calc.screen,
   };
 }
 

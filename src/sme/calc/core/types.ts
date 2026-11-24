@@ -163,6 +163,8 @@ export interface CalculatorDef<I> {
   example: Record<string, unknown>;
   /** Set when the calculator cannot run in this build yet; the catalogue shows the reason. */
   unavailableReasonKey?: string;
+  /** The screen this calculator is a view of; the catalogue opens it instead of a form. */
+  screen?: string;
   compute(input: I, ctx: CalcContext): CalcOutcome;
 }
 
@@ -177,6 +179,7 @@ export interface RegisteredCalculator {
   ruleParams: RuleParamRef[];
   example: Record<string, unknown>;
   unavailableReasonKey?: string;
+  screen?: string;
   /** Parses the wire input, then computes. */
   run(raw: unknown, ctx: CalcContext): CalcOutcome;
 }

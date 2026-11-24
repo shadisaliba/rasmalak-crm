@@ -165,6 +165,11 @@ begin
     values ('b1000000-0000-4000-b000-0000000000e2', 'b1000000-0000-4000-b000-0000000000e1', 1, 'en', 'B', 'B', '{"sections":[]}', ub, 'published');
   insert into lesson_progress (user_id, org_id, item_id, version_id) values (ub, b, 'b1000000-0000-4000-b000-0000000000e1', 'b1000000-0000-4000-b000-0000000000e2');
   insert into lesson_feedback (user_id, org_id, item_id, version_id, useful) values (ub, b, 'b1000000-0000-4000-b000-0000000000e1', 'b1000000-0000-4000-b000-0000000000e2', true);
+  insert into sme_scheduled_items (org_id, label, direction, amount_minor, start_date, created_by) values (b, 'B rent', 'out', 1000, current_date, ub);
+  insert into sme_scenarios (id, org_id, name, created_by) values ('b1000000-0000-4000-b000-0000000000f1', b, 'B scenario', ub);
+  insert into sme_forecast_settings (org_id, buffer_minor) values (b, 0);
+  insert into sme_forecast_runs (org_id, scenario_id, engine_version, as_of, input_digest, result, trigger)
+    values (b, 'b1000000-0000-4000-b000-0000000000f1', '1.0.0', current_date, repeat('b', 64), '{}', 'request');
 end $$;
 
 select is_empty(

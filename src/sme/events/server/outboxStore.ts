@@ -7,8 +7,8 @@ export const supabaseOutboxStore: OutboxStore = {
   async claim(limit) {
     const { data, error } = await serviceDb().rpc('sme_outbox_claim', { p_limit: limit });
     if (error) throw new Error(`outbox claim failed: ${error.message}`);
-    return (data ?? []).map((r: { id: number; org_id: string; event_type: string; payload: unknown; attempts: number }) => ({
-      id: r.id, orgId: r.org_id, eventType: r.event_type, payload: r.payload, attempts: r.attempts,
+    return (data ?? []).map((r: { id: number; org_id: string; event_type: string; payload: unknown; attempts: number; created_at: string }) => ({
+      id: r.id, orgId: r.org_id, eventType: r.event_type, payload: r.payload, attempts: r.attempts, createdAt: r.created_at,
     }));
   },
   async complete(id) {

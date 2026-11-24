@@ -185,6 +185,7 @@ Seeded local users (password `Passw0rd!local`): `owner.a@example.test` (Org A ow
 | `/crm/onboarding` | Business onboarding (blueprint §4) |
 | `/crm/money/accounts`, `/crm/money/transactions`, `/crm/money/transactions/import` | Accounts and cashboxes, the ledger, statement imports |
 | `/crm/money/receivables`, `/crm/money/payables` | Invoice records and supplier bills, with ageing |
+| `/crm/money/forecast` | 13-week cash forecast (FIN-05): weekly in, out and closing, assumptions, scheduled items, scenarios |
 | `/crm/tools`, `/crm/tools/[code]`, `/crm/tools/saved` | Calculators (blueprint §8), one service for every screen; saved scenarios |
 | `/crm/learn`, `/crm/learn/[slug]` | Published lessons (blueprint §6) |
 | `/crm/staff/content` | Content review for platform staff (drafts, review, publishing) |
