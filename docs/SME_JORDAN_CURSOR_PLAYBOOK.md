@@ -1675,14 +1675,14 @@ Tick an item (☐ → ☑) and add the PR link in the same PR that completes it.
 
 | ID | Prompt(s) | Done | PR |
 | --- | --- | --- | --- |
-| F1.01 Business profile & JOD settings | W2-03 | ☐ | |
-| F1.02 Cash and account register | W2-04, W2-05 | ☐ | |
+| F1.01 Business profile & JOD settings | W2-03 | ☑ | branch, no PR yet |
+| F1.02 Cash and account register | W2-04, W2-05 | ☑ | branch, no PR yet |
 | F1.03 Transaction intake & reconciliation | W2-06, W3a-02, W3a-03 | ☐ | |
-| F1.04 Jordan payment channels | W2-04, W3a-04 | ☐ | |
+| F1.04 Jordan payment channels | W2-04, W3a-04 | ☑ | branch, no PR yet |
 | F1.05 Revenue intelligence | W3a-08 | ☐ | |
 | F1.06 Expense intelligence | W2-04, W3a-08 | ☐ | |
-| F1.07 Receivables | W3a-02, W3a-04 | ☐ | |
-| F1.08 Payables and suppliers | W3a-03 | ☐ | |
+| F1.07 Receivables | W3a-02, W3a-04 | ☑ | branch, no PR yet |
+| F1.08 Payables and suppliers | W3a-03 | ☑ | branch, no PR yet |
 | F1.09 13-week cash forecast | W3a-07 | ☐ | |
 | F1.10 Profit and business KPIs | W3a-08 | ☐ | |
 | F1.11 Financial health actions | W3a-09 | ☐ | |
@@ -1691,7 +1691,7 @@ Tick an item (☐ → ☑) and add the PR link in the same PR that completes it.
 | F2.03 Tax and invoicing awareness | W3b-02 (regulated; reviewers) | ☐ | |
 | F2.04 Funding and credit readiness | W3b-02 | ☐ | |
 | F2.05 Operating a small business | W3b-02 | ☐ | |
-| F2.09 Content lifecycle and credentials | W3b-01 | ☐ | |
+| F2.09 Content lifecycle and credentials | W3b-01 | ☑ | branch, no PR yet |
 | F2.10 Personal recommendations | W3b-03 | ☐ | |
 | F3.01 Natural-language financial Q&A | W3b-07 | ☐ | |
 | F3.02 Cash collections advisor | W3a-09, W3b-07 | ☐ | |
@@ -1701,14 +1701,14 @@ Tick an item (☐ → ☑) and add the PR link in the same PR that completes it.
 | F3.06 Playbook and calculator routing | W3b-03, W3b-07 | ☐ | |
 | F3.11 Assistant governance | W3b-07 | ☐ | |
 | F4.01 Cash forecast | W3a-06, W3a-07 | ☐ | |
-| F4.02 Break-even | W3a-06 | ☐ | |
-| F4.03 Profit margin and markup | W3a-06 | ☐ | |
-| F4.04 Working capital | W3a-06 | ☐ | |
-| F4.05 Startup cost | W3a-06 | ☐ | |
-| F4.06 Loan affordability | W3a-06 | ☐ | |
-| F4.07 Product pricing | W3a-06 | ☐ | |
-| F4.08 Service hourly pricing | W3a-06 | ☐ | |
-| F4.09 Employee cost | W3a-06 (+ reviewer rule) | ☐ | |
+| F4.02 Break-even | W3a-06 | ☑ | branch, no PR yet |
+| F4.03 Profit margin and markup | W3a-06 | ☑ | branch, no PR yet |
+| F4.04 Working capital | W3a-06 | ☑ | branch, no PR yet |
+| F4.05 Startup cost | W3a-06 | ☑ | branch, no PR yet |
+| F4.06 Loan affordability | W3a-06 | ☑ | branch, no PR yet |
+| F4.07 Product pricing | W3a-06 | ☑ | branch, no PR yet |
+| F4.08 Service hourly pricing | W3a-06 | ☑ | branch, no PR yet |
+| F4.09 Employee cost | W3a-06 (+ reviewer rule) | ☑ | branch, no PR yet |
 | F5.01 Jordan legal-source register | W3b-04 | ☐ | |
 | F5.02 Registration navigator | W3b-04, W3b-05 (structure); reviewers | ☐ | |
 | F5.03 Municipal and profession licensing | W3b-04, W3b-05 (structure); reviewers | ☐ | |
@@ -1723,12 +1723,12 @@ Tick an item (☐ → ☑) and add the PR link in the same PR that completes it.
 | Screen | Prompt | Done | | Screen | Prompt | Done |
 | --- | --- | --- | --- | --- | --- | --- |
 | FIN-01 | W3a-11 | ☐ | | AI-01 | W3b-07 | ☐ |
-| FIN-02 | W2-05, W2-06 | ☐ | | AI-02 | W3b-09 | ☐ |
-| FIN-03 | W3a-02 | ☐ | | AI-03 | W3b-07 | ☐ |
-| FIN-04 | W3a-03 | ☐ | | AI-04 | W3b-07 | ☐ |
-| FIN-05 | W3a-07 | ☐ | | CAL-01 to CAL-04 | W3a-05 | ☐ |
+| FIN-02 | W2-05, W2-06 | ☑ | | AI-02 | W3b-09 | ☐ |
+| FIN-03 | W3a-02 | ☑ | | AI-03 | W3b-07 | ☐ |
+| FIN-04 | W3a-03 | ☑ | | AI-04 | W3b-07 | ☐ |
+| FIN-05 | W3a-07 | ☐ | | CAL-01 to CAL-04 | W3a-05 | ☑ |
 | FIN-06 | W3a-10 | ☐ | | CMP-01 | W3b-05 | ☐ |
-| LRN-01, LRN-02 | W3b-02 | ☐ | | CMP-02, CMP-04 | W3b-06 | ☐ |
+| LRN-01, LRN-02 | W3b-02 | ☑ | | CMP-02, CMP-04 | W3b-06 | ☐ |
 | LRN-03, LRN-04 | W3b-03 | ☐ | | CMP-03, CMP-05 | W3b-04 | ☐ |
 
 ---

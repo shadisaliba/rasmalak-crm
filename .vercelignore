@@ -11,3 +11,5 @@ test-results
 playwright-report
 tests/.auth
 SME_JORDAN_CURSOR_PLAYBOOK.md
+# Agent and scratch worktrees are full copies of the repository.
+.claude
