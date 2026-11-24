@@ -60,7 +60,8 @@ select is_empty(
      from pg_class c join pg_namespace n on n.oid = c.relnamespace
      where n.nspname = 'public' and c.relkind in ('r', 'p')
        and c.relname not in (select table_name from tests.rows_per_table('00000000-0000-4000-b000-00000000000b'))
-       and c.relname not in ('crm_vertical_templates', 'crm_workflow_templates', 'sme_lookup_values', 'sme_currencies', 'fx_rates') $$,
+       and c.relname not in ('crm_vertical_templates', 'crm_workflow_templates', 'sme_lookup_values', 'sme_currencies', 'fx_rates',
+                             'platform_staff', 'content_items', 'content_versions') $$,
   'every table except the global catalogues is covered by the tenancy check'
 );
 
@@ -159,6 +160,11 @@ begin
     values (b, 'b1000000-0000-4000-b000-0000000000d1', 'b1000000-0000-4000-b000-0000000000f1', 100, 'b-bill-alloc', ub);
   insert into sme_calculation_records (org_id, calculator_code, calculator_version, as_of, input_snapshot, output, created_by)
     values (b, 'break_even', '1.0.0', current_date, '{}', '{"figures":[],"tables":[]}', ub);
+  insert into content_items (id, slug, kind, created_by) values ('b1000000-0000-4000-b000-0000000000e1', 'org-b-fixture', 'lesson', ub);
+  insert into content_versions (id, item_id, version, locale, title, summary, body, author_id, state)
+    values ('b1000000-0000-4000-b000-0000000000e2', 'b1000000-0000-4000-b000-0000000000e1', 1, 'en', 'B', 'B', '{"sections":[]}', ub, 'published');
+  insert into lesson_progress (user_id, org_id, item_id, version_id) values (ub, b, 'b1000000-0000-4000-b000-0000000000e1', 'b1000000-0000-4000-b000-0000000000e2');
+  insert into lesson_feedback (user_id, org_id, item_id, version_id, useful) values (ub, b, 'b1000000-0000-4000-b000-0000000000e1', 'b1000000-0000-4000-b000-0000000000e2', true);
 end $$;
 
 select is_empty(
