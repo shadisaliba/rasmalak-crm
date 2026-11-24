@@ -8,7 +8,7 @@ import type { TriggerType } from '@/types/crm';
 export interface TriggerEvent {
   type: TriggerType;
   orgId: string;
-  entityType: 'deal' | 'contact' | 'task' | 'communication';
+  entityType: 'deal' | 'contact' | 'task' | 'communication' | 'invoice' | 'bill' | 'forecast';
   entityId: string;
   data: Record<string, unknown>;
   previousData?: Record<string, unknown>;
@@ -53,6 +53,9 @@ export function doesTriggerMatch(
     case 'task_overdue':
     case 'task_completed':
     case 'communication_logged':
+    case 'sme_invoice_overdue':
+    case 'sme_forecast_shortfall':
+    case 'sme_bill_due':
       return true;
 
     default:

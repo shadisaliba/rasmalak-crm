@@ -709,7 +709,9 @@ export type TriggerType =
   | 'deal_created' | 'deal_stage_changed' | 'deal_value_changed' | 'deal_closed'
   | 'contact_created' | 'contact_updated' | 'contact_tagged'
   | 'task_overdue' | 'task_completed'
-  | 'communication_logged' | 'no_activity' | 'scheduled';
+  | 'communication_logged' | 'no_activity' | 'scheduled'
+  // SME (W3a-09): outbound actions on these always wait for a person.
+  | 'sme_invoice_overdue' | 'sme_forecast_shortfall' | 'sme_bill_due';
 
 export type ConditionOperator =
   | 'equals' | 'not_equals' | 'contains' | 'not_contains'

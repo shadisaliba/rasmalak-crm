@@ -48,6 +48,9 @@ export default {
   'trigger.communication_logged': 'Communication Logged',
   'trigger.no_activity': 'No Activity',
   'trigger.scheduled': 'Scheduled',
+  'trigger.sme_invoice_overdue': 'Customer invoice overdue (always needs approval)',
+  'trigger.sme_forecast_shortfall': 'Cash forecast falls short (always needs approval)',
+  'trigger.sme_bill_due': 'Supplier bill due soon (always needs approval)',
 
   // Trigger config
   'trigger.config.fromStage': 'From Stage',
