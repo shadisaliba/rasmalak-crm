@@ -187,6 +187,7 @@ Seeded local users (password `Passw0rd!local`): `owner.a@example.test` (Org A ow
 | `/crm/money/receivables`, `/crm/money/payables` | Invoice records and supplier bills, with ageing |
 | `/crm/money/forecast` | 13-week cash forecast (FIN-05): weekly in, out and closing, assumptions, scheduled items, scenarios |
 | `/crm/tools`, `/crm/tools/[code]`, `/crm/tools/saved` | Calculators (blueprint §8), one service for every screen; saved scenarios |
+| `/crm/money/reports` | Reports and summary (FIN-06): KPIs for a period (`kpi-v1-proposed`, gate G1), five reports as CSV, Excel or PDF with provenance |
 | `/crm/learn`, `/crm/learn/[slug]` | Published lessons (blueprint §6) |
 | `/crm/staff/content` | Content review for platform staff (drafts, review, publishing) |
 | `/crm/sales` | Sales overview (KPIs, recent activity, at-risk deals) |
