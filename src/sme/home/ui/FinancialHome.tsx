@@ -130,7 +130,7 @@ export function FinancialHome() {
                           <span style={{ fontVariantNumeric: 'tabular-nums' }}>{L.amount(a.baseBalanceMinor, 'JOD')}</span>
                         </li>
                       ))}
-                      {list.length > 3 && <li>{L.t('sme.home.moreAccounts', { count: list.length - 3 })}</li>}
+                      {list.length > 3 && <li>{L.t('sme.home.moreAccounts', { count: L.number(list.length - 3) })}</li>}
                     </ul>
                   )} />
               );
