@@ -1091,9 +1091,9 @@ export interface CalcContext {
 6. New automation trigger types `sme_invoice_overdue`, `sme_forecast_shortfall` and `sme_bill_due` for the workflow builder; outbound actions on them always require confirmation.
 
 **Acceptance**
-- [ ] Re-running evaluation twice creates no duplicate action or notification.
-- [ ] Each action shows the numbers that triggered it and links to their source.
-- [ ] No message is sent without a click.
+- [x] Re-running evaluation twice creates no duplicate action or notification.
+- [x] Each action shows the numbers that triggered it and links to their source.
+- [x] No message is sent without a click.
 
 ### W3a-10 Reports and exports
 
@@ -1685,7 +1685,7 @@ Tick an item (☐ → ☑) and add the PR link in the same PR that completes it.
 | F1.08 Payables and suppliers | W3a-03 | ☑ | branch, no PR yet |
 | F1.09 13-week cash forecast | W3a-07 | ☑ | [#8](https://github.com/shadisaliba/rasmalak-crm/pull/8) |
 | F1.10 Profit and business KPIs | W3a-08 | ☐ | |
-| F1.11 Financial health actions | W3a-09 | ☐ | |
+| F1.11 Financial health actions | W3a-09 | ☑ | [#9](https://github.com/shadisaliba/rasmalak-crm/pull/9) |
 | F2.01 Starting a business in Jordan | W3b-01, W3b-02 (structure); reviewers (content) | ☐ | |
 | F2.02 Cash and financial literacy | W3b-02 | ☐ | |
 | F2.03 Tax and invoicing awareness | W3b-02 (regulated; reviewers) | ☐ | |

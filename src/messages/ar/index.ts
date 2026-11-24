@@ -18,6 +18,7 @@ import tools from './tools';
 import calc from './calc';
 import learn from './learn';
 import forecast from './forecast';
+import actions from './actions';
 
 // Flatten all domain messages into a single object with prefixed keys
 function flatten(obj: Record<string, string>, prefix: string): Record<string, string> {
@@ -49,6 +50,7 @@ const messages: Record<string, string> = {
   ...flatten(calc, 'calc'),
   ...flatten(learn, 'learn'),
   ...flatten(forecast, 'forecast'),
+  ...flatten(actions, 'actions'),
 };
 
 export default messages;

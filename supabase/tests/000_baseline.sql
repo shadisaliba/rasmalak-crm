@@ -168,6 +168,8 @@ begin
   insert into sme_scheduled_items (org_id, label, direction, amount_minor, start_date, created_by) values (b, 'B rent', 'out', 1000, current_date, ub);
   insert into sme_scenarios (id, org_id, name, created_by) values ('b1000000-0000-4000-b000-0000000000f1', b, 'B scenario', ub);
   insert into sme_forecast_settings (org_id, buffer_minor) values (b, 0);
+  insert into sme_action_settings (org_id, rule_code) values (b, 'receivable_overdue');
+  insert into sme_action_evaluations (org_id) values (b);
   insert into sme_forecast_runs (org_id, scenario_id, engine_version, as_of, input_digest, result, trigger)
     values (b, 'b1000000-0000-4000-b000-0000000000f1', '1.0.0', current_date, repeat('b', 64), '{}', 'request');
 end $$;

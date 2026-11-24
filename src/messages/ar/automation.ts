@@ -48,6 +48,9 @@ export default {
   'trigger.communication_logged': 'تسجيل تواصل',
   'trigger.no_activity': 'عدم نشاط',
   'trigger.scheduled': 'مجدول',
+  'trigger.sme_invoice_overdue': 'فاتورة عميل متأخرة (تحتاج موافقة دائمًا)',
+  'trigger.sme_forecast_shortfall': 'توقع نقص في النقد (يحتاج موافقة دائمًا)',
+  'trigger.sme_bill_due': 'فاتورة مورّد قريبة الاستحقاق (تحتاج موافقة دائمًا)',
 
   // Trigger config
   'trigger.config.fromStage': 'من المرحلة',

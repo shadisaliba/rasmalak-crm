@@ -8,6 +8,7 @@ const TRIGGER_TYPES: TriggerType[] = [
   'contact_created', 'contact_updated', 'contact_tagged',
   'task_overdue', 'task_completed',
   'communication_logged', 'no_activity', 'scheduled',
+  'sme_invoice_overdue', 'sme_forecast_shortfall', 'sme_bill_due',
 ];
 
 interface TriggerSelectorProps {

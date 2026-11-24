@@ -35,6 +35,10 @@
     {
       "path": "/api/cron/sme-fx-refresh",
       "schedule": "30 6 * * *"
+    },
+    {
+      "path": "/api/cron/sme-daily",
+      "schedule": "0 4 * * *"
     }
   ]
 }
