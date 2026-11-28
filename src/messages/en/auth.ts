@@ -51,4 +51,6 @@ export default {
   password_requirements: 'Password must be at least 8 characters with uppercase, lowercase, and a number',
   too_many_attempts: 'Too many attempts. Please wait {seconds} seconds.',
   'demoOpening': 'Opening the demo…',
+  'demoFailed': 'The demo could not open. Check your connection and try again.',
+  'demoRetry': 'Try again',
 };
