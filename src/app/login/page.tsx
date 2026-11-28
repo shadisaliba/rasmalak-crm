@@ -10,7 +10,7 @@ import { ThemeLanguageSwitcher } from '@/components';
 import { HOME_ROUTE, nextPathFromLocation } from '@/lib/routes';
 import { supabase } from '@/lib/supabaseClient';
 
-// Preview deployments set this to open straight into the demo account (see /api/demo/session).
+// Demo deployments set this to open straight into the demo account (see /api/demo/session).
 const DEMO_AUTO_LOGIN = process.env.NEXT_PUBLIC_DEMO_AUTO_LOGIN === 'true';
 
 export default function LoginPage() {
@@ -26,7 +26,8 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockedUntil, setLockedUntil] = useState(0);
-  const [demo, setDemo] = useState<'working' | 'off'>(DEMO_AUTO_LOGIN ? 'working' : 'off');
+  const [demo, setDemo] = useState<'working' | 'failed' | 'off'>(DEMO_AUTO_LOGIN ? 'working' : 'off');
+  const [demoAttempt, setDemoAttempt] = useState(0);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -34,7 +35,8 @@ export default function LoginPage() {
     }
   }, [isAuthenticated, router]);
 
-  // Sign in to the demo account; ?manual=1 shows the normal form instead.
+  // Sign in to the demo account. A demo never shows the form unless ?manual=1 asks for it; if the
+  // sign-in fails, visitors get a retry instead.
   useEffect(() => {
     if (!DEMO_AUTO_LOGIN || isAuthenticated) return;
     let ignore = false;
@@ -43,9 +45,9 @@ export default function LoginPage() {
       .then(res => (res.ok ? res.json() : Promise.reject(new Error('demo login unavailable'))))
       .then(tokens => supabase.auth.setSession(tokens))
       .then(({ error: sessionError }) => { if (sessionError) throw sessionError; })
-      .catch(() => { if (!ignore) setDemo('off'); });
+      .catch(() => { if (!ignore) setDemo(manual ? 'off' : 'failed'); });
     return () => { ignore = true; };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, demoAttempt]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,10 +82,19 @@ export default function LoginPage() {
     }
   };
 
-  if (demo === 'working') {
+  if (demo !== 'off') {
     return (
-      <div role="status" className="min-h-screen flex items-center justify-center" style={{ background: 'var(--ds-bg-page)', color: 'var(--ds-text-muted)', fontSize: '14px' }}>
-        {intl.formatMessage({ id: 'auth.demoOpening', defaultMessage: 'Opening the demo…' })}
+      <div role="status" className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 text-center" style={{ background: 'var(--ds-bg-page)', color: 'var(--ds-text-muted)', fontSize: '14px' }}>
+        {demo === 'working' ? (
+          intl.formatMessage({ id: 'auth.demoOpening', defaultMessage: 'Opening the demo…' })
+        ) : (
+          <>
+            <span>{intl.formatMessage({ id: 'auth.demoFailed', defaultMessage: 'The demo could not open. Check your connection and try again.' })}</span>
+            <Button type="button" variant="primary" onClick={() => { setDemo('working'); setDemoAttempt(n => n + 1); }}>
+              {intl.formatMessage({ id: 'auth.demoRetry', defaultMessage: 'Try again' })}
+            </Button>
+          </>
+        )}
       </div>
     );
   }
